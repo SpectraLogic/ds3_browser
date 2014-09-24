@@ -16,7 +16,7 @@ Build Instructions
 
 Building a Qt application is generally the same on all platforms.  It generally
 involves using `qmake` to generate Makefiles/project files/etc and then
-using your systems native build tools to build the application.  It is
+using your system's native build tools to build the application.  It is
 recommended to build within a separate `build` directory to keep the source
 directory clean.  This also makes it easy to clean your workspace.
 
@@ -41,7 +41,7 @@ To generate a Microsoft Visual Studio project file:
     cd <ds3_explorer directory>
     mkdir build
     cd build
-    qmake -tp vc
+    qmake -tp vc ../ds3_explorer.pro
 
 Mac OSX Builds
 --------------
