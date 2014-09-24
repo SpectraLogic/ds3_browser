@@ -5,11 +5,11 @@ DS3 Explorer is a C++/Qt graphical desktop application for interacting with the
 DS3 Deep Storage REST interface.  Windows and Mac OSX are currently supported
 although it should work on any Qt compatible platform.
 
-Requirements
-------------
+Build Requirements
+------------------
 
 * Qt 5.3
-* C++ compiler (Windows MSVC, Apple XCode, g++ etc)
+* C++ compiler (Microsoft Visual Studio, Apple XCode, GCC, etc)
 
 Build Instructions
 ------------------
