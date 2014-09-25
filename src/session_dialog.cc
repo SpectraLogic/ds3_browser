@@ -12,7 +12,8 @@ SessionDialog::SessionDialog(QWidget* parent)
 	m_hostLineEdit = new QLineEdit;
 	m_hostLineEdit->setToolTip("The name or IP address of the DS3 " \
 				   "system's data interface");
-	m_form->addRow("BlackPearl Name or IP Address", m_hostLineEdit);
+	m_hostLabel = new QLabel("BlackPearl Name or IP Address");
+	m_form->addRow(m_hostLabel, m_hostLineEdit);
 
 	m_portComboBox = new QComboBox();
 	m_portComboBox->addItem("80");
@@ -22,10 +23,12 @@ SessionDialog::SessionDialog(QWidget* parent)
 	m_form->addRow("BlackPearl DS3 Port", m_portComboBox);
 
 	m_accessIdLineEdit = new QLineEdit;
-	m_form->addRow("S3 Access ID", m_accessIdLineEdit);
+	m_accessIdLabel = new QLabel("S3 Access ID");
+	m_form->addRow(m_accessIdLabel, m_accessIdLineEdit);
 
 	m_secretKeyLineEdit = new QLineEdit;
-	m_form->addRow("S3 Secret Key", m_secretKeyLineEdit);
+	m_secretKeyLabel = new QLabel("S3 Secret Key");
+	m_form->addRow(m_secretKeyLabel, m_secretKeyLineEdit);
 
 	m_buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok
 					   | QDialogButtonBox::Cancel);
@@ -50,8 +53,27 @@ SessionDialog::~SessionDialog()
 void
 SessionDialog::Accept()
 {
+	bool valid = true;
+	ValidateLineEditNotEmpty(m_hostLabel, m_hostLineEdit, valid);
+	ValidateLineEditNotEmpty(m_accessIdLabel, m_accessIdLineEdit, valid);
+	ValidateLineEditNotEmpty(m_secretKeyLabel, m_secretKeyLineEdit, valid);
+	if (!valid) {
+		return;
+	}
+
 	UpdateSession();
 	accept();
+}
+
+void
+SessionDialog::ValidateLineEditNotEmpty(QLabel* label, QLineEdit* lineEdit, bool& valid)
+{
+	if (lineEdit->text().trimmed().isEmpty()) {
+		label->setStyleSheet("QLabel { color: red; }");
+		valid = false;
+	} else {
+		label->setStyleSheet("");
+	}
 }
 
 void
@@ -63,8 +85,8 @@ SessionDialog::Reject()
 void
 SessionDialog::UpdateSession()
 {
-	m_session->SetHost(m_hostLineEdit->text().toUtf8().constData());
-	m_session->SetPort(m_portComboBox->currentText().toInt());
-	m_session->SetAccessId(m_accessIdLineEdit->text().toUtf8().constData());
-	m_session->SetSecretKey(m_secretKeyLineEdit->text().toUtf8().constData());
+	m_session->SetHost(m_hostLineEdit->text().trimmed().toUtf8().constData());
+	m_session->SetPort(m_portComboBox->currentText().trimmed().toInt());
+	m_session->SetAccessId(m_accessIdLineEdit->text().trimmed().toUtf8().constData());
+	m_session->SetSecretKey(m_secretKeyLineEdit->text().trimmed().toUtf8().constData());
 }

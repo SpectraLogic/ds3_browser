@@ -31,14 +31,19 @@ private:
 
 	QFormLayout* m_form;
 
+	QLabel* m_hostLabel;
 	QLineEdit* m_hostLineEdit;
 	QComboBox* m_portComboBox;
+	QLabel* m_accessIdLabel;
 	QLineEdit* m_accessIdLineEdit;
+	QLabel* m_secretKeyLabel;
 	QLineEdit* m_secretKeyLineEdit;
 
 	QDialogButtonBox* m_buttonBox;
 
 	Session* m_session;
+
+	void ValidateLineEditNotEmpty(QLabel*, QLineEdit*, bool&);
 
 	void UpdateSession();
 };
