@@ -1,7 +1,3 @@
-#include <QFileSystemModel>
-#include <QTreeView>
-#include <QTimer>
-
 #include "main_window.h"
 #include "session_dialog.h"
 
@@ -10,12 +6,18 @@ MainWindow::MainWindow(Session* session)
 {
 	setWindowTitle("Spectra Logic DS3 Explorer");
 
-	QFileSystemModel *model = new QFileSystemModel;
-	model->setRootPath(QDir::rootPath());
+	m_hostFileSystem = new QFileSystemModel(this);
+	m_hostFileSystem->setRootPath(QDir::rootPath());
 
-	QTreeView *tree = new QTreeView();
-	tree->setModel(model);
-	tree->setRootIndex(model->index(QDir::rootPath()));
+	m_hostBrowser = new QTreeView();
+	m_hostBrowser->setModel(m_hostFileSystem);
+	m_hostBrowser->setRootIndex(m_hostFileSystem->index(QDir::rootPath()));
 
-	setCentralWidget(tree);
+	m_remoteBrowser = new QTreeView;
+
+	m_splitter = new QSplitter(this);
+	m_splitter->addWidget(m_hostBrowser);
+	m_splitter->addWidget(m_remoteBrowser);
+
+	setCentralWidget(m_splitter);
 }

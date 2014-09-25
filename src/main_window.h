@@ -2,6 +2,9 @@
 #define MAIN_WINDOW_H
 
 #include <QMainWindow>
+#include <QFileSystemModel>
+#include <QSplitter>
+#include <QTreeView>
 
 #include "session.h"
 
@@ -14,6 +17,12 @@ public:
 
 private:
 	Session* m_session;
+
+	QSplitter* m_splitter;
+	QTreeView* m_hostBrowser;
+	QTreeView* m_remoteBrowser;
+
+	QFileSystemModel* m_hostFileSystem;
 };
 
 #endif
