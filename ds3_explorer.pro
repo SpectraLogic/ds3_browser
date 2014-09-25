@@ -2,7 +2,8 @@ TARGET = "Spectra Logic DS3 Explorer"
 
 QT += core gui widgets
 
-CONFIG += build_all debug_and_release warn_on
+CONFIG -= release
+CONFIG += debug_and_release warn_on
 
 CONFIG(debug, debug|release) {
 	DESTDIR = debug
