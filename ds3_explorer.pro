@@ -7,8 +7,6 @@ CONFIG += build_all debug_and_release warn_on
 CONFIG(debug, debug|release) {
 	DESTDIR = debug
 } else {
-	CONFIG += static
-	DEFINES += STATIC
 	DESTDIR = release
 }
 
