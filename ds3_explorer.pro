@@ -16,12 +16,18 @@ MOC_DIR = $$DESTDIR/.moc
 RCC_DIR = $$DESTDIR/.qrc
 UI_DIR = $$DESTDIR/.ui
 
+INCLUDEPATH += src
+
 HEADERS = \
-	src/main_window.h
+	src/main_window.h \
+	src/session.h \
+	src/session_dialog.h
 
 SOURCES = \
 	src/main.cc \
-	src/main_window.cc
+	src/main_window.cc \
+	src/session.cc \
+	src/session_dialog.cc
 
 macx {
 	# Qt should normally find its default Info.plist.app file, however, a

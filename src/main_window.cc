@@ -1,9 +1,12 @@
 #include <QFileSystemModel>
 #include <QTreeView>
+#include <QTimer>
 
 #include "main_window.h"
+#include "session_dialog.h"
 
-MainWindow::MainWindow()
+MainWindow::MainWindow(Session* session)
+	: m_session(session)
 {
 	setWindowTitle("Spectra Logic DS3 Explorer");
 
