@@ -7,13 +7,13 @@ class Session
 {
 public:
 	Session();
-	Session(std::string, int, std::string, std::string);
+	Session(std::string, std::string, std::string, std::string);
 
 	std::string GetHost();
 	void SetHost(const std::string);
 
-	int GetPort();
-	void SetPort(const int);
+	std::string GetPort();
+	void SetPort(const std::string);
 
 	std::string GetAccessId();
 	void SetAccessId(const std::string);
@@ -22,10 +22,9 @@ public:
 	void SetSecretKey(const std::string);
 
 private:
-
 	std::string m_host;
 
-	int m_port;
+	std::string m_port;
 
 	std::string m_accessId;
 
@@ -44,14 +43,14 @@ Session::SetHost(const std::string host)
 	m_host = host;
 }
 
-inline int
+inline std::string
 Session::GetPort()
 {
 	return m_port;
 }
 
 inline void
-Session::SetPort(const int port)
+Session::SetPort(const std::string port)
 {
 	m_port = port;
 }

@@ -19,15 +19,21 @@ UI_DIR = $$DESTDIR/.ui
 INCLUDEPATH += src
 
 HEADERS = \
+	src/models/bucket.h \
+	src/client.h \
 	src/main_window.h \
 	src/session.h \
 	src/session_dialog.h
 
 SOURCES = \
+	src/models/bucket.cc \
+	src/client.cc \
 	src/main.cc \
 	src/main_window.cc \
 	src/session.cc \
 	src/session_dialog.cc
+
+RESOURCES = ds3_explorer.qrc
 
 macx {
 	# Qt should normally find its default Info.plist.app file, however, a
@@ -38,5 +44,20 @@ macx {
 	QMAKE_INFO_PLIST=src/mac/Info.plist.app
 }
 
-msvc: QMAKE_CXXFLAGS += /WX
+msvc {
+	LIBS += ds3.lib
+	QMAKE_CXXFLAGS += /WX
+} else {
+	# Necessary on OSX at least
+	exists(/usr/local/include) {
+		INCLUDEPATH += /usr/local/include
+	}
+	# Necessary on OSX at least
+	exists(/usr/local/lib) {
+		LIBS += -L/usr/local/lib
+	}
+
+	LIBS += -lds3 -lcurl
+}
+
 gcc: QMAKE_CXXFLAGS += -Werror

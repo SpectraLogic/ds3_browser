@@ -86,7 +86,7 @@ void
 SessionDialog::UpdateSession()
 {
 	m_session->SetHost(m_hostLineEdit->text().trimmed().toUtf8().constData());
-	m_session->SetPort(m_portComboBox->currentText().trimmed().toInt());
+	m_session->SetPort(m_portComboBox->currentText().trimmed().toUtf8().constData());
 	m_session->SetAccessId(m_accessIdLineEdit->text().trimmed().toUtf8().constData());
 	m_session->SetSecretKey(m_secretKeyLineEdit->text().trimmed().toUtf8().constData());
 }

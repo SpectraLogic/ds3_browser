@@ -5,7 +5,7 @@ Session::Session()
 }
 
 Session::Session(std::string host,
-		 int port,
+		 std::string port,
 		 std::string accessId,
 		 std::string secretKey)
 	: m_host(host),
