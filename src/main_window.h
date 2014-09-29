@@ -2,7 +2,9 @@
 #define MAIN_WINDOW_H
 
 #include <QMainWindow>
+#include <QAction>
 #include <QFileSystemModel>
+#include <QMenu>
 #include <QSplitter>
 #include <QTreeView>
 
@@ -26,6 +28,12 @@ private:
 	QTreeView* m_remoteBrowser;
 
 	QFileSystemModel* m_hostFileSystem;
+
+	QMenu* m_helpMenu;
+	QAction* m_aboutAction;
+
+private slots:
+	void About();
 };
 
 #endif
