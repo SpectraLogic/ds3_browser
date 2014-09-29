@@ -1,7 +1,12 @@
-#include <QIcon>
+#include <QDateTime>
 #include <QIcon>
 
 #include "bucket.h"
+
+// Must match Bucket::Column
+const char* const Bucket::COLUMN_NAMES[] = { "Name",
+					     "Owner",
+					     "Created" };
 
 Bucket::Bucket(ds3_get_service_response* response, QObject* parent)
 	: QAbstractItemModel(parent),
@@ -32,7 +37,7 @@ Bucket::hasChildren(const QModelIndex &/*parent*/) const
 int
 Bucket::columnCount(const QModelIndex &/*parent*/) const
 {
-	return 1;
+	return COUNT;
 }
 
 int
@@ -56,14 +61,32 @@ QVariant
 Bucket::data(const QModelIndex &index, int role) const
 {
 	char* name;
+	char* owner;
+	char* createdStr;
+	QDateTime created;
+	int column = index.column();
 
 	switch (role)
 	{
 	case Qt::DisplayRole:
-		name = m_get_service_response->buckets[index.row()].name->value;
-		return QString(QLatin1String(name));
+		switch (column)
+		{
+		case NAME:
+			name = m_get_service_response->buckets[index.row()].name->value;
+			return QString(QLatin1String(name));
+		case OWNER:
+			owner = m_get_service_response->owner->name->value;
+			return QString(QLatin1String(owner));
+		case CREATED:
+			createdStr = m_get_service_response->buckets[index.row()].creation_date->value;
+			created = QDateTime::fromString(QString(QLatin1String(createdStr)),
+							"yyyy-MM-ddThh:mm:ss.000Z");
+			return created.toString("MMMM d, yyyy h:mm AP");
+		}
 	case Qt::DecorationRole:
-		return QIcon(":/resources/icons/bucket.png");
+		if (column == NAME) {
+			return QIcon(":/resources/icons/bucket.png");
+		}
 	}
 	return QVariant();
 }
@@ -73,11 +96,7 @@ Bucket::headerData(int section, Qt::Orientation /*orientation*/, int role) const
 {
 	if (role == Qt::DisplayRole)
 	{
-		switch (section)
-		{
-		case 0:
-			return "Name";
-		}
+		return COLUMN_NAMES[section];
 	}
 	return QVariant();
 }

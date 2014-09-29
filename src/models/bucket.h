@@ -27,4 +27,8 @@ public:
 
 private:
 	ds3_get_service_response* m_get_service_response;
+
+	// Must match COLUMN_NAMES
+	enum Column { NAME, OWNER, CREATED, COUNT };
+	static const char* const COLUMN_NAMES[];
 };
