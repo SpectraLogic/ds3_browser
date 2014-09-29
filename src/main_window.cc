@@ -57,6 +57,7 @@ MainWindow::CreateMenus()
 void
 MainWindow::About()
 {
-	QMessageBox::about(this, tr("About DS3 Explorer"),
-		tr("<b>DS3 Explorer</b>"));
+	QString text = tr("<b>DS3 Explorer</b><br/>Version %1")
+				.arg(APP_VERSION);
+	QMessageBox::about(this, tr("About DS3 Explorer"), text);
 }

@@ -1,4 +1,5 @@
 TARGET = "Spectra Logic DS3 Explorer"
+VERSION = 0.0.0
 
 QT += core gui widgets
 
@@ -10,6 +11,8 @@ CONFIG(debug, debug|release) {
 } else {
 	DESTDIR = release
 }
+
+DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 OBJECTS_DIR = $$DESTDIR/.obj
 MOC_DIR = $$DESTDIR/.moc
