@@ -20,6 +20,8 @@ public:
 	~MainWindow();
 
 private:
+	void CreateMenus();
+
 	Client* m_client;
 	Session* m_session;
 

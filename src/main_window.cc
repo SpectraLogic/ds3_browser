@@ -10,13 +10,7 @@ MainWindow::MainWindow(Session* session)
 {
 	setWindowTitle("Spectra Logic DS3 Explorer");
 
-	m_aboutAction = new QAction(tr("&About"), this);
-	connect(m_aboutAction, SIGNAL(triggered()), this, SLOT(About()));
-
-	m_helpMenu = new QMenu(tr("&Help"), this);
-	m_helpMenu->addAction(m_aboutAction);
-
-	menuBar()->addMenu(m_helpMenu);
+	CreateMenus();
 
 	m_hostFileSystem = new QFileSystemModel(this);
 	m_hostFileSystem->setRootPath(QDir::rootPath());
@@ -46,6 +40,18 @@ MainWindow::MainWindow(Session* session)
 MainWindow::~MainWindow()
 {
 	delete m_client;
+}
+
+void
+MainWindow::CreateMenus()
+{
+	m_aboutAction = new QAction(tr("&About"), this);
+	connect(m_aboutAction, SIGNAL(triggered()), this, SLOT(About()));
+
+	m_helpMenu = new QMenu(tr("&Help"), this);
+	m_helpMenu->addAction(m_aboutAction);
+
+	menuBar()->addMenu(m_helpMenu);
 }
 
 void
