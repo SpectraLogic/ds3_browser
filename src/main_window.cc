@@ -11,7 +11,10 @@ MainWindow::MainWindow(Session* session)
 	CreateMenus();
 
 	m_sessionView = new SessionView(session, this);
-	setCentralWidget(m_sessionView);
+	m_sessionTabs = new QTabWidget(this);
+	m_sessionTabs->addTab(m_sessionView,
+			      QString::fromStdString(session->GetHost()));
+	setCentralWidget(m_sessionTabs);
 }
 
 void

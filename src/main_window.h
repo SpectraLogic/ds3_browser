@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QAction>
 #include <QMenu>
+#include <QTabWidget>
 
 #include "views/session_view.h"
 
@@ -20,6 +21,7 @@ private:
 	QMenu* m_helpMenu;
 	QAction* m_aboutAction;
 
+	QTabWidget* m_sessionTabs;
 	SessionView* m_sessionView;
 
 private slots:
