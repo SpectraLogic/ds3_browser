@@ -8,6 +8,10 @@ SessionView::SessionView(Session* session, QWidget* parent)
 	m_hostFileSystem = new QFileSystemModel(this);
 	QString rootPath = m_hostFileSystem->myComputer().toString();
 	m_hostFileSystem->setRootPath(rootPath);
+	m_hostFileSystem->setFilter(QDir::AllDirs |
+				    QDir::AllEntries |
+				    QDir::NoDotAndDotDot |
+				    QDir::Hidden);
 
 	m_hostBrowser = new QTreeView;
 	m_hostBrowser->setModel(m_hostFileSystem);
