@@ -3,6 +3,8 @@
 
 #include <string>
 
+// Session, a model that represents the data necessary to setup a
+// host<->DS3 session.
 class Session
 {
 public:

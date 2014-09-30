@@ -11,6 +11,8 @@
 
 #include "models/session.h"
 
+// SessionDialog, a dialog to gather host/user information when creating
+// a new host<->DS3 System session.
 class SessionDialog : public QDialog
 {
 	Q_OBJECT
