@@ -2,11 +2,22 @@
 #include <QMessageBox>
 
 #include "main_window.h"
-#include "models/session.h"
+#include "views/session_dialog.h"
 
-MainWindow::MainWindow(Session* session)
+MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
+	: QMainWindow(parent, flags),
+	  m_isFinished(false)
 {
 	setWindowTitle("Spectra Logic DS3 Explorer");
+
+	Session* session = CreateSession();
+	if (session == 0)
+	{
+		// User closed/cancelled the New Session dialog which should
+		// result in the application closing.
+		m_isFinished = true;
+		return;
+	}
 
 	CreateMenus();
 
@@ -15,6 +26,17 @@ MainWindow::MainWindow(Session* session)
 	m_sessionTabs->addTab(m_sessionView,
 			      QString::fromStdString(session->GetHost()));
 	setCentralWidget(m_sessionTabs);
+}
+
+Session*
+MainWindow::CreateSession()
+{
+	SessionDialog sessionDialog;
+	if (sessionDialog.exec() == QDialog::Rejected) {
+		return 0;
+	}
+	Session* session = new Session(*sessionDialog.GetSession());
+	return session;
 }
 
 void

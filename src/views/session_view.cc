@@ -44,4 +44,5 @@ SessionView::SessionView(Session* session, QWidget* parent)
 SessionView::~SessionView()
 {
 	delete m_client;
+	delete m_session;
 }

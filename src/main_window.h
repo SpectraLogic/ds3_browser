@@ -6,6 +6,7 @@
 #include <QMenu>
 #include <QTabWidget>
 
+#include "models/session.h"
 #include "views/session_view.h"
 
 class MainWindow : public QMainWindow
@@ -13,10 +14,15 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 
 public:
-	MainWindow(Session*);
+	MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+
+	inline bool IsFinished();
 
 private:
+	Session* CreateSession();
 	void CreateMenus();
+
+	bool m_isFinished;
 
 	QMenu* m_helpMenu;
 	QAction* m_aboutAction;
@@ -27,5 +33,11 @@ private:
 private slots:
 	void About();
 };
+
+inline bool
+MainWindow::IsFinished()
+{
+	return m_isFinished;
+}
 
 #endif
