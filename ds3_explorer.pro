@@ -1,4 +1,4 @@
-TARGET = "Spectra Logic DS3 Explorer"
+TARGET = SpectraLogicDS3Explorer
 VERSION = 0.0.0
 
 QT += core gui widgets
