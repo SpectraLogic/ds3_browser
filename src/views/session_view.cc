@@ -11,8 +11,12 @@ SessionView::SessionView(Session* session, QWidget* parent)
 	m_hostBrowser = new QTreeView;
 	m_hostBrowser->setModel(m_hostFileSystem);
 	m_hostBrowser->setRootIndex(m_hostFileSystem->index(QDir::rootPath()));
+	// Remove the focus rectangle around the tree view on OSX.
+	m_hostBrowser->setAttribute(Qt::WA_MacShowFocusRect, 0);
 
 	m_remoteBrowser = new QTreeView;
+	// Remove the focus rectangle around the tree view on OSX.
+	m_remoteBrowser->setAttribute(Qt::WA_MacShowFocusRect, 0);
 
 	m_splitter = new QSplitter;
 	m_splitter->addWidget(m_hostBrowser);
