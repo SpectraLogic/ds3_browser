@@ -3,13 +3,9 @@
 
 #include <QMainWindow>
 #include <QAction>
-#include <QFileSystemModel>
 #include <QMenu>
-#include <QSplitter>
-#include <QTreeView>
 
-#include "lib/client.h"
-#include "models/session.h"
+#include "views/session_view.h"
 
 class MainWindow : public QMainWindow
 {
@@ -17,22 +13,14 @@ class MainWindow : public QMainWindow
 
 public:
 	MainWindow(Session*);
-	~MainWindow();
 
 private:
 	void CreateMenus();
 
-	Client* m_client;
-	Session* m_session;
-
-	QSplitter* m_splitter;
-	QTreeView* m_hostBrowser;
-	QTreeView* m_remoteBrowser;
-
-	QFileSystemModel* m_hostFileSystem;
-
 	QMenu* m_helpMenu;
 	QAction* m_aboutAction;
+
+	SessionView* m_sessionView;
 
 private slots:
 	void About();

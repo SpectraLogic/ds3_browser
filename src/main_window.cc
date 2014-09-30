@@ -2,44 +2,16 @@
 #include <QMessageBox>
 
 #include "main_window.h"
-#include "models/bucket.h"
-#include "views/session_dialog.h"
+#include "models/session.h"
 
 MainWindow::MainWindow(Session* session)
-	: m_session(session)
 {
 	setWindowTitle("Spectra Logic DS3 Explorer");
 
 	CreateMenus();
 
-	m_hostFileSystem = new QFileSystemModel(this);
-	m_hostFileSystem->setRootPath(QDir::rootPath());
-
-	m_hostBrowser = new QTreeView;
-	m_hostBrowser->setModel(m_hostFileSystem);
-	m_hostBrowser->setRootIndex(m_hostFileSystem->index(QDir::rootPath()));
-
-	m_remoteBrowser = new QTreeView;
-
-	m_splitter = new QSplitter;
-	m_splitter->addWidget(m_hostBrowser);
-	m_splitter->addWidget(m_remoteBrowser);
-
-	setCentralWidget(m_splitter);
-
-	m_client = new Client(m_session->GetHost(),
-			      m_session->GetPort(),
-			      m_session->GetAccessId(),
-			      m_session->GetSecretKey());
-
-	ds3_get_service_response* response = m_client->GetService();
-	Bucket* bucket = new Bucket(response);
-	m_remoteBrowser->setModel(bucket);
-}
-
-MainWindow::~MainWindow()
-{
-	delete m_client;
+	m_sessionView = new SessionView(session, this);
+	setCentralWidget(m_sessionView);
 }
 
 void

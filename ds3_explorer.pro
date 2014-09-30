@@ -26,7 +26,8 @@ HEADERS = \
 	src/lib/client.h \
 	src/models/bucket.h \
 	src/models/session.h \
-	src/views/session_dialog.h
+	src/views/session_dialog.h \
+	src/views/session_view.h
 
 SOURCES = \
 	src/main.cc \
@@ -34,7 +35,8 @@ SOURCES = \
 	src/lib/client.cc \
 	src/models/bucket.cc \
 	src/models/session.cc \
-	src/views/session_dialog.cc
+	src/views/session_dialog.cc \
+	src/views/session_view.cc
 
 RESOURCES = ds3_explorer.qrc
 
