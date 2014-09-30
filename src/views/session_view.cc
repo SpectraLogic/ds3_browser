@@ -6,11 +6,11 @@ SessionView::SessionView(Session* session, QWidget* parent)
 	  m_session(session)
 {
 	m_hostFileSystem = new QFileSystemModel(this);
-	m_hostFileSystem->setRootPath(QDir::rootPath());
+	QString rootPath = m_hostFileSystem->myComputer().toString();
+	m_hostFileSystem->setRootPath(rootPath);
 
 	m_hostBrowser = new QTreeView;
 	m_hostBrowser->setModel(m_hostFileSystem);
-	m_hostBrowser->setRootIndex(m_hostFileSystem->index(QDir::rootPath()));
 	// Remove the focus rectangle around the tree view on OSX.
 	m_hostBrowser->setAttribute(Qt::WA_MacShowFocusRect, 0);
 
