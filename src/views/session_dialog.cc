@@ -1,6 +1,6 @@
-#include "session.h"
+#include "models/session.h"
 
-#include "session_dialog.h"
+#include "views/session_dialog.h"
 
 SessionDialog::SessionDialog(QWidget* parent)
 	: QDialog(parent)

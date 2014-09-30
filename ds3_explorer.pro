@@ -22,19 +22,19 @@ UI_DIR = $$DESTDIR/.ui
 INCLUDEPATH += src
 
 HEADERS = \
-	src/models/bucket.h \
-	src/client.h \
 	src/main_window.h \
-	src/session.h \
-	src/session_dialog.h
+	src/lib/client.h \
+	src/models/bucket.h \
+	src/models/session.h \
+	src/views/session_dialog.h
 
 SOURCES = \
-	src/models/bucket.cc \
-	src/client.cc \
 	src/main.cc \
 	src/main_window.cc \
-	src/session.cc \
-	src/session_dialog.cc
+	src/lib/client.cc \
+	src/models/bucket.cc \
+	src/models/session.cc \
+	src/views/session_dialog.cc
 
 RESOURCES = ds3_explorer.qrc
 

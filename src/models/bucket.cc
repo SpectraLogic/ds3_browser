@@ -1,7 +1,7 @@
 #include <QDateTime>
 #include <QIcon>
 
-#include "bucket.h"
+#include "models/bucket.h"
 
 // Must match Bucket::Column
 const char* const Bucket::COLUMN_NAMES[] = { "Name",

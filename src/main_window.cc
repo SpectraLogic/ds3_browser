@@ -2,8 +2,8 @@
 #include <QMessageBox>
 
 #include "main_window.h"
-#include "session_dialog.h"
 #include "models/bucket.h"
+#include "views/session_dialog.h"
 
 MainWindow::MainWindow(Session* session)
 	: m_session(session)

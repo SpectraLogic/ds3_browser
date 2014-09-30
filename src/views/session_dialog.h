@@ -9,7 +9,7 @@
 #include <QLineEdit>
 #include <QVBoxLayout>
 
-#include "session.h"
+#include "models/session.h"
 
 class SessionDialog : public QDialog
 {

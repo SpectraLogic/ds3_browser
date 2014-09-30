@@ -1,8 +1,8 @@
 #include <QApplication>
 
 #include "main_window.h"
-#include "session_dialog.h"
-#include "session.h"
+#include "models/session.h"
+#include "views/session_dialog.h"
 
 int
 main(int argc, char *argv[])

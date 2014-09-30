@@ -8,8 +8,8 @@
 #include <QSplitter>
 #include <QTreeView>
 
-#include "client.h"
-#include "session.h"
+#include "lib/client.h"
+#include "models/session.h"
 
 class MainWindow : public QMainWindow
 {
