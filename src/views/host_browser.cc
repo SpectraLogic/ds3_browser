@@ -49,7 +49,7 @@ HostBrowser::GoToParent()
 {
 	QString parentPath;
 	QString currentPath = m_model->filePath(m_treeView->rootIndex());
-	if (currentPath == "" || currentPath == "/")
+	if (currentPath == "" || QDir::drives().contains(QFileInfo(currentPath)))
 	{
 		// Either at the "My Computer" level or the root (of a drive
 		// on Windows).
