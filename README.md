@@ -9,6 +9,7 @@ Build Requirements
 ------------------
 
 * Qt 5.3
+* [DS3 C SDK](https://github.com/SpectraLogic/ds3_c_sdk)
 * C++ compiler (Microsoft Visual Studio, Apple XCode, GCC, etc)
 
 Build Instructions
