@@ -10,11 +10,17 @@
 // BlackPearl)
 class DS3Browser : public Browser
 {
+	Q_OBJECT
+
 public:
 	DS3Browser(Session* session,
 		   QWidget* parent = 0,
 		   Qt::WindowFlags flags = 0);
 	~DS3Browser();
+
+protected:
+	void GoToRoot();
+	void OnModelItemDoubleClick(const QModelIndex& index);
 
 private:
 	Bucket* m_model;
