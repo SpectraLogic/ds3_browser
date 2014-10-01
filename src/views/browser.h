@@ -1,3 +1,6 @@
+#ifndef BROWSER_H
+#define BROWSER_H
+
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QTreeView>
@@ -9,7 +12,9 @@ public:
 	Browser(QWidget* parent = 0, Qt::WindowFlags flags = 0);
 	virtual ~Browser();
 
-private:
+protected:
 	QVBoxLayout* m_layout;
 	QTreeView* m_treeView;
 };
+
+#endif

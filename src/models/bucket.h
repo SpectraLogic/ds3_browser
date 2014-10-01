@@ -1,3 +1,6 @@
+#ifndef BUCKET_H
+#define BUCKET_H
+
 #include <QAbstractItemModel>
 #include <ds3.h>
 
@@ -32,3 +35,5 @@ private:
 	enum Column { NAME, OWNER, CREATED, COUNT };
 	static const char* const COLUMN_NAMES[];
 };
+
+#endif

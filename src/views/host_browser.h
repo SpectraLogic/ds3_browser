@@ -1,3 +1,6 @@
+#ifndef HOST_BROWSER_H
+#define HOST_BROWSER_H
+
 #include <QFileSystemModel>
 #include "views/browser.h"
 
@@ -9,4 +12,6 @@ public:
 
 private:
 	QFileSystemModel* m_model;
-}
+};
+
+#endif

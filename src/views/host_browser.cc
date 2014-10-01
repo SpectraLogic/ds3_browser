@@ -2,7 +2,7 @@
 
 HostBrowser::HostBrowser(QWidget* parent, Qt::WindowFlags flags)
 	: Browser(parent, flags),
-	  m_hostFileSystem(new QFileSystemModel(this))
+	  m_model(new QFileSystemModel(this))
 {
 	QString rootPath = m_model->myComputer().toString();
 	m_model->setRootPath(rootPath);

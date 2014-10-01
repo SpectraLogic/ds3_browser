@@ -28,7 +28,6 @@ public slots:
 	void Reject();
 
 private:
-
 	QVBoxLayout* m_layout;
 
 	QFormLayout* m_form;

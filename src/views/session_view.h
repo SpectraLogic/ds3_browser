@@ -1,10 +1,12 @@
-#include <QFileSystemModel>
+#ifndef SESSION_VIEW_H
+#define SESSION_VIEW_H
+
 #include <QVBoxLayout>
 #include <QSplitter>
-#include <QTreeView>
 #include <QWidget>
 
-#include "lib/client.h"
+#include "views/ds3_browser.h"
+#include "views/host_browser.h"
 #include "models/session.h"
 
 // SessionView, the overall view that is used for each session.  It represents
@@ -17,12 +19,12 @@ public:
 	~SessionView();
 
 private:
-	Client* m_client;
+	DS3Browser* m_ds3Browser;
+	HostBrowser* m_hostBrowser;
 	Session* m_session;
-	QFileSystemModel* m_hostFileSystem;
 
 	QVBoxLayout* m_topLayout;
 	QSplitter* m_splitter;
-	QTreeView* m_hostBrowser;
-	QTreeView* m_remoteBrowser;
 };
+
+#endif

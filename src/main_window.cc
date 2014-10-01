@@ -6,7 +6,8 @@
 
 MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags),
-	  m_isFinished(false)
+	  m_isFinished(false),
+	  m_sessionTabs(new QTabWidget(this))
 {
 	setWindowTitle("Spectra Logic DS3 Explorer");
 
@@ -22,7 +23,6 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 	CreateMenus();
 
 	m_sessionView = new SessionView(session, this);
-	m_sessionTabs = new QTabWidget(this);
 	m_sessionTabs->addTab(m_sessionView,
 			      QString::fromStdString(session->GetHost()));
 	setCentralWidget(m_sessionTabs);
