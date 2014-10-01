@@ -27,8 +27,13 @@ Browser::~Browser()
 void
 Browser::AddToolBarActions()
 {
+	m_parentAction = new QAction(style()->standardIcon(QStyle::SP_FileDialogToParent),
+				     "Parent directory", this);
+	connect(m_parentAction, SIGNAL(triggered()), this, SLOT(GoToParent()));
+	m_toolBar->addAction(m_parentAction);
+
 	m_rootAction = new QAction(style()->standardIcon(QStyle::SP_ComputerIcon),
-				   "Root", this);
+				   "Root directory", this);
 	connect(m_rootAction, SIGNAL(triggered()), this, SLOT(GoToRoot()));
 	m_toolBar->addAction(m_rootAction);
 }

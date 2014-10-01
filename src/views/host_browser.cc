@@ -25,7 +25,7 @@ void
 HostBrowser::AddCustomToolBarActions()
 {
 	m_homeAction = new QAction(style()->standardIcon(QStyle::SP_DirHomeIcon),
-				   "Home", this);
+				   "Home directory", this);
 	connect(m_homeAction, SIGNAL(triggered()), this, SLOT(GoToHome()));
 	m_toolBar->addAction(m_homeAction);
 }
@@ -36,6 +36,15 @@ HostBrowser::GoToHome()
 	QString path = QDir::homePath();
 	m_treeView->setRootIndex(m_model->index(path));
 	m_path->setText(path);
+}
+
+void
+HostBrowser::GoToParent()
+{
+	QString currentPath = m_model->filePath(m_treeView->rootIndex());
+	QString parentPath = QFileInfo(currentPath).dir().path();
+	m_treeView->setRootIndex(m_model->index(parentPath));
+	m_path->setText(parentPath);
 }
 
 void

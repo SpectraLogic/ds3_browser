@@ -18,6 +18,11 @@ DS3Browser::~DS3Browser()
 }
 
 void
+DS3Browser::GoToParent()
+{
+}
+
+void
 DS3Browser::GoToRoot()
 {
 }

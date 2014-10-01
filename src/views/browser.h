@@ -23,11 +23,13 @@ protected:
 	QToolBar* m_toolBar;
 	QTreeView* m_treeView;
 
+	QAction* m_parentAction;
 	QAction* m_rootAction;
 
 	void AddToolBarActions();
 
 protected slots:
+	virtual void GoToParent() = 0;
 	virtual void GoToRoot() = 0;
 	virtual void OnModelItemDoubleClick(const QModelIndex& index) = 0;
 };

@@ -14,6 +14,7 @@ public:
 
 protected:
 	void AddCustomToolBarActions();
+	void GoToParent();
 	void GoToRoot();
 	void OnModelItemDoubleClick(const QModelIndex& index);
 

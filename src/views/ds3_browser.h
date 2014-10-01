@@ -19,6 +19,7 @@ public:
 	~DS3Browser();
 
 protected:
+	void GoToParent();
 	void GoToRoot();
 	void OnModelItemDoubleClick(const QModelIndex& index);
 
