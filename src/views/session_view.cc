@@ -10,6 +10,8 @@ SessionView::SessionView(Session* session, QWidget* parent)
 	m_splitter = new QSplitter;
 	m_splitter->addWidget(m_hostBrowser);
 	m_splitter->addWidget(m_ds3Browser);
+	m_splitter->setCollapsible(0, false);
+	m_splitter->setCollapsible(1, false);
 
 	m_topLayout = new QVBoxLayout(this);
 	m_topLayout->setContentsMargins(5, 5, 5, 5);
