@@ -37,3 +37,9 @@ Browser::AddToolBarActions()
 	connect(m_rootAction, SIGNAL(triggered()), this, SLOT(GoToRoot()));
 	m_toolBar->addAction(m_rootAction);
 }
+
+void
+Browser::UpdatePathLabel(const QString& path)
+{
+	m_path->setText(path);
+}

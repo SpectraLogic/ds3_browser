@@ -27,6 +27,7 @@ protected:
 	QAction* m_rootAction;
 
 	void AddToolBarActions();
+	virtual void UpdatePathLabel(const QString& path);
 
 protected slots:
 	virtual void GoToParent() = 0;

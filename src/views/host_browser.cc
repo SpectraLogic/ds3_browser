@@ -7,7 +7,7 @@ HostBrowser::HostBrowser(QWidget* parent, Qt::WindowFlags flags)
 	AddCustomToolBarActions();
 
 	QString rootPath = m_model->myComputer().toString();
-	m_path->setText(rootPath);
+	UpdatePathLabel(rootPath);
 	m_model->setRootPath(rootPath);
 	m_model->setFilter(QDir::AllDirs |
 			   QDir::AllEntries |
@@ -31,11 +31,17 @@ HostBrowser::AddCustomToolBarActions()
 }
 
 void
+HostBrowser::UpdatePathLabel(const QString& path)
+{
+	m_path->setText(QDir::toNativeSeparators(path));
+}
+
+void
 HostBrowser::GoToHome()
 {
 	QString path = QDir::homePath();
 	m_treeView->setRootIndex(m_model->index(path));
-	m_path->setText(path);
+	UpdatePathLabel(path);
 }
 
 void
@@ -44,7 +50,7 @@ HostBrowser::GoToParent()
 	QString currentPath = m_model->filePath(m_treeView->rootIndex());
 	QString parentPath = QFileInfo(currentPath).dir().path();
 	m_treeView->setRootIndex(m_model->index(parentPath));
-	m_path->setText(parentPath);
+	UpdatePathLabel(parentPath);
 }
 
 void
@@ -52,7 +58,7 @@ HostBrowser::GoToRoot()
 {
 	QVariant myComputer = m_model->myComputer();
 	m_treeView->setRootIndex(myComputer.toModelIndex());
-	m_path->setText(myComputer.toString());
+	UpdatePathLabel(myComputer.toString());
 }
 
 void
@@ -63,6 +69,6 @@ HostBrowser::OnModelItemDoubleClick(const QModelIndex& index)
 	if (m_model->isDir(index) && dir.isReadable())
 	{
 		m_treeView->setRootIndex(index);
-		m_path->setText(path);
+		UpdatePathLabel(path);
 	}
 }

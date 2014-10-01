@@ -14,6 +14,7 @@ public:
 
 protected:
 	void AddCustomToolBarActions();
+	void UpdatePathLabel(const QString& path);
 	void GoToParent();
 	void GoToRoot();
 	void OnModelItemDoubleClick(const QModelIndex& index);
