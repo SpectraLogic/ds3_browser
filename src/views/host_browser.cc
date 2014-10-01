@@ -49,9 +49,11 @@ HostBrowser::GoToRoot()
 void
 HostBrowser::OnModelItemDoubleClick(const QModelIndex& index)
 {
-	if (m_model->isDir(index))
+	QString path = m_model->filePath(index);
+	QDir dir = QDir(path);
+	if (m_model->isDir(index) && dir.isReadable())
 	{
 		m_treeView->setRootIndex(index);
-		m_path->setText(m_model->filePath(index));
+		m_path->setText(path);
 	}
 }
