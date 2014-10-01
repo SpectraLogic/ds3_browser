@@ -8,7 +8,7 @@ although it should work on any Qt compatible platform.
 Build Requirements
 ------------------
 
-* Qt 5.3
+* [Qt 5.3](http://qt-project.org)
 * [DS3 C SDK](https://github.com/SpectraLogic/ds3_c_sdk)
 * C++ compiler (Microsoft Visual Studio, Apple XCode, GCC, etc)
 
