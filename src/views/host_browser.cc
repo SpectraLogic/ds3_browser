@@ -47,8 +47,18 @@ HostBrowser::GoToHome()
 void
 HostBrowser::GoToParent()
 {
+	QString parentPath;
 	QString currentPath = m_model->filePath(m_treeView->rootIndex());
-	QString parentPath = QFileInfo(currentPath).dir().path();
+	if (currentPath == "" || currentPath == "/")
+	{
+		// Either at the "My Computer" level or the root (of a drive
+		// on Windows).
+		parentPath = m_model->myComputer().toString();
+	}
+	else
+	{
+		parentPath = QFileInfo(currentPath).dir().path();
+	}
 	m_treeView->setRootIndex(m_model->index(parentPath));
 	UpdatePathLabel(parentPath);
 }
