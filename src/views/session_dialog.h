@@ -9,7 +9,7 @@
 #include <QLineEdit>
 #include <QVBoxLayout>
 
-#include "models/session.h"
+class Session;
 
 // SessionDialog, a dialog to gather host/user information when creating
 // a new host<->DS3 System session.

@@ -6,8 +6,8 @@
 #include <QMenu>
 #include <QTabWidget>
 
-#include "models/session.h"
-#include "views/session_view.h"
+class Session;
+class SessionView;
 
 class MainWindow : public QMainWindow
 {

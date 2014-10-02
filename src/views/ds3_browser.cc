@@ -1,3 +1,6 @@
+#include "lib/client.h"
+#include "models/bucket.h"
+#include "models/session.h"
 #include "views/ds3_browser.h"
 
 DS3Browser::DS3Browser(Session* session, QWidget* parent, Qt::WindowFlags flags)

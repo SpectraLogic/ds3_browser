@@ -5,9 +5,9 @@
 #include <QSplitter>
 #include <QWidget>
 
-#include "views/ds3_browser.h"
-#include "views/host_browser.h"
-#include "models/session.h"
+class DS3Browser;
+class HostBrowser;
+class Session;
 
 // SessionView, the overall view that is used for each session.  It represents
 // the host and DS3 system in a split pane with the host on the left and

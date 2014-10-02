@@ -1,3 +1,6 @@
+#include "models/session.h"
+#include "views/ds3_browser.h"
+#include "views/host_browser.h"
 #include "views/session_view.h"
 
 SessionView::SessionView(Session* session, QWidget* parent)

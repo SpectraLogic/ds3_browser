@@ -2,7 +2,9 @@
 #include <QMessageBox>
 
 #include "main_window.h"
+#include "models/session.h"
 #include "views/session_dialog.h"
+#include "views/session_view.h"
 
 MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags),

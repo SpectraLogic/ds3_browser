@@ -1,10 +1,11 @@
 #ifndef DS3_BROWSER_H
 #define DS3_BROWSER_H
 
-#include "lib/client.h"
-#include "models/session.h"
-#include "models/bucket.h"
 #include "views/browser.h"
+
+class Bucket;
+class Client;
+class Session;
 
 // DS3Browser, a Browser class used for browsing a DS3 system (e.g a
 // BlackPearl)
