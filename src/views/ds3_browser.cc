@@ -31,6 +31,12 @@ DS3Browser::GoToRoot()
 }
 
 void
+DS3Browser::OnContextMenuRequested(const QPoint& /*pos*/)
+{
+	// TODO Add actions and handlers
+}
+
+void
 DS3Browser::OnModelItemDoubleClick(const QModelIndex& /*index*/)
 {
 	// TODO descend into bucket/folder if index points to a bucket/folder

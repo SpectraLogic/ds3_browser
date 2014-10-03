@@ -3,6 +3,8 @@
 
 #include <QAction>
 #include <QLabel>
+#include <QModelIndex>
+#include <QPoint>
 #include <QToolbar>
 #include <QTreeView>
 #include <QVBoxLayout>
@@ -32,6 +34,7 @@ protected:
 protected slots:
 	virtual void GoToParent() = 0;
 	virtual void GoToRoot() = 0;
+	virtual void OnContextMenuRequested(const QPoint& pos) = 0;
 	virtual void OnModelItemDoubleClick(const QModelIndex& index) = 0;
 };
 

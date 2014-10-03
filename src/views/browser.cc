@@ -9,6 +9,10 @@ Browser::Browser(QWidget* parent, Qt::WindowFlags flags)
 {
 	AddToolBarActions();
 
+	m_treeView->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(m_treeView, SIGNAL(customContextMenuRequested(const QPoint&)),
+		this, SLOT(OnContextMenuRequested(const QPoint&)));
+
 	// Remove the focus rectangle around the tree view on OSX.
 	m_treeView->setAttribute(Qt::WA_MacShowFocusRect, 0);
 

@@ -22,6 +22,7 @@ public:
 protected:
 	void GoToParent();
 	void GoToRoot();
+	void OnContextMenuRequested(const QPoint& pos);
 	void OnModelItemDoubleClick(const QModelIndex& index);
 
 private:
