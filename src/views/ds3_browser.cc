@@ -1,6 +1,9 @@
+#include <QMenu>
+
 #include "lib/client.h"
 #include "models/bucket.h"
 #include "models/session.h"
+#include "views/buckets/new_bucket_dialog.h"
 #include "views/ds3_browser.h"
 
 DS3Browser::DS3Browser(Session* session, QWidget* parent, Qt::WindowFlags flags)
@@ -33,7 +36,30 @@ DS3Browser::GoToRoot()
 void
 DS3Browser::OnContextMenuRequested(const QPoint& /*pos*/)
 {
-	// TODO Add actions and handlers
+	QMenu menu;
+	QAction newBucketAction("New Bucket", &menu);
+	menu.addAction(&newBucketAction);
+
+	QAction* selectedAction = menu.exec(QCursor::pos());
+	if (!selectedAction)
+	{
+		return;
+	}
+
+	if (selectedAction == &newBucketAction)
+	{
+		CreateBucket();
+	}
+}
+
+void
+DS3Browser::CreateBucket()
+{
+	NewBucketDialog newBucketDialog(m_client);
+	if (newBucketDialog.exec() == QDialog::Rejected) {
+		return;
+	}
+	// TODO refresh m_model
 }
 
 void

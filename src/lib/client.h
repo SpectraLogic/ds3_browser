@@ -13,6 +13,8 @@ public:
 
 	ds3_get_service_response* GetService();
 
+	void CreateBucket(std::string);
+
 private:
 	ds3_creds* m_creds;
 	ds3_client* m_client;

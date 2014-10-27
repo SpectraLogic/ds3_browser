@@ -27,6 +27,7 @@ HEADERS = \
 	src/models/bucket.h \
 	src/models/session.h \
 	src/views/browser.h \
+	src/views/buckets/new_bucket_dialog.h \
 	src/views/ds3_browser.h \
 	src/views/host_browser.h \
 	src/views/session_dialog.h \
@@ -39,6 +40,7 @@ SOURCES = \
 	src/models/bucket.cc \
 	src/models/session.cc \
 	src/views/browser.cc \
+	src/views/buckets/new_bucket_dialog.cc \
 	src/views/ds3_browser.cc \
 	src/views/host_browser.cc \
 	src/views/session_dialog.cc \

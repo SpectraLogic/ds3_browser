@@ -28,6 +28,8 @@ protected:
 private:
 	Bucket* m_model;
 	Client* m_client;
+
+	void CreateBucket();
 };
 
 #endif

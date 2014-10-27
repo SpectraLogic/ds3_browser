@@ -33,3 +33,16 @@ Client::GetService()
 
 	return response;
 }
+
+void
+Client::CreateBucket(std::string name)
+{
+	ds3_request* request = ds3_init_put_bucket(name.c_str());
+	ds3_error* error = ds3_put_bucket(m_client, request);
+	ds3_free_request(request);
+
+	// TODO check the error
+	ds3_free_error(error);
+
+	return;
+}
