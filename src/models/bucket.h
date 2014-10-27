@@ -18,15 +18,17 @@
 #define BUCKET_H
 
 #include <QAbstractItemModel>
+#include <QMutex>
 #include <ds3.h>
+
+class Client;
 
 class Bucket : public QAbstractItemModel
 {
 	Q_OBJECT
 
 public:
-	Bucket(ds3_get_service_response* response, QObject* parent = 0);
-	~Bucket();
+	Bucket(Client* client, QObject* parent = 0);
 
 	QModelIndex index(int row, int column = 0,
 			  const QModelIndex &parent = QModelIndex()) const;
@@ -44,12 +46,20 @@ public:
 
 	bool hasChildren(const QModelIndex & parent = QModelIndex()) const;
 
+	void Refresh();
+
 private:
-	ds3_get_service_response* m_get_service_response;
+	Client* m_client;
+
+	mutable ds3_get_service_response* m_get_service_response;
 
 	// Must match COLUMN_NAMES
 	enum Column { NAME, OWNER, CREATED, COUNT };
 	static const char* const COLUMN_NAMES[];
+
+	ds3_get_service_response* GetGetServiceResponse() const;
+
+	mutable QMutex m_get_service_response_lock;
 };
 
 #endif

@@ -25,18 +25,28 @@
 DS3Browser::DS3Browser(Session* session, QWidget* parent, Qt::WindowFlags flags)
 	: Browser(parent, flags)
 {
+	AddCustomToolBarActions();
+
 	m_client = new Client(session->GetHost(),
 			      session->GetPort(),
 			      session->GetAccessId(),
 			      session->GetSecretKey());
-	ds3_get_service_response* response = m_client->GetService();
-	m_model = new Bucket(response, this);
+	m_model = new Bucket(m_client, this);
 	m_treeView->setModel(m_model);
 }
 
 DS3Browser::~DS3Browser()
 {
 	delete m_client;
+}
+
+void
+DS3Browser::AddCustomToolBarActions()
+{
+	m_refreshAction = new QAction(style()->standardIcon(QStyle::SP_BrowserReload),
+				      "Refresh", this);
+	connect(m_refreshAction, SIGNAL(triggered()), this, SLOT(Refresh()));
+	m_toolBar->addAction(m_refreshAction);
 }
 
 void
@@ -75,11 +85,17 @@ DS3Browser::CreateBucket()
 	if (newBucketDialog.exec() == QDialog::Rejected) {
 		return;
 	}
-	// TODO refresh m_model
+	Refresh();
 }
 
 void
 DS3Browser::OnModelItemDoubleClick(const QModelIndex& /*index*/)
 {
 	// TODO descend into bucket/folder if index points to a bucket/folder
+}
+
+void
+DS3Browser::Refresh()
+{
+	m_model->Refresh();
 }

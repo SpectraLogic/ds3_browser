@@ -17,6 +17,7 @@
 #include <QDateTime>
 #include <QIcon>
 
+#include "lib/client.h"
 #include "models/bucket.h"
 
 // Must match Bucket::Column
@@ -24,15 +25,11 @@ const char* const Bucket::COLUMN_NAMES[] = { "Name",
 					     "Owner",
 					     "Created" };
 
-Bucket::Bucket(ds3_get_service_response* response, QObject* parent)
+Bucket::Bucket(Client* client, QObject* parent)
 	: QAbstractItemModel(parent),
-	  m_get_service_response(response)	
+	  m_client(client),
+	  m_get_service_response(NULL)
 {
-}
-
-Bucket::~Bucket()
-{
-	ds3_free_service_response(m_get_service_response);
 }
 
 QModelIndex
@@ -59,11 +56,16 @@ Bucket::columnCount(const QModelIndex &/*parent*/) const
 int
 Bucket::rowCount(const QModelIndex &parent) const
 {
-	if (parent.isValid())
+	int count = 0;
+
+	if (!parent.isValid())
 	{
-		return 0;
+		m_get_service_response_lock.lock();
+		count = GetGetServiceResponse()->num_buckets;
+		m_get_service_response_lock.unlock();
 	}
-	return m_get_service_response->num_buckets;
+
+	return count;
 }
 
 QModelIndex
@@ -81,30 +83,45 @@ Bucket::data(const QModelIndex &index, int role) const
 	char* createdStr;
 	QDateTime created;
 	int column = index.column();
+	QVariant data;
+	ds3_get_service_response* get_service_response;
+
+	if (index.parent().isValid()) {
+		// TODO fetch and display objects
+		return data;
+	}
 
 	switch (role)
 	{
 	case Qt::DisplayRole:
+		m_get_service_response_lock.lock();
+		get_service_response = GetGetServiceResponse();
 		switch (column)
 		{
 		case NAME:
-			name = m_get_service_response->buckets[index.row()].name->value;
-			return QString(QLatin1String(name));
+			name = get_service_response->buckets[index.row()].name->value;
+			data = QString(QLatin1String(name));
+			break;
 		case OWNER:
-			owner = m_get_service_response->owner->name->value;
-			return QString(QLatin1String(owner));
+			owner = get_service_response->owner->name->value;
+			data = QString(QLatin1String(owner));
+			break;
 		case CREATED:
-			createdStr = m_get_service_response->buckets[index.row()].creation_date->value;
+			createdStr = get_service_response->buckets[index.row()].creation_date->value;
 			created = QDateTime::fromString(QString(QLatin1String(createdStr)),
 							"yyyy-MM-ddThh:mm:ss.000Z");
-			return created.toString("MMMM d, yyyy h:mm AP");
+			data = created.toString("MMMM d, yyyy h:mm AP");
+			break;
 		}
+		m_get_service_response_lock.unlock();
+		break;
 	case Qt::DecorationRole:
 		if (column == NAME) {
-			return QIcon(":/resources/icons/bucket.png");
+			data = QIcon(":/resources/icons/bucket.png");
 		}
+		break;
 	}
-	return QVariant();
+	return data;
 }
 
 QVariant
@@ -115,4 +132,25 @@ Bucket::headerData(int section, Qt::Orientation /*orientation*/, int role) const
 		return COLUMN_NAMES[section];
 	}
 	return QVariant();
+}
+
+void
+Bucket::Refresh()
+{
+	beginResetModel();
+	m_get_service_response_lock.lock();
+	m_get_service_response = NULL;
+	m_get_service_response_lock.unlock();
+	endResetModel();
+}
+
+ds3_get_service_response*
+Bucket::GetGetServiceResponse() const
+{
+	if (m_get_service_response != NULL) {
+		return m_get_service_response;
+	}
+
+	m_get_service_response = m_client->GetService();
+	return m_get_service_response;
 }

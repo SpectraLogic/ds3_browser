@@ -36,10 +36,16 @@ public:
 	~DS3Browser();
 
 protected:
+	QAction* m_refreshAction;
+
+	void AddCustomToolBarActions();
 	void GoToParent();
 	void GoToRoot();
 	void OnContextMenuRequested(const QPoint& pos);
 	void OnModelItemDoubleClick(const QModelIndex& index);
+
+protected slots:
+	void Refresh();
 
 private:
 	Bucket* m_model;
