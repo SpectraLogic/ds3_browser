@@ -139,7 +139,10 @@ Bucket::Refresh()
 {
 	beginResetModel();
 	m_get_service_response_lock.lock();
-	m_get_service_response = NULL;
+	if (m_get_service_response != NULL) {
+		ds3_free_service_response(m_get_service_response);
+		m_get_service_response = NULL;
+	}
 	m_get_service_response_lock.unlock();
 	endResetModel();
 }
