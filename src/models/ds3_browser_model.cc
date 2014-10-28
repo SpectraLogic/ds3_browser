@@ -18,14 +18,14 @@
 #include <QIcon>
 
 #include "lib/client.h"
-#include "models/bucket.h"
+#include "models/ds3_browser_model.h"
 
-// Must match Bucket::Column
-const char* const Bucket::COLUMN_NAMES[] = { "Name",
-					     "Owner",
-					     "Created" };
+// Must match DS3BrowserModel::Column
+const char* const DS3BrowserModel::COLUMN_NAMES[] = { "Name",
+						      "Owner",
+						      "Created" };
 
-Bucket::Bucket(Client* client, QObject* parent)
+DS3BrowserModel::DS3BrowserModel(Client* client, QObject* parent)
 	: QAbstractItemModel(parent),
 	  m_client(client),
 	  m_get_service_response(NULL)
@@ -33,7 +33,7 @@ Bucket::Bucket(Client* client, QObject* parent)
 }
 
 QModelIndex
-Bucket::index(int row, int column, const QModelIndex &parent) const
+DS3BrowserModel::index(int row, int column, const QModelIndex &parent) const
 {
 	return hasIndex(row, column, parent) ? createIndex(row, column) : QModelIndex();
 }
@@ -42,19 +42,19 @@ Bucket::index(int row, int column, const QModelIndex &parent) const
 // it.  hasChildren always returns true so the expand/collapse caret is
 // always displayed even if we don't yet know if the bucket has any objects.
 bool
-Bucket::hasChildren(const QModelIndex &/*parent*/) const
+DS3BrowserModel::hasChildren(const QModelIndex &/*parent*/) const
 {
 	return true;
 }
 
 int
-Bucket::columnCount(const QModelIndex &/*parent*/) const
+DS3BrowserModel::columnCount(const QModelIndex &/*parent*/) const
 {
 	return COUNT;
 }
 
 int
-Bucket::rowCount(const QModelIndex &parent) const
+DS3BrowserModel::rowCount(const QModelIndex &parent) const
 {
 	int count = 0;
 
@@ -69,14 +69,14 @@ Bucket::rowCount(const QModelIndex &parent) const
 }
 
 QModelIndex
-Bucket::parent(const QModelIndex &/*index*/) const
+DS3BrowserModel::parent(const QModelIndex &/*index*/) const
 {
 	QModelIndex invalidQModelIndex;
 	return invalidQModelIndex;
 }
 
 QVariant
-Bucket::data(const QModelIndex &index, int role) const
+DS3BrowserModel::data(const QModelIndex &index, int role) const
 {
 	char* name;
 	char* owner;
@@ -125,7 +125,7 @@ Bucket::data(const QModelIndex &index, int role) const
 }
 
 QVariant
-Bucket::headerData(int section, Qt::Orientation /*orientation*/, int role) const
+DS3BrowserModel::headerData(int section, Qt::Orientation /*orientation*/, int role) const
 {
 	if (role == Qt::DisplayRole)
 	{
@@ -135,7 +135,7 @@ Bucket::headerData(int section, Qt::Orientation /*orientation*/, int role) const
 }
 
 void
-Bucket::Refresh()
+DS3BrowserModel::Refresh()
 {
 	beginResetModel();
 	m_get_service_response_lock.lock();
@@ -148,7 +148,7 @@ Bucket::Refresh()
 }
 
 ds3_get_service_response*
-Bucket::GetGetServiceResponse() const
+DS3BrowserModel::GetGetServiceResponse() const
 {
 	if (m_get_service_response != NULL) {
 		return m_get_service_response;

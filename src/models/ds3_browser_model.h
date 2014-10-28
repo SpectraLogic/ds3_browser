@@ -14,8 +14,8 @@
  * *****************************************************************************
  */
 
-#ifndef BUCKET_H
-#define BUCKET_H
+#ifndef DS3_BROWSER_MODEL_H
+#define DS3_BROWSER_MODEL_H
 
 #include <QAbstractItemModel>
 #include <QMutex>
@@ -23,12 +23,12 @@
 
 class Client;
 
-class Bucket : public QAbstractItemModel
+class DS3BrowserModel : public QAbstractItemModel
 {
 	Q_OBJECT
 
 public:
-	Bucket(Client* client, QObject* parent = 0);
+	DS3BrowserModel(Client* client, QObject* parent = 0);
 
 	QModelIndex index(int row, int column = 0,
 			  const QModelIndex &parent = QModelIndex()) const;

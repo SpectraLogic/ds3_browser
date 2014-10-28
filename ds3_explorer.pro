@@ -38,7 +38,7 @@ INCLUDEPATH += src
 HEADERS = \
 	src/main_window.h \
 	src/lib/client.h \
-	src/models/bucket.h \
+	src/models/ds3_browser_model.h \
 	src/models/session.h \
 	src/views/browser.h \
 	src/views/buckets/new_bucket_dialog.h \
@@ -51,7 +51,7 @@ SOURCES = \
 	src/main.cc \
 	src/main_window.cc \
 	src/lib/client.cc \
-	src/models/bucket.cc \
+	src/models/ds3_browser_model.cc \
 	src/models/session.cc \
 	src/views/browser.cc \
 	src/views/buckets/new_bucket_dialog.cc \

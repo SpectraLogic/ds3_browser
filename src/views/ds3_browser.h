@@ -19,7 +19,7 @@
 
 #include "views/browser.h"
 
-class Bucket;
+class DS3BrowserModel;
 class Client;
 class Session;
 
@@ -48,7 +48,7 @@ protected slots:
 	void Refresh();
 
 private:
-	Bucket* m_model;
+	DS3BrowserModel* m_model;
 	Client* m_client;
 
 	void CreateBucket();

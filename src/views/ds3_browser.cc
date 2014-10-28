@@ -17,7 +17,7 @@
 #include <QMenu>
 
 #include "lib/client.h"
-#include "models/bucket.h"
+#include "models/ds3_browser_model.h"
 #include "models/session.h"
 #include "views/buckets/new_bucket_dialog.h"
 #include "views/ds3_browser.h"
@@ -31,7 +31,7 @@ DS3Browser::DS3Browser(Session* session, QWidget* parent, Qt::WindowFlags flags)
 			      session->GetPort(),
 			      session->GetAccessId(),
 			      session->GetSecretKey());
-	m_model = new Bucket(m_client, this);
+	m_model = new DS3BrowserModel(m_client, this);
 	m_treeView->setModel(m_model);
 }
 
