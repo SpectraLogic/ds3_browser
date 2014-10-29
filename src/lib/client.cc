@@ -50,6 +50,34 @@ Client::GetService()
 	return response;
 }
 
+ds3_get_bucket_response*
+Client::GetBucket(std::string bucketName,
+		  std::string prefix,
+		  std::string delimiter,
+		  std::string nextMarker)
+{
+	ds3_get_bucket_response *response;
+	ds3_request* request = ds3_init_get_bucket(bucketName.c_str());
+	if (!prefix.empty()) {
+		ds3_request_set_prefix(request, prefix.c_str());
+	}
+	if (!delimiter.empty()) {
+		ds3_request_set_delimiter(request, delimiter.c_str());
+	}
+	if (!nextMarker.empty()) {
+		ds3_request_set_next_marker(request, nextMarker.c_str());
+	}
+	ds3_error* error = ds3_get_bucket(m_client,
+					  request,
+					  &response);
+	ds3_free_request(request);
+
+	// TODO check the error
+	ds3_free_error(error);
+
+	return response;
+}
+
 void
 Client::CreateBucket(std::string name)
 {

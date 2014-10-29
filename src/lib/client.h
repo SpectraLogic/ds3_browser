@@ -28,6 +28,10 @@ public:
 	~Client();
 
 	ds3_get_service_response* GetService();
+	ds3_get_bucket_response* GetBucket(std::string bucketName,
+					   std::string prefix = std::string(),
+					   std::string delimiter = std::string(),
+					   std::string nextMarker = std::string());
 
 	void CreateBucket(std::string);
 

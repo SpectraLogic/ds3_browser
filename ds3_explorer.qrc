@@ -1,5 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
 	<file>resources/icons/bucket.png</file>
+	<file>resources/icons/file.png</file>
+	<file>resources/icons/files.png</file>
 </qresource>
 </RCC>

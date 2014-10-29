@@ -18,10 +18,11 @@
 #define DS3_BROWSER_MODEL_H
 
 #include <QAbstractItemModel>
-#include <QMutex>
+#include <QList>
 #include <ds3.h>
 
 class Client;
+class DS3BrowserItem;
 
 class DS3BrowserModel : public QAbstractItemModel
 {
@@ -29,6 +30,7 @@ class DS3BrowserModel : public QAbstractItemModel
 
 public:
 	DS3BrowserModel(Client* client, QObject* parent = 0);
+	~DS3BrowserModel();
 
 	QModelIndex index(int row, int column = 0,
 			  const QModelIndex &parent = QModelIndex()) const;
@@ -51,15 +53,7 @@ public:
 private:
 	Client* m_client;
 
-	mutable ds3_get_service_response* m_get_service_response;
-
-	// Must match COLUMN_NAMES
-	enum Column { NAME, OWNER, CREATED, COUNT };
-	static const char* const COLUMN_NAMES[];
-
-	ds3_get_service_response* GetGetServiceResponse() const;
-
-	mutable QMutex m_get_service_response_lock;
+	DS3BrowserItem* m_rootItem;
 };
 
 #endif
