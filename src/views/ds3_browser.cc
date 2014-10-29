@@ -89,13 +89,18 @@ DS3Browser::CreateBucket()
 }
 
 void
-DS3Browser::OnModelItemDoubleClick(const QModelIndex& /*index*/)
+DS3Browser::OnModelItemDoubleClick(const QModelIndex& index)
 {
-	// TODO descend into bucket/folder if index points to a bucket/folder
+	if (m_model->IsBucketOrFolder(index)) {
+		QString path = m_model->GetPath(index);
+		m_treeView->setRootIndex(index);
+		UpdatePathLabel(path);
+	}
 }
 
 void
 DS3Browser::Refresh()
 {
 	m_model->Refresh();
+	UpdatePathLabel("/");
 }

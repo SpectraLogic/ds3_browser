@@ -51,6 +51,7 @@ public:
 	int GetRow() const;
 	DS3BrowserItem* GetParent();
 	void Reset();
+	QString GetPath();
 
 private:
 	Client* m_client;
@@ -139,6 +140,23 @@ DS3BrowserItem::Reset()
 	FetchChildren();
 }
 
+QString
+DS3BrowserItem::GetPath()
+{
+	QString path = "/" + m_bucketName;
+	if (GetData(KIND) == BUCKET) {
+		return path;
+	}
+
+	if (m_prefix.isEmpty()) {
+		path += "/";
+	} else {
+		path += "/" + m_prefix;
+	}
+	path += GetData(NAME).toString();
+	return path;
+}
+
 QList<DS3BrowserItem*>
 DS3BrowserItem::GetChildren()
 {
@@ -205,10 +223,16 @@ DS3BrowserItem::FetchBuckets()
 void
 DS3BrowserItem::FetchObjects()
 {
+	bool isBucket = GetData(KIND) == BUCKET;
+	QString name = GetData(NAME).toString();
 	std::string bucketName = m_bucketName.toUtf8().constData();
-	std::string prefix = m_prefix.toUtf8().constData();
+	QString prefix = m_prefix;
+	if (!isBucket) {
+		prefix += name + "/";
+	}
+
 	ds3_get_bucket_response* response = m_client->GetBucket(bucketName,
-								prefix,
+								prefix.toUtf8().constData(),
 								"/");
 
 	QVariant owner = GetData(OWNER);
@@ -220,19 +244,14 @@ DS3BrowserItem::FetchObjects()
 		QList<QVariant> objectData;
 		DS3BrowserItem* object;
 
-		QString name = QString(QLatin1String(rawCommonPrefix->value));
-		name.replace(QRegExp("/$"), "");
-		objectData << name;
+		QString nextName = QString(QLatin1String(rawCommonPrefix->value));
+		nextName.replace(QRegExp("^" + prefix), "");
+		nextName.replace(QRegExp("/$"), "");
+		objectData << nextName;
 		objectData << owner;
 		objectData << "--";
 		objectData << FOLDER;
 		objectData << "--";
-
-		QString prefix;
-		if (!m_prefix.isEmpty()) {
- 			prefix += "/";
-		}
- 		prefix += name + "/";
 		object = new DS3BrowserItem(m_client,
 					    objectData,
 					    m_bucketName,
@@ -242,7 +261,7 @@ DS3BrowserItem::FetchObjects()
 	}
 
 	for (size_t i = 0; i < response->num_objects; i++) {
-		QString name;
+		QString nextName;
 		char* rawCreated;
 		QDateTime createdDT;
 		QString created;
@@ -253,8 +272,9 @@ DS3BrowserItem::FetchObjects()
 
 		ds3_object rawObject = response->objects[i];
 
-		name = QString(QLatin1String(rawObject.name->value));	
-		objectData << name;
+		nextName = QString(QLatin1String(rawObject.name->value));
+		nextName.replace(QRegExp("^" + prefix), "");
+		objectData << nextName;
 
 		objectData << owner;
 
@@ -269,11 +289,6 @@ DS3BrowserItem::FetchObjects()
 		created = createdDT.toString(VIEW_TIMESTAMP_FORMAT);
 		objectData << created;
 
-		QString prefix;
-		if (!m_prefix.isEmpty()) {
- 			prefix += "/";
-		}
- 		prefix += name;
 		object = new DS3BrowserItem(m_client,
 					    objectData,
 					    m_bucketName,
@@ -434,6 +449,21 @@ DS3BrowserModel::headerData(int section, Qt::Orientation /*orientation*/, int ro
 		return m_rootItem->GetData(section);
 	}
 	return QVariant();
+}
+
+bool
+DS3BrowserModel::IsBucketOrFolder(const QModelIndex& index) const
+{
+	DS3BrowserItem* item = static_cast<DS3BrowserItem*>(index.internalPointer());
+	QVariant kind = item->GetData(KIND);
+	return (kind == BUCKET || kind == FOLDER);
+}
+
+QString
+DS3BrowserModel::GetPath(const QModelIndex& index) const
+{
+	DS3BrowserItem* item = static_cast<DS3BrowserItem*>(index.internalPointer());
+	return item->GetPath();
 }
 
 void

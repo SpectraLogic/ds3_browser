@@ -29,6 +29,11 @@ Browser::Browser(QWidget* parent, Qt::WindowFlags flags)
 	connect(m_treeView, SIGNAL(customContextMenuRequested(const QPoint&)),
 		this, SLOT(OnContextMenuRequested(const QPoint&)));
 
+	m_treeView->setExpandsOnDoubleClick(false);
+	m_treeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	connect(m_treeView, SIGNAL(doubleClicked(const QModelIndex&)),
+		this, SLOT(OnModelItemDoubleClick(const QModelIndex&)));
+
 	// Remove the focus rectangle around the tree view on OSX.
 	m_treeView->setAttribute(Qt::WA_MacShowFocusRect, 0);
 

@@ -48,6 +48,9 @@ public:
 
 	bool hasChildren(const QModelIndex & parent = QModelIndex()) const;
 
+	bool IsBucketOrFolder(const QModelIndex& index) const;
+	QString GetPath(const QModelIndex& index) const;
+
 	void Refresh();
 
 private:

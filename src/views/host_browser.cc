@@ -34,11 +34,6 @@ HostBrowser::HostBrowser(QWidget* parent, Qt::WindowFlags flags)
 			   QDir::Hidden);
 	m_treeView->setModel(m_model);
 
-	m_treeView->setExpandsOnDoubleClick(false);
-	m_treeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-	connect(m_treeView, SIGNAL(doubleClicked(const QModelIndex&)),
-		this, SLOT(OnModelItemDoubleClick(const QModelIndex&)));
-
 	m_treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 }
 
