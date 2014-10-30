@@ -19,6 +19,7 @@
 
 #include <QAbstractItemModel>
 #include <QList>
+#include <QTreeView>
 #include <ds3.h>
 
 class Client;
@@ -49,14 +50,29 @@ public:
 	bool hasChildren(const QModelIndex & parent = QModelIndex()) const;
 
 	bool IsBucketOrFolder(const QModelIndex& index) const;
+	bool IsBreak(const QModelIndex& index) const;
 	QString GetPath(const QModelIndex& index) const;
 
 	void Refresh();
+
+	void SetView(QTreeView* view);
+
+	void FetchNextPage(const QModelIndex& pageBreakIndex);
+
+	bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex());
 
 private:
 	Client* m_client;
 
 	DS3BrowserItem* m_rootItem;
+
+	QTreeView* m_view;
 };
+
+inline void
+DS3BrowserModel::SetView(QTreeView* view)
+{
+	m_view = view;
+}
 
 #endif

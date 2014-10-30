@@ -45,6 +45,7 @@ protected:
 
 protected slots:
 	void Refresh();
+	void OnModelItemClick(const QModelIndex& index);
 
 private:
 	DS3BrowserModel* m_model;

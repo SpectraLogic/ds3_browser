@@ -32,7 +32,11 @@ DS3Browser::DS3Browser(Session* session, QWidget* parent, Qt::WindowFlags flags)
 			      session->GetAccessId(),
 			      session->GetSecretKey());
 	m_model = new DS3BrowserModel(m_client, this);
+	m_model->SetView(m_treeView);
 	m_treeView->setModel(m_model);
+
+	connect(m_treeView, SIGNAL(clicked(const QModelIndex&)),
+		this, SLOT(OnModelItemClick(const QModelIndex&)));
 }
 
 DS3Browser::~DS3Browser()
@@ -99,4 +103,12 @@ DS3Browser::Refresh()
 {
 	m_model->Refresh();
 	UpdatePathLabel("/");
+}
+
+void
+DS3Browser::OnModelItemClick(const QModelIndex& index)
+{
+	if (m_model->IsBreak(index)) {
+		m_model->FetchNextPage(index);
+	}
 }

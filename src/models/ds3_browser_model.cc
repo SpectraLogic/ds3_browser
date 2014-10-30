@@ -16,6 +16,7 @@
 
 #include <QDateTime>
 #include <QIcon>
+#include <QSet>
 
 #include "lib/client.h"
 #include "models/ds3_browser_model.h"
@@ -29,6 +30,7 @@ static const QString VIEW_TIMESTAMP_FORMAT = "MMMM d, yyyy h:mm AP";
 static const QString BUCKET = "Bucket";
 static const QString OBJECT = "Object";
 static const QString FOLDER = "Folder";
+static const QString BREAK = "Break";
 
 //
 // DS3BrowserItem
@@ -45,6 +47,7 @@ public:
 	~DS3BrowserItem();
 
 	DS3BrowserItem* GetChild(int row);
+	void RemoveChild(int row);
 	int GetChildCount();
 	int GetColumnCount() const;
 	QVariant GetData(int column) const;
@@ -52,6 +55,8 @@ public:
 	DS3BrowserItem* GetParent();
 	void Reset();
 	QString GetPath();
+
+	void FetchObjects();
 
 private:
 	Client* m_client;
@@ -69,10 +74,13 @@ private:
 	const QString m_prefix;
 	DS3BrowserItem* m_parent;
 
+	bool m_childrenTruncated;
+	QString m_childrenNextMarker;
+	uint32_t m_childrenMaxKeys;
+
 	QList<DS3BrowserItem*> GetChildren();
 	void FetchChildren();
 	void FetchBuckets();
-	void FetchObjects();
 };
 
 DS3BrowserItem::DS3BrowserItem(Client* client,
@@ -85,7 +93,9 @@ DS3BrowserItem::DS3BrowserItem(Client* client,
 	  m_data(data),
 	  m_bucketName(bucketName),
 	  m_prefix(prefix),
-	  m_parent(parent)
+	  m_parent(parent),
+	  m_childrenTruncated(false),
+	  m_childrenMaxKeys(1000)
 {
 }
 
@@ -98,6 +108,16 @@ DS3BrowserItem*
 DS3BrowserItem::GetChild(int row)
 {
 	return GetChildren().value(row);
+}
+
+void
+DS3BrowserItem::RemoveChild(int row)
+{
+	if (row < m_children.count()) {
+		DS3BrowserItem* item = m_children.at(row);
+		m_children.removeAt(row);
+		delete item;
+	}
 }
 
 int
@@ -231,11 +251,27 @@ DS3BrowserItem::FetchObjects()
 		prefix += name + "/";
 	}
 
+	std::string nextMarker;
+	uint32_t maxKeys = 0;
+	if (m_childrenTruncated) {
+		nextMarker = m_childrenNextMarker.toUtf8().constData();
+		maxKeys = m_childrenMaxKeys;
+	}
 	ds3_get_bucket_response* response = m_client->GetBucket(bucketName,
 								prefix.toUtf8().constData(),
-								"/");
+								"/",
+								nextMarker,
+								maxKeys);
 
 	QVariant owner = GetData(OWNER);
+
+	QSet<QString> currentCommonPrefixNames;
+	for (int i = 0; i < m_children.count(); i++) {
+		DS3BrowserItem* object = m_children.at(i);
+		if (object->GetData(KIND) == FOLDER) {
+			currentCommonPrefixNames << object->GetData(NAME).toString();
+		}
+	}
 
 	for (size_t i = 0; i < response->num_common_prefixes; i++) {
 		ds3_str* rawCommonPrefix = response->common_prefixes[i];
@@ -247,17 +283,19 @@ DS3BrowserItem::FetchObjects()
 		QString nextName = QString(QLatin1String(rawCommonPrefix->value));
 		nextName.replace(QRegExp("^" + prefix), "");
 		nextName.replace(QRegExp("/$"), "");
-		objectData << nextName;
-		objectData << owner;
-		objectData << "--";
-		objectData << FOLDER;
-		objectData << "--";
-		object = new DS3BrowserItem(m_client,
-					    objectData,
-					    m_bucketName,
-					    prefix,   	
-					    this);
-		m_children << object;
+		if (!currentCommonPrefixNames.contains(nextName)) {
+			objectData << nextName;
+			objectData << owner;
+			objectData << "--";
+			objectData << FOLDER;
+			objectData << "--";
+			object = new DS3BrowserItem(m_client,
+						    objectData,
+						    m_bucketName,
+						    prefix,
+						    this);
+			m_children << object;
+		}
 	}
 
 	for (size_t i = 0; i < response->num_objects; i++) {
@@ -295,6 +333,23 @@ DS3BrowserItem::FetchObjects()
 					    prefix,   	
 					    this);
 		m_children << object;
+	}
+
+	m_childrenTruncated = response->is_truncated;
+	if (response->next_marker) {
+		m_childrenNextMarker = QString(QLatin1String(response->next_marker->value));
+	}
+	m_childrenMaxKeys = response->max_keys;
+
+	if (m_childrenTruncated) {
+		QList<QVariant> pageBreakData;
+		pageBreakData << "Click to load more" << "" << "" << BREAK;
+		DS3BrowserItem* pageBreak = new DS3BrowserItem(m_client,
+							       pageBreakData,
+							       m_bucketName,
+							       prefix,
+							       this);
+		m_children << pageBreak;
 	}
 
 	ds3_free_bucket_response(response);
@@ -425,6 +480,9 @@ DS3BrowserModel::data(const QModelIndex &index, int role) const
 	{
 	case Qt::DisplayRole:
 		data = item->GetData(column);
+		if (column == 0 && item->GetData(KIND) == BREAK) {
+			m_view->setFirstColumnSpanned(index.row(), index.parent(), true);
+		}
 		break;
 	case Qt::DecorationRole:
 		if (column == NAME) {
@@ -459,6 +517,14 @@ DS3BrowserModel::IsBucketOrFolder(const QModelIndex& index) const
 	return (kind == BUCKET || kind == FOLDER);
 }
 
+bool
+DS3BrowserModel::IsBreak(const QModelIndex& index) const
+{
+	DS3BrowserItem* item = static_cast<DS3BrowserItem*>(index.internalPointer());
+	QVariant kind = item->GetData(KIND);
+	return (kind == BREAK);
+}
+
 QString
 DS3BrowserModel::GetPath(const QModelIndex& index) const
 {
@@ -476,4 +542,37 @@ DS3BrowserModel::Refresh()
 	beginResetModel();
 	m_rootItem->Reset();
 	endResetModel();
+}
+
+void
+DS3BrowserModel::FetchNextPage(const QModelIndex& pageBreakIndex)
+{
+	QModelIndex parentIndex = pageBreakIndex.parent();
+	int pageBreakRow = pageBreakIndex.row();
+	DS3BrowserItem* parent = static_cast<DS3BrowserItem*>(parentIndex.internalPointer());
+	// TODO Make use of beginInsertRows and endInsertRows, which might
+	//      require moving the FetchObjects out of DS3BrowserItem and into
+	//      this class.
+	parent->FetchObjects();
+	removeRow(pageBreakRow, parentIndex);
+}
+
+bool
+DS3BrowserModel::removeRows(int row, int count, const QModelIndex& parentIndex)
+{
+	if (row < 0 || count <= 0 || (row + count) > rowCount(parentIndex)) {
+		return false;
+	}
+
+	DS3BrowserItem* parent = static_cast<DS3BrowserItem*>(parentIndex.internalPointer());
+
+	beginRemoveRows(parentIndex, row, row + count - 1);
+
+	for (int i = 0; i < count; i++) {
+		parent->RemoveChild(row + i);
+	}
+
+	endRemoveRows();
+
+	return true;
 }
