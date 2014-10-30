@@ -54,7 +54,8 @@ ds3_get_bucket_response*
 Client::GetBucket(std::string bucketName,
 		  std::string prefix,
 		  std::string delimiter,
-		  std::string nextMarker)
+		  std::string marker,
+		  uint32_t maxKeys)
 {
 	ds3_get_bucket_response *response;
 	ds3_request* request = ds3_init_get_bucket(bucketName.c_str());
@@ -64,8 +65,11 @@ Client::GetBucket(std::string bucketName,
 	if (!delimiter.empty()) {
 		ds3_request_set_delimiter(request, delimiter.c_str());
 	}
-	if (!nextMarker.empty()) {
-		ds3_request_set_next_marker(request, nextMarker.c_str());
+	if (!marker.empty()) {
+		ds3_request_set_marker(request, marker.c_str());
+	}
+	if (maxKeys > 0) {
+		ds3_request_set_max_keys(request, maxKeys);
 	}
 	ds3_error* error = ds3_get_bucket(m_client,
 					  request,

@@ -31,7 +31,8 @@ public:
 	ds3_get_bucket_response* GetBucket(std::string bucketName,
 					   std::string prefix = std::string(),
 					   std::string delimiter = std::string(),
-					   std::string nextMarker = std::string());
+					   std::string marker = std::string(),
+					   uint32_t maxKeys = 0);
 
 	void CreateBucket(std::string);
 
