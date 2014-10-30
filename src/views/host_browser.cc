@@ -46,6 +46,16 @@ HostBrowser::AddCustomToolBarActions()
 	m_toolBar->addAction(m_homeAction);
 }
 
+QString
+HostBrowser::IndexToPath(const QModelIndex& index)
+{
+	QString path = m_model->filePath(index);
+	if (path.isEmpty()) {
+		path = m_model->myComputer().toString();
+	}
+	return path;
+}
+
 void
 HostBrowser::UpdatePathLabel(const QString& path)
 {
@@ -58,33 +68,6 @@ HostBrowser::GoToHome()
 	QString path = QDir::homePath();
 	m_treeView->setRootIndex(m_model->index(path));
 	UpdatePathLabel(path);
-}
-
-void
-HostBrowser::GoToParent()
-{
-	QString parentPath;
-	QString currentPath = m_model->filePath(m_treeView->rootIndex());
-	if (currentPath == "" || QDir::drives().contains(QFileInfo(currentPath)))
-	{
-		// Either at the "My Computer" level or the root (of a drive
-		// on Windows).
-		parentPath = m_model->myComputer().toString();
-	}
-	else
-	{
-		parentPath = QFileInfo(currentPath).dir().path();
-	}
-	m_treeView->setRootIndex(m_model->index(parentPath));
-	UpdatePathLabel(parentPath);
-}
-
-void
-HostBrowser::GoToRoot()
-{
-	QVariant myComputer = m_model->myComputer();
-	m_treeView->setRootIndex(myComputer.toModelIndex());
-	UpdatePathLabel(myComputer.toString());
 }
 
 void

@@ -68,3 +68,20 @@ Browser::UpdatePathLabel(const QString& path)
 {
 	m_path->setText(path);
 }
+
+void
+Browser::GoToParent()
+{
+	QModelIndex parentIndex = m_treeView->rootIndex().parent();
+	QString parentPath = IndexToPath(parentIndex);
+	m_treeView->setRootIndex(parentIndex);
+	UpdatePathLabel(parentPath);
+}
+
+void
+Browser::GoToRoot()
+{
+	QModelIndex rootIndex;
+	m_treeView->setRootIndex(rootIndex);
+	UpdatePathLabel(IndexToPath(rootIndex));
+}

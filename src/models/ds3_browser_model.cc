@@ -462,8 +462,12 @@ DS3BrowserModel::IsBucketOrFolder(const QModelIndex& index) const
 QString
 DS3BrowserModel::GetPath(const QModelIndex& index) const
 {
+	QString path = "/";
 	DS3BrowserItem* item = static_cast<DS3BrowserItem*>(index.internalPointer());
-	return item->GetPath();
+	if (item != NULL) {
+		path = item->GetPath();
+	}
+	return path;
 }
 
 void

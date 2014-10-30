@@ -49,14 +49,10 @@ DS3Browser::AddCustomToolBarActions()
 	m_toolBar->addAction(m_refreshAction);
 }
 
-void
-DS3Browser::GoToParent()
+QString
+DS3Browser::IndexToPath(const QModelIndex& index)
 {
-}
-
-void
-DS3Browser::GoToRoot()
-{
+	return m_model->GetPath(index);
 }
 
 void
@@ -92,7 +88,7 @@ void
 DS3Browser::OnModelItemDoubleClick(const QModelIndex& index)
 {
 	if (m_model->IsBucketOrFolder(index)) {
-		QString path = m_model->GetPath(index);
+		QString path = IndexToPath(index);
 		m_treeView->setRootIndex(index);
 		UpdatePathLabel(path);
 	}

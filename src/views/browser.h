@@ -45,11 +45,12 @@ protected:
 	QAction* m_rootAction;
 
 	void AddToolBarActions();
+	virtual QString IndexToPath(const QModelIndex& index) = 0;
 	virtual void UpdatePathLabel(const QString& path);
 
 protected slots:
-	virtual void GoToParent() = 0;
-	virtual void GoToRoot() = 0;
+	void GoToParent();
+	void GoToRoot();
 	virtual void OnContextMenuRequested(const QPoint& pos) = 0;
 	virtual void OnModelItemDoubleClick(const QModelIndex& index) = 0;
 };

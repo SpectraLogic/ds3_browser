@@ -39,8 +39,7 @@ protected:
 	QAction* m_refreshAction;
 
 	void AddCustomToolBarActions();
-	void GoToParent();
-	void GoToRoot();
+	QString IndexToPath(const QModelIndex& index);
 	void OnContextMenuRequested(const QPoint& pos);
 	void OnModelItemDoubleClick(const QModelIndex& index);
 
