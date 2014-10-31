@@ -57,7 +57,7 @@ public:
 	bool IsBucketOrFolder(const QModelIndex& index) const;
 	bool IsBreak(const QModelIndex& index) const;
 	QString GetPath(const QModelIndex& index) const;
-	void Refresh();
+	void Refresh(const QModelIndex& rootIndex = QModelIndex());
 	void SetView(QTreeView* view);
 
 private:

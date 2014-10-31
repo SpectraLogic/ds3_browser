@@ -197,6 +197,7 @@ DS3BrowserItem::Reset()
 	qDeleteAll(m_children);
 	m_children.clear();
 	m_canFetchMore = true;
+	m_nextMarker = QString();
 }
 
 QString
@@ -483,10 +484,17 @@ DS3BrowserModel::GetPath(const QModelIndex& index) const
 }
 
 void
-DS3BrowserModel::Refresh()
+DS3BrowserModel::Refresh(const QModelIndex& index)
 {
+	DS3BrowserItem* item;
+	if (index.isValid()) {
+		item = IndexToItem(index);
+	} else {
+		item = m_rootItem;
+	}
+
 	beginResetModel();
-	m_rootItem->Reset();
+	item->Reset();
 	endResetModel();
 }
 

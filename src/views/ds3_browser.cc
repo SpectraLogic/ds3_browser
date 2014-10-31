@@ -101,8 +101,11 @@ DS3Browser::OnModelItemDoubleClick(const QModelIndex& index)
 void
 DS3Browser::Refresh()
 {
-	m_model->Refresh();
-	UpdatePathLabel("/");
+	QModelIndex index = m_treeView->rootIndex();
+	m_model->Refresh(index);
+	QString path = IndexToPath(index);
+	UpdatePathLabel(path);
+	m_treeView->setRootIndex(index);
 }
 
 void
