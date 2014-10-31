@@ -23,7 +23,11 @@ Client::Client(std::string host,
 {
 	m_creds = ds3_create_creds(accessId.c_str(), secretKey.c_str());
 
-	std::string endpoint = "http://" + host + ":" + port;
+	std::string endpoint = "http://" + host;
+	if (!port.empty()) {
+		endpoint += ":" + port;
+	}
+
 	m_client = ds3_create_client(endpoint.c_str(), m_creds);
 }
 
