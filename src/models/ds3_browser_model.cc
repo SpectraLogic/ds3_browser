@@ -384,7 +384,7 @@ DS3BrowserModel::index(int row, int column, const QModelIndex &parent) const
 	DS3BrowserItem* parentItem;
 
 	if (parent.isValid()) {
-		parentItem = static_cast<DS3BrowserItem*>(parent.internalPointer());
+		parentItem = IndexToItem(parent);
 	} else {
 		parentItem = m_rootItem;
 	}
@@ -408,7 +408,7 @@ DS3BrowserModel::hasChildren(const QModelIndex& parent) const
 		return true;
 	}
 
-	DS3BrowserItem* item = static_cast<DS3BrowserItem*>(parent.internalPointer());
+	DS3BrowserItem* item = IndexToItem(parent);
 	QVariant kind = item->GetData(KIND);
 	if (kind == BUCKET || kind == FOLDER) {
 		return true;
@@ -422,7 +422,7 @@ DS3BrowserModel::columnCount(const QModelIndex& parent) const
 {
 	DS3BrowserItem* item;
 	if (parent.isValid()) {
-		item = static_cast<DS3BrowserItem*>(parent.internalPointer());
+		item = IndexToItem(parent);
 	} else {
 		item = m_rootItem;
 	}
@@ -438,7 +438,7 @@ DS3BrowserModel::rowCount(const QModelIndex &parent) const
 	}
 
 	if (parent.isValid()) {
-		parentItem = static_cast<DS3BrowserItem*>(parent.internalPointer());
+		parentItem = IndexToItem(parent);
 	} else {
 		parentItem = m_rootItem;
 	}
@@ -453,7 +453,7 @@ DS3BrowserModel::parent(const QModelIndex& index) const
 		return QModelIndex();
 	}
 
-	DS3BrowserItem* childItem = static_cast<DS3BrowserItem*>(index.internalPointer());
+	DS3BrowserItem* childItem = IndexToItem(index);
 	DS3BrowserItem* parentItem = childItem->GetParent();
 
 	if (parentItem == m_rootItem) {
@@ -473,7 +473,7 @@ DS3BrowserModel::data(const QModelIndex &index, int role) const
 		return data;
 	}
 
-	item = static_cast<DS3BrowserItem*>(index.internalPointer());
+	item = IndexToItem(index);
 	int column = index.column();
 
 	switch (role)
@@ -512,7 +512,7 @@ DS3BrowserModel::headerData(int section, Qt::Orientation /*orientation*/, int ro
 bool
 DS3BrowserModel::IsBucketOrFolder(const QModelIndex& index) const
 {
-	DS3BrowserItem* item = static_cast<DS3BrowserItem*>(index.internalPointer());
+	DS3BrowserItem* item = IndexToItem(index);
 	QVariant kind = item->GetData(KIND);
 	return (kind == BUCKET || kind == FOLDER);
 }
@@ -520,7 +520,7 @@ DS3BrowserModel::IsBucketOrFolder(const QModelIndex& index) const
 bool
 DS3BrowserModel::IsBreak(const QModelIndex& index) const
 {
-	DS3BrowserItem* item = static_cast<DS3BrowserItem*>(index.internalPointer());
+	DS3BrowserItem* item = IndexToItem(index);
 	QVariant kind = item->GetData(KIND);
 	return (kind == BREAK);
 }
@@ -529,7 +529,7 @@ QString
 DS3BrowserModel::GetPath(const QModelIndex& index) const
 {
 	QString path = "/";
-	DS3BrowserItem* item = static_cast<DS3BrowserItem*>(index.internalPointer());
+	DS3BrowserItem* item = IndexToItem(index);
 	if (item != NULL) {
 		path = item->GetPath();
 	}
@@ -549,7 +549,7 @@ DS3BrowserModel::FetchNextPage(const QModelIndex& pageBreakIndex)
 {
 	QModelIndex parentIndex = pageBreakIndex.parent();
 	int pageBreakRow = pageBreakIndex.row();
-	DS3BrowserItem* parent = static_cast<DS3BrowserItem*>(parentIndex.internalPointer());
+	DS3BrowserItem* parent = IndexToItem(parentIndex);
 	// TODO Make use of beginInsertRows and endInsertRows, which might
 	//      require moving the FetchObjects out of DS3BrowserItem and into
 	//      this class.
@@ -564,7 +564,7 @@ DS3BrowserModel::removeRows(int row, int count, const QModelIndex& parentIndex)
 		return false;
 	}
 
-	DS3BrowserItem* parent = static_cast<DS3BrowserItem*>(parentIndex.internalPointer());
+	DS3BrowserItem* parent = IndexToItem(parentIndex);
 
 	beginRemoveRows(parentIndex, row, row + count - 1);
 

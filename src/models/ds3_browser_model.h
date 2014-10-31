@@ -67,12 +67,21 @@ private:
 	DS3BrowserItem* m_rootItem;
 
 	QTreeView* m_view;
+
+	DS3BrowserItem* IndexToItem(const QModelIndex& index) const;
 };
 
 inline void
 DS3BrowserModel::SetView(QTreeView* view)
 {
 	m_view = view;
+}
+
+
+inline DS3BrowserItem*
+DS3BrowserModel::IndexToItem(const QModelIndex& index) const
+{
+	return static_cast<DS3BrowserItem*>(index.internalPointer());
 }
 
 #endif
