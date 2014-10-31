@@ -36,22 +36,22 @@ public:
 	~DS3Browser();
 
 protected:
-	QAction* m_refreshAction;
-
 	void AddCustomToolBarActions();
-	QString IndexToPath(const QModelIndex& index);
+	QString IndexToPath(const QModelIndex& index) const;
 	void OnContextMenuRequested(const QPoint& pos);
 	void OnModelItemDoubleClick(const QModelIndex& index);
+
+	QAction* m_refreshAction;
 
 protected slots:
 	void Refresh();
 	void OnModelItemClick(const QModelIndex& index);
 
 private:
+	void CreateBucket();
+
 	DS3BrowserModel* m_model;
 	Client* m_client;
-
-	void CreateBucket();
 };
 
 #endif

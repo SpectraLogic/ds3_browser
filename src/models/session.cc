@@ -20,10 +20,10 @@ Session::Session()
 {
 }
 
-Session::Session(std::string host,
-		 std::string port,
-		 std::string accessId,
-		 std::string secretKey)
+Session::Session(const std::string& host,
+		 const std::string& port,
+		 const std::string& accessId,
+		 const std::string& secretKey)
 	: m_host(host),
 	  m_port(port),
 	  m_accessId(accessId),

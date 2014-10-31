@@ -37,13 +37,16 @@ public:
 	SessionDialog(QWidget* parent = 0);
 	~SessionDialog();
 
-	Session* GetSession();
+	Session* GetSession() const;
 
 public slots:
 	void Accept();
 	void Reject();
 
 private:
+	bool ValidateLineEditNotEmpty(QLabel*, QLineEdit*);
+	void UpdateSession();
+
 	QVBoxLayout* m_layout;
 
 	QFormLayout* m_form;
@@ -59,14 +62,10 @@ private:
 	QDialogButtonBox* m_buttonBox;
 
 	Session* m_session;
-
-	void ValidateLineEditNotEmpty(QLabel*, QLineEdit*, bool&);
-
-	void UpdateSession();
 };
 
 inline Session*
-SessionDialog::GetSession()
+SessionDialog::GetSession() const
 {
 	return m_session;
 }

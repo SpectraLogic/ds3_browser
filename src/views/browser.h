@@ -36,6 +36,10 @@ public:
 	virtual ~Browser();
 
 protected:
+	void AddToolBarActions();
+	virtual QString IndexToPath(const QModelIndex& index) const = 0;
+	virtual void UpdatePathLabel(const QString& path);
+
 	QVBoxLayout* m_layout;
 	QLabel* m_path;
 	QToolBar* m_toolBar;
@@ -43,10 +47,6 @@ protected:
 
 	QAction* m_parentAction;
 	QAction* m_rootAction;
-
-	void AddToolBarActions();
-	virtual QString IndexToPath(const QModelIndex& index) = 0;
-	virtual void UpdatePathLabel(const QString& path);
 
 protected slots:
 	void GoToParent();

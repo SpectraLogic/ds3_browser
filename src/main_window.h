@@ -32,7 +32,7 @@ class MainWindow : public QMainWindow
 public:
 	MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
 
-	inline bool IsFinished();
+	inline bool IsFinished() const;
 
 private:
 	Session* CreateSession();
@@ -51,7 +51,7 @@ private slots:
 };
 
 inline bool
-MainWindow::IsFinished()
+MainWindow::IsFinished() const
 {
 	return m_isFinished;
 }

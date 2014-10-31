@@ -61,13 +61,13 @@ public:
 	void SetView(QTreeView* view);
 
 private:
-	Client* m_client;
-	DS3BrowserItem* m_rootItem;
-	QTreeView* m_view;
-
 	void FetchMoreBuckets(const QModelIndex& parent);
 	void FetchMoreObjects(const QModelIndex& parent);
 	DS3BrowserItem* IndexToItem(const QModelIndex& index) const;
+
+	Client* m_client;
+	DS3BrowserItem* m_rootItem;
+	QTreeView* m_view;
 };
 
 inline void

@@ -32,17 +32,17 @@ public:
 
 protected:
 	void AddCustomToolBarActions();
-	QString IndexToPath(const QModelIndex& index);
+	QString IndexToPath(const QModelIndex& index) const;
 	void UpdatePathLabel(const QString& path);
 	void OnContextMenuRequested(const QPoint& pos);
 	void OnModelItemDoubleClick(const QModelIndex& index);
 
 private:
+	QList<QString> GetSelectedFiles() const;
+
 	QAction* m_homeAction;
 	QAction* m_uploadAction;
 	QFileSystemModel* m_model;
-
-	QList<QString> GetSelectedFiles();
 
 private slots:
 	void GoToHome();

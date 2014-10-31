@@ -34,34 +34,29 @@ class NewBucketDialog : public QDialog
 public:
 	NewBucketDialog(Client* client, QWidget* parent = 0);
 
-	const QString& GetBucket();
+	const QString& GetBucket() const;
 
 public slots:
 	void Accept();
 	void Reject();
 
 private:
+	bool ValidateLineEditNotEmpty(QLabel* label, QLineEdit* lineEdit);
+	void UpdateBucket();
+	void CreateBucket();
+
 	QVBoxLayout* m_layout;
-
 	QFormLayout* m_form;
-
 	QLabel* m_bucketLabel;
 	QLineEdit* m_bucketLineEdit;
-
 	QDialogButtonBox* m_buttonBox;
 
 	Client* m_client;
-
 	QString m_bucket;
-
-	void ValidateLineEditNotEmpty(QLabel*, QLineEdit*, bool&);
-
-	void UpdateBucket();
-	void CreateBucket();
 };
 
 inline const QString&
-NewBucketDialog::GetBucket()
+NewBucketDialog::GetBucket() const
 {
 	return m_bucket;
 }

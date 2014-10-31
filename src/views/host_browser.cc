@@ -47,7 +47,7 @@ HostBrowser::AddCustomToolBarActions()
 }
 
 QString
-HostBrowser::IndexToPath(const QModelIndex& index)
+HostBrowser::IndexToPath(const QModelIndex& index) const
 {
 	QString path = m_model->filePath(index);
 	if (path.isEmpty()) {
@@ -116,7 +116,7 @@ HostBrowser::OnModelItemDoubleClick(const QModelIndex& index)
 // does not recursively search directories since this could be called
 // during a context menu, or drag/drop, event handler.
 QList<QString>
-HostBrowser::GetSelectedFiles()
+HostBrowser::GetSelectedFiles() const
 {
 	QList<QString> filesToUpload;
 

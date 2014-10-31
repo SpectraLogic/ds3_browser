@@ -47,9 +47,7 @@ NewBucketDialog::NewBucketDialog(Client* client, QWidget* parent)
 void
 NewBucketDialog::Accept()
 {
-	bool valid = true;
-	ValidateLineEditNotEmpty(m_bucketLabel, m_bucketLineEdit, valid);
-	if (!valid) {
+	if (!ValidateLineEditNotEmpty(m_bucketLabel, m_bucketLineEdit)) {
 		return;
 	}
 
@@ -58,15 +56,17 @@ NewBucketDialog::Accept()
 	accept();
 }
 
-void
-NewBucketDialog::ValidateLineEditNotEmpty(QLabel* label, QLineEdit* lineEdit, bool& valid)
+bool
+NewBucketDialog::ValidateLineEditNotEmpty(QLabel* label, QLineEdit* lineEdit)
 {
+	bool valid = true;
 	if (lineEdit->text().trimmed().isEmpty()) {
 		label->setStyleSheet("QLabel { color: red; }");
 		valid = false;
 	} else {
 		label->setStyleSheet("");
 	}
+	return valid;
 }
 
 void

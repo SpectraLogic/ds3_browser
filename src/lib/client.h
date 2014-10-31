@@ -24,17 +24,20 @@
 class Client
 {
 public:
-	Client(std::string, std::string, std::string, std::string);
+	Client(const std::string& host,
+	       const std::string& port,
+	       const std::string& accessId,
+	       const std::string& secretKey);
 	~Client();
 
 	ds3_get_service_response* GetService();
-	ds3_get_bucket_response* GetBucket(std::string bucketName,
-					   std::string prefix = std::string(),
-					   std::string delimiter = std::string(),
-					   std::string marker = std::string(),
+	ds3_get_bucket_response* GetBucket(const std::string& bucketName,
+					   const std::string& prefix = std::string(),
+					   const std::string& delimiter = std::string(),
+					   const std::string& marker = std::string(),
 					   uint32_t maxKeys = 0);
 
-	void CreateBucket(std::string);
+	void CreateBucket(const std::string& name);
 
 private:
 	ds3_creds* m_creds;

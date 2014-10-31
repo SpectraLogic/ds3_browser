@@ -54,7 +54,7 @@ DS3Browser::AddCustomToolBarActions()
 }
 
 QString
-DS3Browser::IndexToPath(const QModelIndex& index)
+DS3Browser::IndexToPath(const QModelIndex& index) const
 {
 	return m_model->GetPath(index);
 }

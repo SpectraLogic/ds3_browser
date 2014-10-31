@@ -69,10 +69,9 @@ SessionDialog::~SessionDialog()
 void
 SessionDialog::Accept()
 {
-	bool valid = true;
-	ValidateLineEditNotEmpty(m_hostLabel, m_hostLineEdit, valid);
-	ValidateLineEditNotEmpty(m_accessIdLabel, m_accessIdLineEdit, valid);
-	ValidateLineEditNotEmpty(m_secretKeyLabel, m_secretKeyLineEdit, valid);
+	bool valid = ValidateLineEditNotEmpty(m_hostLabel, m_hostLineEdit);
+ 	valid &= ValidateLineEditNotEmpty(m_accessIdLabel, m_accessIdLineEdit);
+	valid &= ValidateLineEditNotEmpty(m_secretKeyLabel, m_secretKeyLineEdit);
 	if (!valid) {
 		return;
 	}
@@ -81,15 +80,17 @@ SessionDialog::Accept()
 	accept();
 }
 
-void
-SessionDialog::ValidateLineEditNotEmpty(QLabel* label, QLineEdit* lineEdit, bool& valid)
+bool
+SessionDialog::ValidateLineEditNotEmpty(QLabel* label, QLineEdit* lineEdit)
 {
+	bool valid = true;
 	if (lineEdit->text().trimmed().isEmpty()) {
 		label->setStyleSheet("QLabel { color: red; }");
 		valid = false;
 	} else {
 		label->setStyleSheet("");
 	}
+	return valid;
 }
 
 void
