@@ -252,10 +252,9 @@ DS3BrowserItem::FetchObjects()
 	}
 
 	std::string nextMarker;
-	uint32_t maxKeys = 0;
+	uint32_t maxKeys = m_childrenMaxKeys;
 	if (m_childrenTruncated) {
 		nextMarker = m_childrenNextMarker.toUtf8().constData();
-		maxKeys = m_childrenMaxKeys;
 	}
 	ds3_get_bucket_response* response = m_client->GetBucket(bucketName,
 								prefix.toUtf8().constData(),
