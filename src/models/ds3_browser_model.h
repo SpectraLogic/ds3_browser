@@ -33,41 +33,40 @@ public:
 	DS3BrowserModel(Client* client, QObject* parent = 0);
 	~DS3BrowserModel();
 
+	// QAbstractItemModel Overrides
+
+	// DS3BrowserModel only uses canFetchMore so QAbstractItemView can
+	// automatically handle the first page load.  In order to prevent it
+	// from loading every page right away, this isn't used past that.
+	bool canFetchMore(const QModelIndex& parent) const;
+	int columnCount(const QModelIndex &parent = QModelIndex()) const;
+	QVariant data(const QModelIndex &index,
+		      int role = Qt::DisplayRole) const;
+	void fetchMore(const QModelIndex& parent);
+	bool hasChildren(const QModelIndex & parent = QModelIndex()) const;
+	QVariant headerData(int section, Qt::Orientation orientation,
+			    int role = Qt::DisplayRole) const;
 	QModelIndex index(int row, int column = 0,
 			  const QModelIndex &parent = QModelIndex()) const;
-
 	QModelIndex parent(const QModelIndex &index) const;
-
+	bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex());
 	int rowCount(const QModelIndex &parent = QModelIndex()) const;
-	int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
-	QVariant data(const QModelIndex &index,
-		int role = Qt::DisplayRole) const;
-
-	QVariant headerData(int section, Qt::Orientation orientation,
-		int role = Qt::DisplayRole) const;
-
-	bool hasChildren(const QModelIndex & parent = QModelIndex()) const;
+	// Non-Qt Methods
 
 	bool IsBucketOrFolder(const QModelIndex& index) const;
 	bool IsBreak(const QModelIndex& index) const;
 	QString GetPath(const QModelIndex& index) const;
-
 	void Refresh();
-
 	void SetView(QTreeView* view);
-
-	void FetchNextPage(const QModelIndex& pageBreakIndex);
-
-	bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex());
 
 private:
 	Client* m_client;
-
 	DS3BrowserItem* m_rootItem;
-
 	QTreeView* m_view;
 
+	void FetchMoreBuckets(const QModelIndex& parent);
+	void FetchMoreObjects(const QModelIndex& parent);
 	DS3BrowserItem* IndexToItem(const QModelIndex& index) const;
 };
 

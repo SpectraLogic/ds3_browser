@@ -39,30 +39,38 @@ static const QString BREAK = "Break";
 class DS3BrowserItem
 {
 public:
-	DS3BrowserItem(Client* client,
-		       const QList<QVariant>& data,
+	DS3BrowserItem(const QList<QVariant>& data,
 		       QString bucketName = QString(),
 		       QString prefix = QString(),
 		       DS3BrowserItem* parent = 0);
 	~DS3BrowserItem();
 
+	void AppendChild(DS3BrowserItem* item);
+	bool GetCanFetchMore() const;
+	QString GetBucketName() const;
 	DS3BrowserItem* GetChild(int row);
 	void RemoveChild(int row);
 	int GetChildCount();
 	int GetColumnCount() const;
 	QVariant GetData(int column) const;
+	uint32_t GetMaxKeys() const;
+	QString GetNextMarker() const;
+	QString GetPrefix() const;
 	int GetRow() const;
 	DS3BrowserItem* GetParent();
 	void Reset();
 	QString GetPath();
 
-	void FetchObjects();
+	void SetCanFetchMore(bool canFetchMore);
+	void SetMaxKeys(uint32_t maxKeys);
+	void SetNextMarker(const QString nextMarker);
 
 private:
-	Client* m_client;
+	// m_canFetchMore only represents what DS3BrowserModel should report
+	// for canFetchMore and not necessarily if the previous get
+	// children request was truncated or not.
+	bool m_canFetchMore;
 	QList<DS3BrowserItem*> m_children;
-	// So m_children can be lazily populated
-	bool m_childrenInitialized;
 	// List of data to show in the table.  Each item in the list
 	// directly corresponds to a column.
 	QList<QVariant> m_data;
@@ -70,38 +78,49 @@ private:
 	// bucket they're in.  For bucket items, this is the same as
 	// m_data[0];
 	const QString m_bucketName;
+	uint32_t m_maxKeys;
+	QString m_nextMarker;
+	DS3BrowserItem* m_parent;
 	// All parent folder object names, not including the bucket name
 	const QString m_prefix;
-	DS3BrowserItem* m_parent;
-
-	bool m_childrenTruncated;
-	QString m_childrenNextMarker;
-	uint32_t m_childrenMaxKeys;
 
 	QList<DS3BrowserItem*> GetChildren();
-	void FetchChildren();
-	void FetchBuckets();
 };
 
-DS3BrowserItem::DS3BrowserItem(Client* client,
-			       const QList<QVariant>& data,
+DS3BrowserItem::DS3BrowserItem(const QList<QVariant>& data,
 			       QString bucketName,
 			       QString prefix,
 			       DS3BrowserItem* parent)
-	: m_client(client),
-	  m_childrenInitialized(false),
+	: m_canFetchMore(true),
 	  m_data(data),
 	  m_bucketName(bucketName),
-	  m_prefix(prefix),
+	  m_maxKeys(5),
 	  m_parent(parent),
-	  m_childrenTruncated(false),
-	  m_childrenMaxKeys(1000)
+	  m_prefix(prefix)
 {
 }
 
 DS3BrowserItem::~DS3BrowserItem()
 {
 	qDeleteAll(m_children);
+}
+
+void
+DS3BrowserItem::AppendChild(DS3BrowserItem* item)
+{
+	m_children << item;
+}
+
+inline QString
+DS3BrowserItem::GetBucketName() const
+{
+	return m_bucketName;
+}
+
+inline bool
+DS3BrowserItem::GetCanFetchMore() const
+{
+	return m_canFetchMore;
 }
 
 DS3BrowserItem*
@@ -124,6 +143,24 @@ int
 DS3BrowserItem::GetChildCount()
 {
 	return GetChildren().count();	
+}
+
+inline uint32_t
+DS3BrowserItem::GetMaxKeys() const
+{
+	return m_maxKeys;
+}
+
+inline QString
+DS3BrowserItem::GetNextMarker() const
+{
+	return m_nextMarker;
+}
+
+inline QString
+DS3BrowserItem::GetPrefix() const
+{
+	return m_prefix;
 }
 
 int
@@ -157,7 +194,9 @@ DS3BrowserItem::GetParent()
 void
 DS3BrowserItem::Reset()
 {
-	FetchChildren();
+	qDeleteAll(m_children);
+	m_children.clear();
+	m_canFetchMore = true;
 }
 
 QString
@@ -180,178 +219,25 @@ DS3BrowserItem::GetPath()
 QList<DS3BrowserItem*>
 DS3BrowserItem::GetChildren()
 {
-	if (!m_childrenInitialized) {
-		FetchChildren();
-		m_childrenInitialized = true;
-	}
 	return m_children;
 }
 
-void
-DS3BrowserItem::FetchChildren()
+inline void
+DS3BrowserItem::SetCanFetchMore(bool canFetchMore)
 {
-	qDeleteAll(m_children);
-	m_children.clear();
-
-	m_parent ? FetchObjects() : FetchBuckets();
+	m_canFetchMore = canFetchMore;
 }
 
-void
-DS3BrowserItem::FetchBuckets()
+inline void
+DS3BrowserItem::SetMaxKeys(uint32_t maxKeys)
 {
-	ds3_get_service_response* response = m_client->GetService();
-	QString owner = QString(QLatin1String(response->owner->name->value));
-
-	for (size_t i = 0; i < response->num_buckets; i++) {
-		QString name;
-		char* rawCreated;
-		QDateTime createdDT;
-		QString created;
-		// The order in which bucketData is filled must match
-		// Column
-		QList<QVariant> bucketData;
-		DS3BrowserItem* bucket;
-
-		ds3_bucket rawBucket = response->buckets[i];
-
-		name = QString(QLatin1String(rawBucket.name->value));
-		bucketData << name;
-
-		bucketData << owner;
-
-		bucketData << "--";
-
-		bucketData << BUCKET;
-
-		rawCreated = rawBucket.creation_date->value;
-		createdDT = QDateTime::fromString(QString(QLatin1String(rawCreated)),
-				    		  REST_TIMESTAMP_FORMAT);
-		created = createdDT.toString(VIEW_TIMESTAMP_FORMAT);
-		bucketData << created;
-
-		bucket = new DS3BrowserItem(m_client,
-					    bucketData,
-					    name,
-					    QString(),
-					    this);
-		m_children << bucket;
-	}
-
-	ds3_free_service_response(response);
+	m_maxKeys = maxKeys;
 }
 
-void
-DS3BrowserItem::FetchObjects()
+inline void
+DS3BrowserItem::SetNextMarker(const QString nextMarker)
 {
-	bool isBucket = GetData(KIND) == BUCKET;
-	QString name = GetData(NAME).toString();
-	std::string bucketName = m_bucketName.toUtf8().constData();
-	QString prefix = m_prefix;
-	if (!isBucket) {
-		prefix += name + "/";
-	}
-
-	std::string nextMarker;
-	uint32_t maxKeys = m_childrenMaxKeys;
-	if (m_childrenTruncated) {
-		nextMarker = m_childrenNextMarker.toUtf8().constData();
-	}
-	ds3_get_bucket_response* response = m_client->GetBucket(bucketName,
-								prefix.toUtf8().constData(),
-								"/",
-								nextMarker,
-								maxKeys);
-
-	QVariant owner = GetData(OWNER);
-
-	QSet<QString> currentCommonPrefixNames;
-	for (int i = 0; i < m_children.count(); i++) {
-		DS3BrowserItem* object = m_children.at(i);
-		if (object->GetData(KIND) == FOLDER) {
-			currentCommonPrefixNames << object->GetData(NAME).toString();
-		}
-	}
-
-	for (size_t i = 0; i < response->num_common_prefixes; i++) {
-		ds3_str* rawCommonPrefix = response->common_prefixes[i];
-		// The order in which bucketData is filled must match
-		// Column
-		QList<QVariant> objectData;
-		DS3BrowserItem* object;
-
-		QString nextName = QString(QLatin1String(rawCommonPrefix->value));
-		nextName.replace(QRegExp("^" + prefix), "");
-		nextName.replace(QRegExp("/$"), "");
-		if (!currentCommonPrefixNames.contains(nextName)) {
-			objectData << nextName;
-			objectData << owner;
-			objectData << "--";
-			objectData << FOLDER;
-			objectData << "--";
-			object = new DS3BrowserItem(m_client,
-						    objectData,
-						    m_bucketName,
-						    prefix,
-						    this);
-			m_children << object;
-		}
-	}
-
-	for (size_t i = 0; i < response->num_objects; i++) {
-		QString nextName;
-		char* rawCreated;
-		QDateTime createdDT;
-		QString created;
-		// The order in which bucketData is filled must match
-		// Column
-		QList<QVariant> objectData;
-		DS3BrowserItem* object;
-
-		ds3_object rawObject = response->objects[i];
-
-		nextName = QString(QLatin1String(rawObject.name->value));
-		nextName.replace(QRegExp("^" + prefix), "");
-		objectData << nextName;
-
-		objectData << owner;
-
-		// TODO Humanize the size
-		objectData << rawObject.size;
-
-		objectData << OBJECT;
-
-		rawCreated = rawObject.last_modified->value;
-		createdDT = QDateTime::fromString(QString(QLatin1String(rawCreated)),
-				    		  REST_TIMESTAMP_FORMAT);
-		created = createdDT.toString(VIEW_TIMESTAMP_FORMAT);
-		objectData << created;
-
-		object = new DS3BrowserItem(m_client,
-					    objectData,
-					    m_bucketName,
-					    prefix,   	
-					    this);
-		m_children << object;
-	}
-
-	m_childrenTruncated = response->is_truncated;
-	if (response->next_marker) {
-		m_childrenNextMarker = QString(QLatin1String(response->next_marker->value));
-	}
-	m_childrenMaxKeys = response->max_keys;
-
-	if (m_childrenTruncated) {
-		QList<QVariant> pageBreakData;
-		pageBreakData << "Click to load more" << "" << "" << BREAK;
-		DS3BrowserItem* pageBreak = new DS3BrowserItem(m_client,
-							       pageBreakData,
-							       m_bucketName,
-							       prefix,
-							       this);
-		m_children << pageBreak;
-	}
-
-	ds3_free_bucket_response(response);
+	m_nextMarker = nextMarker;
 }
 
 //
@@ -365,7 +251,7 @@ DS3BrowserModel::DS3BrowserModel(Client* client, QObject* parent)
 	// Headers must match DS3BrowserModel::Column
 	QList<QVariant> column_names;
 	column_names << "Name" << "Owner" << "Size" << "Kind" << "Created";
-	m_rootItem = new DS3BrowserItem(m_client, column_names);
+	m_rootItem = new DS3BrowserItem(column_names);
 }
 
 DS3BrowserModel::~DS3BrowserModel()
@@ -373,47 +259,16 @@ DS3BrowserModel::~DS3BrowserModel()
 	delete m_rootItem;
 }
 
-QModelIndex
-DS3BrowserModel::index(int row, int column, const QModelIndex &parent) const
+bool
+DS3BrowserModel::canFetchMore(const QModelIndex& parent) const
 {
-	if (!hasIndex(row, column, parent)) {
-		return QModelIndex();
-	}
-
 	DS3BrowserItem* parentItem;
-
 	if (parent.isValid()) {
 		parentItem = IndexToItem(parent);
 	} else {
 		parentItem = m_rootItem;
 	}
-
-	DS3BrowserItem* childItem = parentItem->GetChild(row);
-	if (childItem) {
-		return createIndex(row, column, childItem);
-	} else {
-		return QModelIndex();
-	}
-}
-
-// rowCount actually determines whether or not the bucket has any objects in
-// it.  hasChildren always returns true for buckets and folders so the
-// caret is always displayed even if we don't yet know if the bucket/folder
-// has any objects.
-bool
-DS3BrowserModel::hasChildren(const QModelIndex& parent) const
-{
-	if (!parent.isValid()) {
-		return true;
-	}
-
-	DS3BrowserItem* item = IndexToItem(parent);
-	QVariant kind = item->GetData(KIND);
-	if (kind == BUCKET || kind == FOLDER) {
-		return true;
-	} else {
-		return false;
-	}
+	return parentItem->GetCanFetchMore();
 }
 
 int
@@ -426,40 +281,6 @@ DS3BrowserModel::columnCount(const QModelIndex& parent) const
 		item = m_rootItem;
 	}
 	return item->GetColumnCount();
-}
-
-int
-DS3BrowserModel::rowCount(const QModelIndex &parent) const
-{
-	DS3BrowserItem* parentItem;
-	if (parent.column() > 0) {
-		return 0;
-	}
-
-	if (parent.isValid()) {
-		parentItem = IndexToItem(parent);
-	} else {
-		parentItem = m_rootItem;
-	}
-
-	return parentItem->GetChildCount();
-}
-
-QModelIndex
-DS3BrowserModel::parent(const QModelIndex& index) const
-{
-	if (!index.isValid()) {
-		return QModelIndex();
-	}
-
-	DS3BrowserItem* childItem = IndexToItem(index);
-	DS3BrowserItem* parentItem = childItem->GetParent();
-
-	if (parentItem == m_rootItem) {
-		return QModelIndex();
-	}
-
-	return createIndex(parentItem->GetRow(), 0, parentItem);
 }
 
 QVariant
@@ -499,6 +320,55 @@ DS3BrowserModel::data(const QModelIndex &index, int role) const
 	return data;
 }
 
+void
+DS3BrowserModel::fetchMore(const QModelIndex& parent)
+{
+	bool parentIsValid = parent.isValid();
+	DS3BrowserItem* parentItem;
+	if (parent.isValid()) {
+		parentItem = IndexToItem(parent);
+	} else {
+		parentItem = m_rootItem;
+	}
+
+	int lastRow = parentItem->GetChildCount() - 1;
+	DS3BrowserItem* pageBreakItem = 0;
+	if (lastRow >= 0) {
+		DS3BrowserItem* lastChildItem = parentItem->GetChild(lastRow);
+		if (lastChildItem->GetData(KIND) == BREAK) {
+			pageBreakItem = lastChildItem;
+		}
+	}
+
+	parentIsValid ? FetchMoreObjects(parent) : FetchMoreBuckets(parent);
+
+	if (pageBreakItem) {
+		removeRow(lastRow, parent);
+	}
+
+	// Always set CanFetchMore to false so the view doesn't automatically
+	// come right back around and ask to fetchMore when this model
+	// emits the rowsInserted signal (which is the way
+	// QAbstractItemView handles fetchMore).
+	parentItem->SetCanFetchMore(false);
+}
+
+// rowCount actually determines whether or not the bucket has any objects in
+// it.  hasChildren always returns true for buckets and folders so the
+// caret is always displayed even if we don't yet know if the bucket/folder
+// has any objects.
+bool
+DS3BrowserModel::hasChildren(const QModelIndex& parent) const
+{
+	if (!parent.isValid()) {
+		return true;
+	}
+
+	DS3BrowserItem* item = IndexToItem(parent);
+	QVariant kind = item->GetData(KIND);
+	return (kind == BUCKET || kind == FOLDER);
+}
+
 QVariant
 DS3BrowserModel::headerData(int section, Qt::Orientation /*orientation*/, int role) const
 {
@@ -506,6 +376,83 @@ DS3BrowserModel::headerData(int section, Qt::Orientation /*orientation*/, int ro
 		return m_rootItem->GetData(section);
 	}
 	return QVariant();
+}
+
+QModelIndex
+DS3BrowserModel::index(int row, int column, const QModelIndex &parent) const
+{
+	if (!hasIndex(row, column, parent)) {
+		return QModelIndex();
+	}
+
+	DS3BrowserItem* parentItem;
+
+	if (parent.isValid()) {
+		parentItem = IndexToItem(parent);
+	} else {
+		parentItem = m_rootItem;
+	}
+
+	DS3BrowserItem* childItem = parentItem->GetChild(row);
+	if (childItem) {
+		return createIndex(row, column, childItem);
+	} else {
+		return QModelIndex();
+	}
+}
+
+QModelIndex
+DS3BrowserModel::parent(const QModelIndex& index) const
+{
+	if (!index.isValid()) {
+		return QModelIndex();
+	}
+
+	DS3BrowserItem* childItem = IndexToItem(index);
+	DS3BrowserItem* parentItem = childItem->GetParent();
+
+	if (parentItem == m_rootItem) {
+		return QModelIndex();
+	}
+
+	return createIndex(parentItem->GetRow(), 0, parentItem);
+}
+
+bool
+DS3BrowserModel::removeRows(int row, int count, const QModelIndex& parentIndex)
+{
+	if (row < 0 || count <= 0 || (row + count) > rowCount(parentIndex)) {
+		return false;
+	}
+
+	DS3BrowserItem* parent = IndexToItem(parentIndex);
+
+	beginRemoveRows(parentIndex, row, row + count - 1);
+
+	for (int i = 0; i < count; i++) {
+		parent->RemoveChild(row + i);
+	}
+
+	endRemoveRows();
+
+	return true;
+}
+
+int
+DS3BrowserModel::rowCount(const QModelIndex &parent) const
+{
+	DS3BrowserItem* parentItem;
+	if (parent.column() > 0) {
+		return 0;
+	}
+
+	if (parent.isValid()) {
+		parentItem = IndexToItem(parent);
+	} else {
+		parentItem = m_rootItem;
+	}
+
+	return parentItem->GetChildCount();
 }
 
 bool
@@ -544,34 +491,189 @@ DS3BrowserModel::Refresh()
 }
 
 void
-DS3BrowserModel::FetchNextPage(const QModelIndex& pageBreakIndex)
+DS3BrowserModel::FetchMoreBuckets(const QModelIndex& parent)
 {
-	QModelIndex parentIndex = pageBreakIndex.parent();
-	int pageBreakRow = pageBreakIndex.row();
-	DS3BrowserItem* parent = IndexToItem(parentIndex);
-	// TODO Make use of beginInsertRows and endInsertRows, which might
-	//      require moving the FetchObjects out of DS3BrowserItem and into
-	//      this class.
-	parent->FetchObjects();
-	removeRow(pageBreakRow, parentIndex);
+	DS3BrowserItem* parentItem;
+	if (parent.isValid()) {
+		// Should never get here since we should never try to fetch
+		// buckets at the bucket level.
+		parentItem = IndexToItem(parent);
+	} else {
+		parentItem = m_rootItem;
+	}
+
+	ds3_get_service_response* response = m_client->GetService();
+	QString owner = QString(QLatin1String(response->owner->name->value));
+
+	size_t numBuckets = response->num_buckets;
+	if (numBuckets > 0) {
+		int startRow = rowCount(parent);
+		beginInsertRows(parent, startRow, startRow + numBuckets - 1);
+	}
+
+	for (size_t i = 0; i < response->num_buckets; i++) {
+		QString name;
+		char* rawCreated;
+		QDateTime createdDT;
+		QString created;
+		// The order in which bucketData is filled must match
+		// Column
+		QList<QVariant> bucketData;
+		DS3BrowserItem* bucket;
+
+		ds3_bucket rawBucket = response->buckets[i];
+
+		name = QString(QLatin1String(rawBucket.name->value));
+		bucketData << name;
+		bucketData << owner;
+		bucketData << "--";
+		bucketData << BUCKET;
+
+		rawCreated = rawBucket.creation_date->value;
+		createdDT = QDateTime::fromString(QString(QLatin1String(rawCreated)),
+						  REST_TIMESTAMP_FORMAT);
+		created = createdDT.toString(VIEW_TIMESTAMP_FORMAT);
+		bucketData << created;
+
+		bucket = new DS3BrowserItem(bucketData,
+					    name,
+					    QString(),
+					    parentItem);
+		parentItem->AppendChild(bucket);
+	}
+
+	if (numBuckets > 0) {
+		endInsertRows();
+	}
+
+	ds3_free_service_response(response);
 }
 
-bool
-DS3BrowserModel::removeRows(int row, int count, const QModelIndex& parentIndex)
+void
+DS3BrowserModel::FetchMoreObjects(const QModelIndex& parent)
 {
-	if (row < 0 || count <= 0 || (row + count) > rowCount(parentIndex)) {
-		return false;
+	DS3BrowserItem* parentItem;
+	if (parent.isValid()) {
+		parentItem = IndexToItem(parent);
+	} else {
+		// Should never get here since we should never try to
+		// fetch objects at the root level.
+		parentItem = m_rootItem;
 	}
 
-	DS3BrowserItem* parent = IndexToItem(parentIndex);
-
-	beginRemoveRows(parentIndex, row, row + count - 1);
-
-	for (int i = 0; i < count; i++) {
-		parent->RemoveChild(row + i);
+	bool isBucket = parentItem->GetData(KIND) == BUCKET;
+	QString name = parentItem->GetData(NAME).toString();
+	QString bucketName = parentItem->GetBucketName();
+	QString prefix = parentItem->GetPrefix();
+	if (!isBucket) {
+		prefix += name + "/";
 	}
 
-	endRemoveRows();
+	std::string bucketNameS = bucketName.toUtf8().constData();
+	uint32_t maxKeys = parentItem->GetMaxKeys();
+	std::string nextMarker = parentItem->GetNextMarker().toUtf8().constData();
+	ds3_get_bucket_response* response = m_client->GetBucket(bucketNameS,
+								prefix.toUtf8().constData(),
+								"/",
+								nextMarker,
+								maxKeys);
 
-	return true;
+	QVariant owner = parentItem->GetData(OWNER);
+
+	QSet<QString> currentCommonPrefixNames;
+	for (int i = 0; i < parentItem->GetChildCount(); i++) {
+		DS3BrowserItem* object = parentItem->GetChild(i);
+		if (object->GetData(KIND) == FOLDER) {
+			currentCommonPrefixNames << object->GetData(NAME).toString();
+		}
+	}
+
+	QList<DS3BrowserItem*> newChildren;
+
+	for (size_t i = 0; i < response->num_common_prefixes; i++) {
+		ds3_str* rawCommonPrefix = response->common_prefixes[i];
+		// The order in which bucketData is filled must match
+		// Column
+		QList<QVariant> objectData;
+		DS3BrowserItem* object;
+
+		QString nextName = QString(QLatin1String(rawCommonPrefix->value));
+		nextName.replace(QRegExp("^" + prefix), "");
+		nextName.replace(QRegExp("/$"), "");
+		if (!currentCommonPrefixNames.contains(nextName)) {
+			objectData << nextName;
+			objectData << owner;
+			objectData << "--";
+			objectData << FOLDER;
+			objectData << "--";
+			object = new DS3BrowserItem(objectData,
+						    bucketName,
+						    prefix,
+						    parentItem);
+			newChildren << object;
+		}
+	}
+
+	for (size_t i = 0; i < response->num_objects; i++) {
+		QString nextName;
+		char* rawCreated;
+		QDateTime createdDT;
+		QString created;
+		// The order in which bucketData is filled must match
+		// Column
+		QList<QVariant> objectData;
+		DS3BrowserItem* object;
+
+		ds3_object rawObject = response->objects[i];
+
+		nextName = QString(QLatin1String(rawObject.name->value));
+		nextName.replace(QRegExp("^" + prefix), "");
+		objectData << nextName;
+
+		objectData << owner;
+
+		// TODO Humanize the size
+		objectData << rawObject.size;
+
+		objectData << OBJECT;
+
+		rawCreated = rawObject.last_modified->value;
+		createdDT = QDateTime::fromString(QString(QLatin1String(rawCreated)),
+						  REST_TIMESTAMP_FORMAT);
+		created = createdDT.toString(VIEW_TIMESTAMP_FORMAT);
+		objectData << created;
+
+		object = new DS3BrowserItem(objectData,
+					    bucketName,
+					    prefix,
+					    parentItem);
+		newChildren << object;
+	}
+
+	if (response->next_marker) {
+		parentItem->SetNextMarker(QString(QLatin1String(response->next_marker->value)));
+	}
+	parentItem->SetMaxKeys(response->max_keys);
+
+	if (response->is_truncated) {
+		QList<QVariant> pageBreakData;
+		pageBreakData << "Click to load more" << "" << "" << BREAK;
+		DS3BrowserItem* pageBreak = new DS3BrowserItem(pageBreakData,
+							       bucketName,
+							       prefix,
+							       parentItem);
+		newChildren << pageBreak;
+	}
+
+	int numNewChildren = newChildren.count();
+	if (numNewChildren > 0) {
+		int startRow = rowCount(parent);
+		beginInsertRows(parent, startRow, startRow + numNewChildren - 1);
+		for (int i = 0; i < numNewChildren; i++) {
+			parentItem->AppendChild(newChildren.at(i));
+		}
+		endInsertRows();
+	}
+
+	ds3_free_bucket_response(response);
 }
