@@ -66,6 +66,19 @@ XCode project file:
     cd build
     qmake -spec macx-xcode ../ds3_explorer.pro
 
+Session Persistence
+-------------------
+
+The application is currently setup to automatically save the session data
+if the user selects that option.  Where the data is saved depends on the
+platform.  On OSX, it is stored in ~/Library/Preferences/com.spectralogic.DS3 Explorer.plist.
+
+OSX Note - OSX Yosemite, and possibly earlier versions, cache the plist files.
+Thus, deleting the plist file is not enough to clear the setting.  You must
+then either restart, logout/login, or execute `killall -u yourusername cfprefsd`
+
+TODO - Update for Windows
+
 Known Bugs
 ----------
 

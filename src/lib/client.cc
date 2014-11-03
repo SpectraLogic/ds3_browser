@@ -19,16 +19,17 @@
 
 Client::Client(const Session* session)
 {
-	m_creds = ds3_create_creds(session->GetAccessId().c_str(),
-				   session->GetSecretKey().c_str());
+	m_creds = ds3_create_creds(session->GetAccessId().toUtf8().constData(),
+				   session->GetSecretKey().toUtf8().constData());
 
-	std::string endpoint = "http://" + session->GetHost();
-	std::string port = session->GetPort();
-	if (!port.empty()) {
+	QString protocol = session->GetProtocolName();
+	QString endpoint = protocol + "://" + session->GetHost();
+	QString port = session->GetPort();
+	if (!port.isEmpty()) {
 		endpoint += ":" + port;
 	}
 
-	m_client = ds3_create_client(endpoint.c_str(), m_creds);
+	m_client = ds3_create_client(endpoint.toUtf8().constData(), m_creds);
 }
 
 Client::~Client()

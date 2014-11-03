@@ -23,6 +23,7 @@ main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
 	app.setOrganizationName("Spectra Logic");
+	app.setOrganizationDomain("spectralogic.com");
 	app.setApplicationName("DS3 Explorer");
 
 	MainWindow mainWindow;

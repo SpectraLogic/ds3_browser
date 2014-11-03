@@ -17,82 +17,131 @@
 #ifndef SESSION_H
 #define SESSION_H
 
-#include <string>
+#include <QString>
 
 // Session, a model that represents the data necessary to setup a
 // host<->DS3 session.
 class Session
 {
 public:
+	enum Protocol { HTTP, HTTPS };
+	static const QString PROTOCOL_NAMES[];
+
 	Session();
-	Session(const std::string& host,
-		const std::string& port,
-		const std::string& accessId,
-		const std::string& secretKey);
 
-	std::string GetHost() const;
-	void SetHost(const std::string& host);
+	QString GetHost() const;
+	void SetHost(const QString& host);
 
-	std::string GetPort() const;
-	void SetPort(const std::string& port);
+	Protocol GetProtocol() const;
+	QString GetProtocolName() const;
+	void SetProtocol(Protocol protocol);
+	void SetProtocol(int protocol);
 
-	std::string GetAccessId() const;
-	void SetAccessId(const std::string& accessId);
+	QString GetPort() const;
+	void SetPort(const QString& port);
 
-	std::string GetSecretKey() const;
-	void SetSecretKey(const std::string& secretKey);
+	bool GetWithCertificateVerification() const;
+	void SetWithCertificateVerification(bool verify);
+
+	QString GetAccessId() const;
+	void SetAccessId(const QString& accessId);
+
+	QString GetSecretKey() const;
+	void SetSecretKey(const QString& secretKey);
 
 private:
-	std::string m_host;
-	std::string m_port;
-	std::string m_accessId;
-	std::string m_secretKey;
+	QString m_host;
+	Protocol m_protocol;
+	QString m_port;
+	// Whether or not SSL certificates should be verified.  This is only
+	// applicable when using HTTPS.  If this is set to true, the user
+	// would have to configure their computer to trust their system's
+	// SSL certificate.
+	bool m_withCertificateVerification;
+	QString m_accessId;
+	QString m_secretKey;
 };
 
-inline std::string
+inline QString
 Session::GetHost() const
 {
 	return m_host;
 }
 
 inline void
-Session::SetHost(const std::string& host)
+Session::SetHost(const QString& host)
 {
 	m_host = host;
 }
 
-inline std::string
+inline Session::Protocol
+Session::GetProtocol() const
+{
+	return m_protocol;
+}
+
+inline QString
+Session::GetProtocolName() const
+{
+	return PROTOCOL_NAMES[m_protocol];
+}
+
+inline void
+Session::SetProtocol(Session::Protocol protocol)
+{
+	m_protocol = protocol;
+}
+
+inline void
+Session::SetProtocol(int protocol)
+{
+	m_protocol = static_cast<Protocol>(protocol);
+}
+
+inline QString
 Session::GetPort() const
 {
 	return m_port;
 }
 
 inline void
-Session::SetPort(const std::string& port)
+Session::SetPort(const QString& port)
 {
 	m_port = port;
 }
 
-inline std::string
+inline bool
+Session::GetWithCertificateVerification() const
+{
+	return m_withCertificateVerification;
+}
+
+inline void
+Session::SetWithCertificateVerification(bool verify)
+{
+	m_withCertificateVerification = verify;
+}
+
+inline QString
 Session::GetAccessId() const
 {
 	return m_accessId;
 }
 
 inline void
-Session::SetAccessId(const std::string& accessId)
+Session::SetAccessId(const QString& accessId)
 {
 	m_accessId = accessId;
 }
 
-inline std::string
+inline QString
 Session::GetSecretKey() const
 {
 	return m_secretKey;
 }
 
 inline void
-Session::SetSecretKey(const std::string& secretKey)
+Session::SetSecretKey(const QString& secretKey)
 {
 	m_secretKey = secretKey;
 }

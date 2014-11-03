@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
 	m_sessionView = new SessionView(session, this);
 	m_sessionTabs->addTab(m_sessionView,
-			      QString::fromStdString(session->GetHost()));
+			      session->GetHost());
 	setCentralWidget(m_sessionTabs);
 }
 

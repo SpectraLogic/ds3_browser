@@ -16,17 +16,10 @@
 
 #include "models/session.h"
 
-Session::Session()
-{
-}
+const QString Session::PROTOCOL_NAMES[] = { "http", "https" };
 
-Session::Session(const std::string& host,
-		 const std::string& port,
-		 const std::string& accessId,
-		 const std::string& secretKey)
-	: m_host(host),
-	  m_port(port),
-	  m_accessId(accessId),
-	  m_secretKey(secretKey)
+Session::Session()
+	: m_protocol(HTTP),
+	  m_withCertificateVerification(false)
 {
 }

@@ -17,6 +17,7 @@
 #ifndef SESSION_DIALOG_H
 #define SESSION_DIALOG_H
 
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QDialog>
@@ -45,7 +46,9 @@ public slots:
 
 private:
 	bool ValidateLineEditNotEmpty(QLabel*, QLineEdit*);
+	void LoadSession();
 	void UpdateSession();
+	void SaveSession();
 
 	QVBoxLayout* m_layout;
 
@@ -59,6 +62,7 @@ private:
 	QLabel* m_secretKeyLabel;
 	QLineEdit* m_secretKeyLineEdit;
 
+	QCheckBox* m_saveSessionCheckBox;
 	QDialogButtonBox* m_buttonBox;
 
 	Session* m_session;
