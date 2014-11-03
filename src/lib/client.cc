@@ -15,15 +15,15 @@
  */
 
 #include "lib/client.h"
+#include "models/session.h"
 
-Client::Client(const std::string& host,
-	       const std::string& port,
-	       const std::string& accessId,
-	       const std::string& secretKey)
+Client::Client(const Session* session)
 {
-	m_creds = ds3_create_creds(accessId.c_str(), secretKey.c_str());
+	m_creds = ds3_create_creds(session->GetAccessId().c_str(),
+				   session->GetSecretKey().c_str());
 
-	std::string endpoint = "http://" + host;
+	std::string endpoint = "http://" + session->GetHost();
+	std::string port = session->GetPort();
 	if (!port.empty()) {
 		endpoint += ":" + port;
 	}

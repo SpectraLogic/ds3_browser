@@ -21,13 +21,12 @@
 
 #include <ds3.h>
 
+class Session;
+
 class Client
 {
 public:
-	Client(const std::string& host,
-	       const std::string& port,
-	       const std::string& accessId,
-	       const std::string& secretKey);
+	Client(const Session* session);
 	~Client();
 
 	ds3_get_service_response* GetService();

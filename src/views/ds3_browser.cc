@@ -27,10 +27,7 @@ DS3Browser::DS3Browser(Session* session, QWidget* parent, Qt::WindowFlags flags)
 {
 	AddCustomToolBarActions();
 
-	m_client = new Client(session->GetHost(),
-			      session->GetPort(),
-			      session->GetAccessId(),
-			      session->GetSecretKey());
+	m_client = new Client(session);
 	m_model = new DS3BrowserModel(m_client, this);
 	m_model->SetView(m_treeView);
 	m_treeView->setModel(m_model);
