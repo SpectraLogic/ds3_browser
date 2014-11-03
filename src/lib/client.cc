@@ -14,7 +14,7 @@
  * *****************************************************************************
  */
 
-#include "client.h"
+#include "lib/client.h"
 
 Client::Client(const std::string& host,
 	       const std::string& port,
