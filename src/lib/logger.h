@@ -14,51 +14,39 @@
  * *****************************************************************************
  */
 
-#ifndef MAIN_WINDOW_H
-#define MAIN_WINDOW_H
+#ifndef LOGGER_H
+#define LOGGER_H
 
-#include <QMainWindow>
-#include <QAction>
-#include <QDockWidget>
-#include <QMenu>
-#include <QTabWidget>
+#include <QMutex>
+#include <QString>
+#include <QTextEdit>
 
-class Console;
-class Session;
-class SessionView;
+#define LOG_DEBUG(msg)   LOG(Logger::DEBUG,   msg)
+#define LOG_INFO(msg)    LOG(Logger::INFO,    msg)
+#define LOG_WARNING(msg) LOG(Logger::WARNING, msg)
+#define LOG_ERROR(msg)   LOG(Logger::ERROR,   msg)
+#define LOG(level, msg)  Logger::Instance()->Log(level, msg)
 
-class MainWindow : public QMainWindow
+class Logger
 {
-	Q_OBJECT
-
 public:
-	MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+	enum Level { DEBUG, INFO, WARNING, ERROR };
+	static const QString LEVEL_COLORS[];
 
-	inline bool IsFinished() const;
+	static Logger* Instance();
+
+	void Log(Level level, const QString& msg);
+
+	void SetStream(QTextEdit* m_stream);
 
 private:
-	Session* CreateSession();
-	void CreateMenus();
+	Logger();
 
-	bool m_isFinished;
+	static Logger* s_instance;
 
-	QMenu* m_helpMenu;
-	QAction* m_aboutAction;
-
-	QTabWidget* m_sessionTabs;
-	SessionView* m_sessionView;
-
-	Console* m_console;;
-	QDockWidget* m_consoleDock;
-
-private slots:
-	void About();
+	Level m_logLevel;
+	QTextEdit* m_stream;
+	QMutex* m_streamLock;
 };
-
-inline bool
-MainWindow::IsFinished() const
-{
-	return m_isFinished;
-}
 
 #endif

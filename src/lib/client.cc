@@ -15,6 +15,7 @@
  */
 
 #include "lib/client.h"
+#include "lib/logger.h"
 #include "models/session.h"
 
 Client::Client(const Session* session)

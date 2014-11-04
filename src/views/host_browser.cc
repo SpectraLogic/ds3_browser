@@ -14,9 +14,9 @@
  * *****************************************************************************
  */
 
-#include <QDebug>
 #include <QMenu>
 
+#include "lib/logger.h"
 #include "views/host_browser.h"
 
 HostBrowser::HostBrowser(QWidget* parent, Qt::WindowFlags flags)
@@ -92,10 +92,10 @@ HostBrowser::OnContextMenuRequested(const QPoint& pos)
 	if (selectedAction == &uploadAction)
 	{
 		QList<QString> filesToUpload = GetSelectedFiles();
-		qDebug() << "files to upload...";
+		LOG_DEBUG("files to upload...");
 		foreach(QString file, filesToUpload)
 		{
-			qDebug() << file;
+			LOG_DEBUG(file);
 		}
 	}
 }

@@ -14,51 +14,25 @@
  * *****************************************************************************
  */
 
-#ifndef MAIN_WINDOW_H
-#define MAIN_WINDOW_H
+#ifndef CONSOLE_H
+#define CONSOLE_H
 
-#include <QMainWindow>
-#include <QAction>
-#include <QDockWidget>
-#include <QMenu>
-#include <QTabWidget>
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <QWidget>
 
-class Console;
-class Session;
-class SessionView;
-
-class MainWindow : public QMainWindow
+class Console : public QWidget
 {
-	Q_OBJECT
-
 public:
-	MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-
-	inline bool IsFinished() const;
+	static Console* Instance();
 
 private:
-	Session* CreateSession();
-	void CreateMenus();
+	Console(QWidget* parent = 0);
 
-	bool m_isFinished;
+	static Console* s_instance;
 
-	QMenu* m_helpMenu;
-	QAction* m_aboutAction;
-
-	QTabWidget* m_sessionTabs;
-	SessionView* m_sessionView;
-
-	Console* m_console;;
-	QDockWidget* m_consoleDock;
-
-private slots:
-	void About();
+	QTextEdit* m_text;
+	QVBoxLayout* m_layout;
 };
-
-inline bool
-MainWindow::IsFinished() const
-{
-	return m_isFinished;
-}
 
 #endif

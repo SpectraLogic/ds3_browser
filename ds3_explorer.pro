@@ -33,16 +33,19 @@ Release:OBJECTS_DIR = release/.obj
 Release:MOC_DIR = release/.moc
 Release:RCC_DIR = release/.qrc
 Release:UI_DIR = release/.ui
+Release:DEFINES += NO_DEBUG
 
 INCLUDEPATH += src
 
 HEADERS = \
 	src/main_window.h \
 	src/lib/client.h \
+	src/lib/logger.h \
 	src/models/ds3_browser_model.h \
 	src/models/session.h \
 	src/views/browser.h \
 	src/views/buckets/new_bucket_dialog.h \
+	src/views/console.h \
 	src/views/ds3_browser.h \
 	src/views/host_browser.h \
 	src/views/session_dialog.h \
@@ -52,10 +55,12 @@ SOURCES = \
 	src/main.cc \
 	src/main_window.cc \
 	src/lib/client.cc \
+	src/lib/logger.cc \
 	src/models/ds3_browser_model.cc \
 	src/models/session.cc \
 	src/views/browser.cc \
 	src/views/buckets/new_bucket_dialog.cc \
+	src/views/console.cc \
 	src/views/ds3_browser.cc \
 	src/views/host_browser.cc \
 	src/views/session_dialog.cc \

@@ -14,51 +14,27 @@
  * *****************************************************************************
  */
 
-#ifndef MAIN_WINDOW_H
-#define MAIN_WINDOW_H
+#include "lib/logger.h"
+#include "views/console.h"
 
-#include <QMainWindow>
-#include <QAction>
-#include <QDockWidget>
-#include <QMenu>
-#include <QTabWidget>
+Console* Console::s_instance = 0;
 
-class Console;
-class Session;
-class SessionView;
-
-class MainWindow : public QMainWindow
+Console*
+Console::Instance()
 {
-	Q_OBJECT
-
-public:
-	MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
-
-	inline bool IsFinished() const;
-
-private:
-	Session* CreateSession();
-	void CreateMenus();
-
-	bool m_isFinished;
-
-	QMenu* m_helpMenu;
-	QAction* m_aboutAction;
-
-	QTabWidget* m_sessionTabs;
-	SessionView* m_sessionView;
-
-	Console* m_console;;
-	QDockWidget* m_consoleDock;
-
-private slots:
-	void About();
-};
-
-inline bool
-MainWindow::IsFinished() const
-{
-	return m_isFinished;
+	if (!s_instance) {
+		s_instance = new Console();
+		Logger::Instance()->SetStream(s_instance->m_text);
+	}
+	return s_instance;
 }
 
-#endif
+Console::Console(QWidget* parent)
+	: QWidget(parent)
+{
+	m_text = new QTextEdit();
+	m_text->setReadOnly(true);
+	m_layout = new QVBoxLayout(this);
+	m_layout->addWidget(m_text);
+	setLayout(m_layout);
+}

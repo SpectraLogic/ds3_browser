@@ -19,6 +19,7 @@
 
 #include "main_window.h"
 #include "models/session.h"
+#include "views/console.h"
 #include "views/session_dialog.h"
 #include "views/session_view.h"
 
@@ -39,6 +40,10 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 	}
 
 	CreateMenus();
+
+	m_consoleDock = new QDockWidget("Log", this);
+	m_consoleDock->setWidget(Console::Instance());
+	addDockWidget(Qt::BottomDockWidgetArea, m_consoleDock);
 
 	m_sessionView = new SessionView(session, this);
 	m_sessionTabs->addTab(m_sessionView,
