@@ -20,18 +20,19 @@ QT += core gui widgets
 CONFIG -= release
 CONFIG += debug_and_release warn_on
 
-CONFIG(debug, debug|release) {
-	DESTDIR = debug
-} else {
-	DESTDIR = release
-}
-
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
-OBJECTS_DIR = $$DESTDIR/.obj
-MOC_DIR = $$DESTDIR/.moc
-RCC_DIR = $$DESTDIR/.qrc
-UI_DIR = $$DESTDIR/.ui
+Debug:DESTDIR = debug
+Debug:OBJECTS_DIR = debug/.obj
+Debug:MOC_DIR = debug/.moc
+Debug:RCC_DIR = debug/.qrc
+Debug:UI_DIR = debug/.ui
+
+Release:DESTDIR = release
+Release:OBJECTS_DIR = release/.obj
+Release:MOC_DIR = release/.moc
+Release:RCC_DIR = release/.qrc
+Release:UI_DIR = release/.ui
 
 INCLUDEPATH += src
 
