@@ -94,7 +94,7 @@ DS3BrowserItem::DS3BrowserItem(const QList<QVariant>& data,
 	: m_canFetchMore(true),
 	  m_data(data),
 	  m_bucketName(bucketName),
-	  m_maxKeys(5),
+	  m_maxKeys(1000),
 	  m_parent(parent),
 	  m_prefix(prefix)
 {
