@@ -55,7 +55,6 @@ SOURCES = \
 	src/main.cc \
 	src/main_window.cc \
 	src/lib/client.cc \
-	src/lib/logger.cc \
 	src/models/ds3_browser_model.cc \
 	src/models/session.cc \
 	src/views/browser.cc \

@@ -17,6 +17,7 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
+#include <QString>
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QWidget>
@@ -24,13 +25,20 @@
 class Console : public QWidget
 {
 public:
+	enum Level { DEBUG, INFO, WARNING, ERROR };
+	static const QString LEVEL_COLORS[];
+
 	static Console* Instance();
+
+	void Log(Level level, const QString& msg);
 
 private:
 	Console(QWidget* parent = 0);
 
 	static Console* s_instance;
 
+	QMutex* m_lock;;
+	Level m_logLevel;
 	QTextEdit* m_text;
 	QVBoxLayout* m_layout;
 };

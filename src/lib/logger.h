@@ -17,36 +17,12 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <QMutex>
-#include <QString>
-#include <QTextEdit>
+#include "views/console.h"
 
-#define LOG_DEBUG(msg)   LOG(Logger::DEBUG,   msg)
-#define LOG_INFO(msg)    LOG(Logger::INFO,    msg)
-#define LOG_WARNING(msg) LOG(Logger::WARNING, msg)
-#define LOG_ERROR(msg)   LOG(Logger::ERROR,   msg)
-#define LOG(level, msg)  Logger::Instance()->Log(level, msg)
-
-class Logger
-{
-public:
-	enum Level { DEBUG, INFO, WARNING, ERROR };
-	static const QString LEVEL_COLORS[];
-
-	static Logger* Instance();
-
-	void Log(Level level, const QString& msg);
-
-	void SetStream(QTextEdit* m_stream);
-
-private:
-	Logger();
-
-	static Logger* s_instance;
-
-	Level m_logLevel;
-	QTextEdit* m_stream;
-	QMutex* m_streamLock;
-};
+#define LOG_DEBUG(msg)   LOG(Console::DEBUG,   msg)
+#define LOG_INFO(msg)    LOG(Console::INFO,    msg)
+#define LOG_WARNING(msg) LOG(Console::WARNING, msg)
+#define LOG_ERROR(msg)   LOG(Console::ERROR,   msg)
+#define LOG(level, msg)  Console::Instance()->Log(level, msg)
 
 #endif

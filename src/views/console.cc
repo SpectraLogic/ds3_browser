@@ -17,6 +17,13 @@
 #include "lib/logger.h"
 #include "views/console.h"
 
+#ifdef NO_DEBUG
+#define DEFAULT_LOG_LEVEL INFO
+#else
+#define DEFAULT_LOG_LEVEL DEBUG
+#endif
+
+const QString Console::LEVEL_COLORS[] = { "Blue", "Black", "darkYellow", "Red" };
 Console* Console::s_instance = 0;
 
 Console*
@@ -24,17 +31,51 @@ Console::Instance()
 {
 	if (!s_instance) {
 		s_instance = new Console();
-		Logger::Instance()->SetStream(s_instance->m_text);
 	}
 	return s_instance;
 }
 
 Console::Console(QWidget* parent)
-	: QWidget(parent)
+	: QWidget(parent),
+	  m_lock(new QMutex),
+	  m_logLevel(DEFAULT_LOG_LEVEL)
 {
 	m_text = new QTextEdit();
 	m_text->setReadOnly(true);
 	m_layout = new QVBoxLayout(this);
 	m_layout->addWidget(m_text);
 	setLayout(m_layout);
+}
+
+void
+Console::Log(Level level, const QString& msg)
+{
+	if (level < m_logLevel) {
+		return;
+	}
+
+	QString fullMsg(msg);
+
+	QColor color;
+	switch (level) {
+	case DEBUG:
+		color = QColor("Blue");
+		break;
+	case INFO:
+		color = QColor("Black");
+		break;
+	case WARNING:
+		color = QColor(175, 175, 0);
+		break;
+	case ERROR:
+		color = QColor("Red");
+		break;
+	};
+
+	m_lock->lock();
+	QColor oldColor = m_text->textColor();
+	m_text->setTextColor(color);
+	m_text->append(fullMsg);
+	m_text->setTextColor(oldColor);
+	m_lock->unlock();
 }
