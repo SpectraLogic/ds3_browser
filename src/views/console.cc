@@ -24,6 +24,7 @@
 #endif
 
 const QString Console::LEVEL_COLORS[] = { "Blue", "Black", "darkYellow", "Red" };
+const unsigned int Console::MAX_LINES = 1000;
 Console* Console::s_instance = 0;
 
 Console*
@@ -38,7 +39,8 @@ Console::Instance()
 Console::Console(QWidget* parent)
 	: QWidget(parent),
 	  m_lock(new QMutex),
-	  m_logLevel(DEFAULT_LOG_LEVEL)
+	  m_logLevel(DEFAULT_LOG_LEVEL),
+	  m_numLines(0)
 {
 	m_text = new QTextEdit();
 	m_text->setReadOnly(true);
@@ -73,9 +75,21 @@ Console::Log(Level level, const QString& msg)
 	};
 
 	m_lock->lock();
-	QColor oldColor = m_text->textColor();
+	if (m_numLines >= MAX_LINES) {
+		m_text->moveCursor(QTextCursor::Start,
+				   QTextCursor::MoveAnchor);
+		m_text->moveCursor(QTextCursor::Down,
+				   QTextCursor::KeepAnchor);
+		m_text->moveCursor(QTextCursor::StartOfLine,
+				   QTextCursor::KeepAnchor);
+		m_text->textCursor().removeSelectedText();
+		m_numLines--;
+	}
+	m_text->moveCursor(QTextCursor::End,
+			   QTextCursor::MoveAnchor);
 	m_text->setTextColor(color);
 	m_text->append(fullMsg);
-	m_text->setTextColor(oldColor);
+	m_numLines++;
+	m_text->ensureCursorVisible();
 	m_lock->unlock();
 }

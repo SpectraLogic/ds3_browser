@@ -27,6 +27,7 @@ class Console : public QWidget
 public:
 	enum Level { DEBUG, INFO, WARNING, ERROR };
 	static const QString LEVEL_COLORS[];
+	static const unsigned int MAX_LINES;
 
 	static Console* Instance();
 
@@ -39,6 +40,7 @@ private:
 
 	QMutex* m_lock;;
 	Level m_logLevel;
+	unsigned int m_numLines;
 	QTextEdit* m_text;
 	QVBoxLayout* m_layout;
 };
