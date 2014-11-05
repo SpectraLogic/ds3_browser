@@ -16,6 +16,7 @@
 
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QSettings>
 
 #include "main_window.h"
 #include "models/session.h"
@@ -49,6 +50,25 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 	m_sessionTabs->addTab(m_sessionView,
 			      session->GetHost());
 	setCentralWidget(m_sessionTabs);
+
+	ReadSettings();
+}
+
+void
+MainWindow::closeEvent(QCloseEvent* event)
+{
+	QSettings settings;
+	settings.setValue("mainWindow/geometry", saveGeometry());
+	settings.setValue("mainWindow/windowState", saveState());
+	QMainWindow::closeEvent(event);
+}
+
+void
+MainWindow::ReadSettings()
+{
+	QSettings settings;
+	restoreGeometry(settings.value("mainWindow/geometry").toByteArray());
+	restoreState(settings.value("mainWindow/windowState").toByteArray());
 }
 
 Session*

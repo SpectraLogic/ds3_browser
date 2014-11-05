@@ -36,7 +36,12 @@ public:
 
 	inline bool IsFinished() const;
 
+protected:
+	void closeEvent(QCloseEvent* event);
+
 private:
+	void ReadSettings();
+
 	Session* CreateSession();
 	void CreateMenus();
 
