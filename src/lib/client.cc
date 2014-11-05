@@ -24,13 +24,13 @@ Client::Client(const Session* session)
 				   session->GetSecretKey().toUtf8().constData());
 
 	QString protocol = session->GetProtocolName();
-	QString endpoint = protocol + "://" + session->GetHost();
+	m_endpoint = protocol + "://" + session->GetHost();
 	QString port = session->GetPort();
-	if (!port.isEmpty()) {
-		endpoint += ":" + port;
+	if (!port.isEmpty() && port != "80" && port != "443") {
+		m_endpoint += ":" + port;
 	}
 
-	m_client = ds3_create_client(endpoint.toUtf8().constData(), m_creds);
+	m_client = ds3_create_client(m_endpoint.toUtf8().constData(), m_creds);
 }
 
 Client::~Client()
@@ -45,6 +45,7 @@ Client::GetService()
 {
 	ds3_get_service_response *response;
 	ds3_request* request = ds3_init_get_service();
+	LOG_INFO("GET " + m_endpoint);
 	ds3_error* error = ds3_get_service(m_client,
 					   request,
 					   &response);
@@ -65,18 +66,28 @@ Client::GetBucket(const std::string& bucketName,
 {
 	ds3_get_bucket_response *response;
 	ds3_request* request = ds3_init_get_bucket(bucketName.c_str());
+	QString logMsg = "GET " + m_endpoint + "/" + QString::fromStdString(bucketName);
+	QStringList logQueryParams;
 	if (!prefix.empty()) {
 		ds3_request_set_prefix(request, prefix.c_str());
+		logQueryParams << "prefix=" + QString::fromStdString(prefix);
 	}
 	if (!delimiter.empty()) {
 		ds3_request_set_delimiter(request, delimiter.c_str());
+		logQueryParams << "delimiter=" + QString::fromStdString(delimiter);
 	}
 	if (!marker.empty()) {
 		ds3_request_set_marker(request, marker.c_str());
+		logQueryParams << "marker=" + QString::fromStdString(marker);
 	}
 	if (maxKeys > 0) {
 		ds3_request_set_max_keys(request, maxKeys);
+		logQueryParams << "max-keys=" + QString::number(maxKeys);
 	}
+	if (!logQueryParams.isEmpty()) {
+		logMsg += "&" + logQueryParams.join("&");
+	}
+	LOG_INFO(logMsg);
 	ds3_error* error = ds3_get_bucket(m_client,
 					  request,
 					  &response);
@@ -92,6 +103,7 @@ void
 Client::CreateBucket(const std::string& name)
 {
 	ds3_request* request = ds3_init_put_bucket(name.c_str());
+	LOG_INFO("PUT " + m_endpoint + "/" + QString::fromStdString(name));
 	ds3_error* error = ds3_put_bucket(m_client, request);
 	ds3_free_request(request);
 

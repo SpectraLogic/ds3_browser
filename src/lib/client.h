@@ -18,6 +18,7 @@
 #define CLIENT_H
 
 #include <string>
+#include <QString>
 
 #include <ds3.h>
 
@@ -39,6 +40,7 @@ public:
 	void CreateBucket(const std::string& name);
 
 private:
+	QString m_endpoint;
 	ds3_creds* m_creds;
 	ds3_client* m_client;
 };
