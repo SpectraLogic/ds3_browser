@@ -14,6 +14,8 @@
  * *****************************************************************************
  */
 
+#include <QDragEnterEvent>
+#include <QMimeData>
 #include <QMenu>
 
 #include "lib/client.h"
@@ -31,6 +33,8 @@ DS3Browser::DS3Browser(Session* session, QWidget* parent, Qt::WindowFlags flags)
 	m_model = new DS3BrowserModel(m_client, this);
 	m_model->SetView(m_treeView);
 	m_treeView->setModel(m_model);
+
+	m_treeView->setDragDropMode(QAbstractItemView::DropOnly);
 
 	connect(m_treeView, SIGNAL(clicked(const QModelIndex&)),
 		this, SLOT(OnModelItemClick(const QModelIndex&)));

@@ -34,6 +34,8 @@ HostBrowser::HostBrowser(QWidget* parent, Qt::WindowFlags flags)
 			   QDir::Hidden);
 	m_treeView->setModel(m_model);
 
+	m_treeView->setDragDropMode(QAbstractItemView::DragOnly);
+
 	m_treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 }
 

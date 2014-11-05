@@ -42,12 +42,18 @@ public:
 	int columnCount(const QModelIndex &parent = QModelIndex()) const;
 	QVariant data(const QModelIndex &index,
 		      int role = Qt::DisplayRole) const;
+	bool dropMimeData(const QMimeData* data,
+			  Qt::DropAction action,
+			  int row, int column,
+			  const QModelIndex& parent);
+	Qt::ItemFlags flags(const QModelIndex& index) const;
 	void fetchMore(const QModelIndex& parent);
 	bool hasChildren(const QModelIndex & parent = QModelIndex()) const;
 	QVariant headerData(int section, Qt::Orientation orientation,
 			    int role = Qt::DisplayRole) const;
 	QModelIndex index(int row, int column = 0,
 			  const QModelIndex &parent = QModelIndex()) const;
+	QStringList mimeTypes() const;
 	QModelIndex parent(const QModelIndex &index) const;
 	bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex());
 	int rowCount(const QModelIndex &parent = QModelIndex()) const;

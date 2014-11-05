@@ -16,9 +16,11 @@
 
 #include <QDateTime>
 #include <QIcon>
+#include <QMimeData>
 #include <QSet>
 
 #include "lib/client.h"
+#include "lib/logger.h"
 #include "models/ds3_browser_model.h"
 
 // Must match m_rootItem->m_data;
@@ -321,6 +323,27 @@ DS3BrowserModel::data(const QModelIndex &index, int role) const
 	return data;
 }
 
+bool
+DS3BrowserModel::dropMimeData(const QMimeData* data,
+			      Qt::DropAction /*action*/,
+			      int /*row*/, int /*column*/,
+			      const QModelIndex& /*parent*/)
+{
+	QList<QUrl> urls = data->urls();
+	for (int i = 0; i < urls.count(); i++) {
+		LOG_DEBUG("Dropping file: " + urls[i].url());
+	}
+	return false;
+}
+
+Qt::ItemFlags
+DS3BrowserModel::flags(const QModelIndex& index) const
+{
+	Qt::ItemFlags flags = QAbstractItemModel::flags(index);
+	flags |= Qt::ItemIsDropEnabled;
+	return flags;
+}
+
 void
 DS3BrowserModel::fetchMore(const QModelIndex& parent)
 {
@@ -400,6 +423,14 @@ DS3BrowserModel::index(int row, int column, const QModelIndex &parent) const
 	} else {
 		return QModelIndex();
 	}
+}
+
+QStringList
+DS3BrowserModel::mimeTypes() const
+{
+	QStringList types = QAbstractItemModel::mimeTypes();
+	types << "text/uri-list";
+	return types;
 }
 
 QModelIndex
