@@ -24,6 +24,8 @@
 
 class Console : public QWidget
 {
+	Q_OBJECT
+
 public:
 	enum Level { DEBUG, INFO, WARNING, ERROR };
 	static const QString LEVEL_COLORS[];
@@ -32,6 +34,9 @@ public:
 	static Console* Instance();
 
 	void Log(Level level, const QString& msg);
+
+signals:
+	void MessageReadyToLog(int level, const QString& msg);
 
 private:
 	Console(QWidget* parent = 0);
@@ -43,6 +48,9 @@ private:
 	unsigned int m_numLines;
 	QTextEdit* m_text;
 	QVBoxLayout* m_layout;
+
+private slots:
+	void LogPrivate(int level, const QString& msg);
 };
 
 #endif

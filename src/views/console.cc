@@ -47,6 +47,9 @@ Console::Console(QWidget* parent)
 	m_layout = new QVBoxLayout(this);
 	m_layout->addWidget(m_text);
 	setLayout(m_layout);
+
+	connect(this, SIGNAL(MessageReadyToLog(int, const QString&)),
+		this, SLOT(LogPrivate(int, const QString&)));
 }
 
 void
@@ -56,6 +59,12 @@ Console::Log(Level level, const QString& msg)
 		return;
 	}
 
+	emit MessageReadyToLog(level, msg);
+}
+
+void
+Console::LogPrivate(int level, const QString& msg)
+{
 	QString fullMsg(msg);
 
 	QColor color;
