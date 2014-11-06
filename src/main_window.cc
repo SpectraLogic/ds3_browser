@@ -43,6 +43,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 	CreateMenus();
 
 	m_consoleDock = new QDockWidget("Log", this);
+	m_consoleDock->setObjectName("console dock");
 	m_consoleDock->setWidget(Console::Instance());
 	addDockWidget(Qt::BottomDockWidgetArea, m_consoleDock);
 
