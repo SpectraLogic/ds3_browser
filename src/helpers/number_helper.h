@@ -17,6 +17,7 @@
 #ifndef NUMBER_HELPER_H
 #define NUMBER_HELPER_H
 
+#include <stdint.h>
 #include <QString>
 
 class NumberHelper
