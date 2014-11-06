@@ -34,6 +34,8 @@ Browser::Browser(QWidget* parent, Qt::WindowFlags flags)
 	connect(m_treeView, SIGNAL(doubleClicked(const QModelIndex&)),
 		this, SLOT(OnModelItemDoubleClick(const QModelIndex&)));
 
+	m_treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+
 	// Remove the focus rectangle around the tree view on OSX.
 	m_treeView->setAttribute(Qt::WA_MacShowFocusRect, 0);
 

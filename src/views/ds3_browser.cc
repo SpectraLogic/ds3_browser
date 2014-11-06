@@ -35,6 +35,7 @@ DS3Browser::DS3Browser(Session* session, QWidget* parent, Qt::WindowFlags flags)
 	m_treeView->setModel(m_model);
 
 	m_treeView->setDragDropMode(QAbstractItemView::DropOnly);
+	m_treeView->setDropIndicatorShown(true);
 
 	connect(m_treeView, SIGNAL(clicked(const QModelIndex&)),
 		this, SLOT(OnModelItemClick(const QModelIndex&)));
