@@ -73,33 +73,8 @@ HostBrowser::GoToHome()
 }
 
 void
-HostBrowser::OnContextMenuRequested(const QPoint& pos)
+HostBrowser::OnContextMenuRequested(const QPoint& /*pos*/)
 {
-	QMenu menu;
-	QAction uploadAction("Upload", &menu);
-	QModelIndex itemUnderCursor = m_treeView->indexAt(pos);
-	if (!itemUnderCursor.isValid())
-	{
-		// User didn't right-click on a row in the tree view
-		return;
-	}
-
-	menu.addAction(&uploadAction);
-	QAction* selectedAction = menu.exec(QCursor::pos());
-	if (!selectedAction)
-	{
-		return;
-	}
-
-	if (selectedAction == &uploadAction)
-	{
-		QList<QString> filesToUpload = GetSelectedFiles();
-		LOG_DEBUG("files to upload...");
-		foreach(QString file, filesToUpload)
-		{
-			LOG_DEBUG(file);
-		}
-	}
 }
 
 void

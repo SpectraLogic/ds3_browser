@@ -41,7 +41,6 @@ private:
 	QList<QString> GetSelectedFiles() const;
 
 	QAction* m_homeAction;
-	QAction* m_uploadAction;
 	QFileSystemModel* m_model;
 
 private slots:
