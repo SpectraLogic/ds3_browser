@@ -20,6 +20,7 @@
 #include "views/browser.h"
 
 class DS3BrowserModel;
+class DS3BrowserTreeViewStyle;
 class Client;
 class Session;
 
@@ -51,6 +52,7 @@ private:
 	void CreateBucket();
 
 	DS3BrowserModel* m_model;
+	DS3BrowserTreeViewStyle* m_treeViewStyle;
 	Client* m_client;
 };
 

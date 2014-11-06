@@ -327,20 +327,27 @@ bool
 DS3BrowserModel::dropMimeData(const QMimeData* data,
 			      Qt::DropAction /*action*/,
 			      int /*row*/, int /*column*/,
-			      const QModelIndex& /*parent*/)
+			      const QModelIndex& parentIndex)
 {
+	DS3BrowserItem* parent = IndexToItem(parentIndex);
 	QList<QUrl> urls = data->urls();
 	for (int i = 0; i < urls.count(); i++) {
-		LOG_DEBUG("Dropping file: " + urls[i].url());
+		LOG_DEBUG("Dropping file: " + urls[i].url() + " in " + parent->GetPath());
 	}
-	return false;
+	return true;
 }
 
 Qt::ItemFlags
 DS3BrowserModel::flags(const QModelIndex& index) const
 {
 	Qt::ItemFlags flags = QAbstractItemModel::flags(index);
-	flags |= Qt::ItemIsDropEnabled;
+	if (index.isValid()) {
+		DS3BrowserItem* item = IndexToItem(index);
+		QVariant kind = item->GetData(KIND);
+		if (kind == BUCKET || kind == FOLDER) {
+			flags |= Qt::ItemIsDropEnabled;
+		}
+	}
 	return flags;
 }
 
