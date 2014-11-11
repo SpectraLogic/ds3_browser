@@ -18,7 +18,9 @@
 #define CLIENT_H
 
 #include <string>
+#include <QList>
 #include <QString>
+#include <QUrl>
 
 #include <ds3.h>
 
@@ -38,6 +40,14 @@ public:
 					   uint32_t maxKeys = 0);
 
 	void CreateBucket(const std::string& name);
+
+	void BulkPut(const QString& bucketName,
+		     const QString& prefix,
+		     const QList<QUrl> urls);
+
+	void PutObject(const QString& bucket,
+		       const QString& object,
+		       const QString& fileName);
 
 private:
 	QString m_endpoint;

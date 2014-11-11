@@ -14,6 +14,11 @@
  * *****************************************************************************
  */
 
+#include <stdlib.h>
+#include <string.h>
+#include <QFileInfo>
+#include <QHash>
+
 #include "lib/client.h"
 #include "lib/logger.h"
 #include "models/session.h"
@@ -51,8 +56,10 @@ Client::GetService()
 					   &response);
 	ds3_free_request(request);
 
-	// TODO check the error
-	ds3_free_error(error);
+	if (error) {
+		// TODO Handle the error
+		ds3_free_error(error);
+	}
 
 	return response;
 }
@@ -93,8 +100,10 @@ Client::GetBucket(const std::string& bucketName,
 					  &response);
 	ds3_free_request(request);
 
-	// TODO check the error
-	ds3_free_error(error);
+	if (error) {
+		// TODO Handle the error
+		ds3_free_error(error);
+	}
 
 	return response;
 }
@@ -107,8 +116,105 @@ Client::CreateBucket(const std::string& name)
 	ds3_error* error = ds3_put_bucket(m_client, request);
 	ds3_free_request(request);
 
-	// TODO check the error
-	ds3_free_error(error);
+	if (error) {
+		// TODO Handle the error
+		ds3_free_error(error);
+	}
+}
 
-	return;
+
+void
+Client::BulkPut(const QString& bucketName,
+		const QString& prefix,
+		const QList<QUrl> urls)
+{
+	uint64_t numFiles = urls.count();
+	ds3_bulk_object_list *bulkObjList = (ds3_bulk_object_list*)calloc(1, sizeof(ds3_bulk_object_list));
+	bulkObjList->list = (ds3_bulk_object*)malloc(numFiles * sizeof(ds3_bulk_object));
+	bulkObjList->size = numFiles;
+	QHash<QString, QString> objMap;
+	QString normPrefix = prefix;
+	if (!normPrefix.isEmpty()) {
+		normPrefix.replace(QRegExp("/$"), "");
+		normPrefix += "/";
+	}
+	for (uint64_t i = 0; i < numFiles; i++) {
+		QString filePath = urls[i].path();
+		QFileInfo fileInfo(filePath);
+		QString fileName = fileInfo.fileName();
+		QString objName = normPrefix + fileName;
+		uint64_t fileSize = 0;
+		if (fileInfo.isDir()) {
+			objName.replace(QRegExp("/$"), "");
+			objName += "/";
+			// TODO Recursively get all files in dir
+		} else {
+			fileSize = fileInfo.size();
+		}
+		objMap.insert(objName, filePath);
+		ds3_bulk_object* bulkObj = &bulkObjList->list[i];
+		bulkObj->name = ds3_str_init(objName.toUtf8().constData());
+		bulkObj->length = fileSize;
+		bulkObj->offset = 0;
+	}
+
+	ds3_request* request = ds3_init_put_bulk(bucketName.toLocal8Bit().constData(), bulkObjList);
+	ds3_bulk_response *response;
+	ds3_error* error = ds3_bulk(m_client, request, &response);
+	ds3_free_request(request);
+	ds3_free_bulk_object_list(bulkObjList);
+
+	if (error) {
+		// TODO Handle the error
+		ds3_free_error(error);
+	}
+
+	for (size_t i = 0; i < response->list_size; i++) {
+		ds3_bulk_object_list* list = response->list[i];
+		for (uint64_t j = 0; j < list->size; j++) {
+			ds3_bulk_object* bulkObj = &list->list[j];
+			QString objName = QString(bulkObj->name->value);
+			// TODO objMap only holds objects for URLs that were
+			//      passed in and not files that were discovered
+			//      underneath directories.  Account for that.
+			QString filePath = objMap[objName];
+			PutObject(bucketName, objName, filePath);
+		}
+	}
+
+	ds3_free_bulk_response(response);
+}
+
+void
+Client::PutObject(const QString& bucket,
+		  const QString& object,
+		  const QString& fileName)
+{
+	LOG_DEBUG("PUT OBJECT: " + object + ", FILE: " + fileName);
+
+	QFileInfo fileInfo(fileName);
+	ds3_request* request = ds3_init_put_object(bucket.toUtf8().constData(),
+						   object.toUtf8().constData(),
+						   fileInfo.size());
+	ds3_error* error = NULL;
+	if (fileInfo.isDir()) {
+		// "folder" objects don't have a size nor do they have any
+		// data associated with them
+		error = ds3_put_object(m_client, request, NULL, NULL);
+	} else {
+		FILE* file = fopen(fileName.toUtf8().constData(), "r");
+		if (file == NULL) {
+			LOG_ERROR("PUT object failed: unable to open file " + fileName);
+		} else {
+			error = ds3_put_object(m_client, request,
+					       file, ds3_read_from_file);
+			fclose(file);
+		}
+	}
+	ds3_free_request(request);
+
+	if (error) {
+		// TODO Handle the error
+		ds3_free_error(error);
+	}
 }

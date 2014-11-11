@@ -330,10 +330,14 @@ DS3BrowserModel::dropMimeData(const QMimeData* data,
 			      const QModelIndex& parentIndex)
 {
 	DS3BrowserItem* parent = IndexToItem(parentIndex);
-	QList<QUrl> urls = data->urls();
-	for (int i = 0; i < urls.count(); i++) {
-		LOG_DEBUG("Dropping file: " + urls[i].url() + " in " + parent->GetPath());
+	QString bucketName = parent->GetBucketName();
+	QString prefix = parent->GetPrefix();
+	if (parent->GetData(KIND) != BUCKET) {
+		prefix += parent->GetData(NAME).toString();
 	}
+	prefix.replace(QRegExp("^/"), "");
+	QList<QUrl> urls = data->urls();
+	m_client->BulkPut(bucketName, prefix, urls);
 	return true;
 }
 
