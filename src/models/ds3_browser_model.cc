@@ -683,10 +683,12 @@ DS3BrowserModel::FetchMoreObjects(const QModelIndex& parent)
 
 		objectData << OBJECT;
 
-		rawCreated = rawObject.last_modified->value;
-		createdDT = QDateTime::fromString(QString(QLatin1String(rawCreated)),
-						  REST_TIMESTAMP_FORMAT);
-		created = createdDT.toString(VIEW_TIMESTAMP_FORMAT);
+		if (rawObject.last_modified) {
+			rawCreated = rawObject.last_modified->value;
+			createdDT = QDateTime::fromString(QString(QLatin1String(rawCreated)),
+							  REST_TIMESTAMP_FORMAT);
+			created = createdDT.toString(VIEW_TIMESTAMP_FORMAT);
+		}
 		objectData << created;
 
 		object = new DS3BrowserItem(objectData,
