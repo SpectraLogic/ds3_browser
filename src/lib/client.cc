@@ -16,6 +16,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <QDir>
 #include <QFileInfo>
 #include <QHash>
 
@@ -144,6 +145,9 @@ Client::BulkPut(const QString& bucketName,
 	}
 	for (uint64_t i = 0; i < numFiles; i++) {
 		QString filePath = urls[i].path();
+		// filePath could be either /foo or /foo/ if it's a directory.
+		// Run it through QDir to normalize it to the former.
+		filePath = QDir(filePath).path();
 		QFileInfo fileInfo(filePath);
 		QString fileName = fileInfo.fileName();
 		QString objName = normPrefix + fileName;
