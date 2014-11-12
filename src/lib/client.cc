@@ -163,7 +163,7 @@ Client::BulkPut(const QString& bucketName,
 	}
 
 	ds3_request* request = ds3_init_put_bulk(bucketName.toLocal8Bit().constData(), bulkObjList);
-	ds3_bulk_response *response;
+	ds3_bulk_response *response = NULL;
 	ds3_error* error = ds3_bulk(m_client, request, &response);
 	ds3_free_request(request);
 	ds3_free_bulk_object_list(bulkObjList);
@@ -171,6 +171,12 @@ Client::BulkPut(const QString& bucketName,
 	if (error) {
 		// TODO Handle the error
 		ds3_free_error(error);
+	}
+
+	if (response == NULL) {
+		// Bulk putting only empty folders will result in a 204
+		// response (no content) indicating there's nothing else to do.
+		return;
 	}
 
 	for (size_t i = 0; i < response->list_size; i++) {
