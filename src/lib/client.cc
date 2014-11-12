@@ -50,7 +50,7 @@ Client::GetService()
 {
 	ds3_get_service_response *response;
 	ds3_request* request = ds3_init_get_service();
-	LOG_INFO("GET " + m_endpoint);
+	LOG_INFO("Get Buckets (GET " + m_endpoint + ")");
 	ds3_error* error = ds3_get_service(m_client,
 					   request,
 					   &response);
@@ -73,7 +73,8 @@ Client::GetBucket(const std::string& bucketName,
 {
 	ds3_get_bucket_response *response;
 	ds3_request* request = ds3_init_get_bucket(bucketName.c_str());
-	QString logMsg = "GET " + m_endpoint + "/" + QString::fromStdString(bucketName);
+	QString logMsg = "List Objects (GET " + m_endpoint + "/";
+	logMsg += QString::fromStdString(bucketName);
 	QStringList logQueryParams;
 	if (!prefix.empty()) {
 		ds3_request_set_prefix(request, prefix.c_str());
@@ -94,6 +95,7 @@ Client::GetBucket(const std::string& bucketName,
 	if (!logQueryParams.isEmpty()) {
 		logMsg += "&" + logQueryParams.join("&");
 	}
+	logMsg += ")";
 	LOG_INFO(logMsg);
 	ds3_error* error = ds3_get_bucket(m_client,
 					  request,
@@ -112,7 +114,9 @@ void
 Client::CreateBucket(const std::string& name)
 {
 	ds3_request* request = ds3_init_put_bucket(name.c_str());
-	LOG_INFO("PUT " + m_endpoint + "/" + QString::fromStdString(name));
+	QString qname = QString::fromStdString(name);
+	LOG_INFO("Create Bucket " + qname + " (PUT " + m_endpoint + "/" + \
+		 qname + ")");
 	ds3_error* error = ds3_put_bucket(m_client, request);
 	ds3_free_request(request);
 
