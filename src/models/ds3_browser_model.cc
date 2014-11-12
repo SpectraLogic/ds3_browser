@@ -19,6 +19,7 @@
 #include <QMimeData>
 #include <QSet>
 
+#include "helpers/number_helper.h"
 #include "lib/client.h"
 #include "lib/logger.h"
 #include "models/ds3_browser_model.h"
@@ -184,7 +185,12 @@ DS3BrowserItem::GetColumnCount() const
 QVariant
 DS3BrowserItem::GetData(int column) const
 {
-	return m_data.value(column);
+	QVariant data = m_data.value(column);
+	if (column == SIZE && data != "Size" && data != "--") {
+		qulonglong size = data.toULongLong();
+		data = QVariant(NumberHelper::ToHumanSize(size));
+	}
+	return data;
 }
 
 inline DS3BrowserItem*

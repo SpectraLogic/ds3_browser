@@ -39,6 +39,7 @@ INCLUDEPATH += src
 
 HEADERS = \
 	src/main_window.h \
+	src/helpers/number_helper.h \
 	src/lib/client.h \
 	src/lib/logger.h \
 	src/models/ds3_browser_model.h \
@@ -54,6 +55,7 @@ HEADERS = \
 SOURCES = \
 	src/main.cc \
 	src/main_window.cc \
+	src/helpers/number_helper.cc \
 	src/lib/client.cc \
 	src/models/ds3_browser_model.cc \
 	src/models/session.cc \
