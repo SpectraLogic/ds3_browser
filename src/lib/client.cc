@@ -134,9 +134,7 @@ Client::BulkPut(const QString& bucketName,
 		const QList<QUrl> urls)
 {
 	uint64_t numFiles = urls.count();
-	ds3_bulk_object_list *bulkObjList = (ds3_bulk_object_list*)calloc(1, sizeof(ds3_bulk_object_list));
-	bulkObjList->list = (ds3_bulk_object*)malloc(numFiles * sizeof(ds3_bulk_object));
-	bulkObjList->size = numFiles;
+	ds3_bulk_object_list *bulkObjList = ds3_init_bulk_object_list(numFiles);
 	QHash<QString, QString> objMap;
 	QString normPrefix = prefix;
 	if (!normPrefix.isEmpty()) {
