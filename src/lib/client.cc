@@ -142,7 +142,7 @@ Client::BulkPut(const QString& bucketName,
 		normPrefix += "/";
 	}
 	for (uint64_t i = 0; i < numFiles; i++) {
-		QString filePath = urls[i].path();
+		QString filePath = urls[i].toLocalFile();
 		// filePath could be either /foo or /foo/ if it's a directory.
 		// Run it through QDir to normalize it to the former.
 		filePath = QDir(filePath).path();
@@ -214,7 +214,8 @@ Client::PutObject(const QString& bucket,
 		// data associated with them
 		error = ds3_put_object(m_client, request, NULL, NULL);
 	} else {
-		FILE* file = fopen(fileName.toUtf8().constData(), "r");
+		QString nativeFileName = QDir::toNativeSeparators(fileName);
+		FILE* file = fopen(nativeFileName.toUtf8().constData(), "r");
 		if (file == NULL) {
 			LOG_ERROR("PUT object failed: unable to open file " + fileName);
 		} else {
