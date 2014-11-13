@@ -24,6 +24,8 @@
 #include "lib/logger.h"
 #include "models/session.h"
 
+static size_t read_from_qfile(void* buffer, size_t size, size_t count, void* user_data);
+
 Client::Client(const Session* session)
 {
 	m_creds = ds3_create_creds(session->GetAccessId().toUtf8().constData(),
@@ -214,14 +216,12 @@ Client::PutObject(const QString& bucket,
 		// data associated with them
 		error = ds3_put_object(m_client, request, NULL, NULL);
 	} else {
-		QString nativeFileName = QDir::toNativeSeparators(fileName);
-		FILE* file = fopen(nativeFileName.toUtf8().constData(), "r");
-		if (file == NULL) {
-			LOG_ERROR("PUT object failed: unable to open file " + fileName);
+		QFile file(fileName);
+		if (file.open(QIODevice::ReadOnly)) {
+			error = ds3_put_object(m_client, request, &file, read_from_qfile);
+			file.close();
 		} else {
-			error = ds3_put_object(m_client, request,
-					       file, ds3_read_from_file);
-			fclose(file);
+			LOG_ERROR("PUT object failed: unable to open file " + fileName);
 		}
 	}
 	ds3_free_request(request);
@@ -230,4 +230,11 @@ Client::PutObject(const QString& bucket,
 		// TODO Handle the error
 		ds3_free_error(error);
 	}
+}
+
+static size_t
+read_from_qfile(void* buffer, size_t size, size_t count, void* user_data)
+{
+	QFile* qfile = (QFile*)user_data;
+	return (qfile->read((char*)buffer, size * count));
 }
