@@ -17,12 +17,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <QDir>
+#include <QDirIterator>
 #include <QFileInfo>
 #include <QHash>
 
 #include "lib/client.h"
 #include "lib/logger.h"
 #include "models/session.h"
+
+// The S3 server imposes this limit
+const uint64_t Client::MAX_NUM_BULK_PUT_OBJECTS = 500000;
 
 static size_t read_from_qfile(void* buffer, size_t size, size_t count, void* user_data);
 
@@ -129,21 +133,29 @@ Client::CreateBucket(const std::string& name)
 	}
 }
 
-
+// TODO Paginate request if more than MAX_NUM_BULK_PUT_OBJECTS files
 void
 Client::BulkPut(const QString& bucketName,
 		const QString& prefix,
 		const QList<QUrl> urls)
 {
-	uint64_t numFiles = urls.count();
-	ds3_bulk_object_list *bulkObjList = ds3_init_bulk_object_list(numFiles);
+	uint64_t numFiles = 0;
+	QString truncMsg = "Truncating request to " + \
+			   QString::number(MAX_NUM_BULK_PUT_OBJECTS) + \
+			   " objects";
 	QHash<QString, QString> objMap;
 	QString normPrefix = prefix;
 	if (!normPrefix.isEmpty()) {
 		normPrefix.replace(QRegExp("/$"), "");
 		normPrefix += "/";
 	}
-	for (uint64_t i = 0; i < numFiles; i++) {
+	int i;
+	for (i = 0; i < urls.count(); i++) {
+		if (numFiles >= MAX_NUM_BULK_PUT_OBJECTS) {
+			LOG_WARNING(truncMsg);
+			break;
+		}
+		numFiles++;
 		QString filePath = urls[i].toLocalFile();
 		// filePath could be either /foo or /foo/ if it's a directory.
 		// Run it through QDir to normalize it to the former.
@@ -151,19 +163,49 @@ Client::BulkPut(const QString& bucketName,
 		QFileInfo fileInfo(filePath);
 		QString fileName = fileInfo.fileName();
 		QString objName = normPrefix + fileName;
-		uint64_t fileSize = 0;
 		if (fileInfo.isDir()) {
-			objName.replace(QRegExp("/$"), "");
 			objName += "/";
-			// TODO Recursively get all files in dir
-		} else {
-			fileSize = fileInfo.size();
+
+			QDirIterator it(filePath,
+					QDir::AllDirs | QDir::Files | QDir::Hidden | QDir::Readable | QDir::System | QDir::NoDotAndDotDot,
+					QDirIterator::Subdirectories);
+			while (it.hasNext()) {
+				if (numFiles >= MAX_NUM_BULK_PUT_OBJECTS) {
+					LOG_WARNING(truncMsg);
+					break;
+				}
+				numFiles++;
+				QString subFilePath = it.next();
+				QFileInfo subFileInfo = it.fileInfo();
+				QString subFileName = subFilePath;
+				subFileName.replace(QRegExp("^" + filePath + "/"), "");
+				QString subObjName = objName + subFileName;
+				if (subFileInfo.isDir()) {
+					subObjName += "/";
+				}
+				objMap.insert(subObjName, subFilePath);
+			}
 		}
 		objMap.insert(objName, filePath);
+	}
+
+	ds3_bulk_object_list *bulkObjList = ds3_init_bulk_object_list(numFiles);
+
+	QHash<QString, QString>::const_iterator hi;
+	i = 0;
+	for (hi = objMap.constBegin(); hi != objMap.constEnd(); hi++) {
 		ds3_bulk_object* bulkObj = &bulkObjList->list[i];
+		QString objName = hi.key();
+		QString filePath = hi.value();
+		QFileInfo fileInfo(filePath);
+		uint64_t fileSize = 0;
+		if (!fileInfo.isDir()) {
+			fileSize = fileInfo.size();
+		}
 		bulkObj->name = ds3_str_init(objName.toUtf8().constData());
 		bulkObj->length = fileSize;
 		bulkObj->offset = 0;
+		i++;
 	}
 
 	ds3_request* request = ds3_init_put_bulk(bucketName.toLocal8Bit().constData(), bulkObjList);
@@ -183,10 +225,10 @@ Client::BulkPut(const QString& bucketName,
 		return;
 	}
 
-	for (size_t i = 0; i < response->list_size; i++) {
-		ds3_bulk_object_list* list = response->list[i];
-		for (uint64_t j = 0; j < list->size; j++) {
-			ds3_bulk_object* bulkObj = &list->list[j];
+	for (size_t j = 0; j < response->list_size; j++) {
+		ds3_bulk_object_list* list = response->list[j];
+		for (uint64_t k = 0; k < list->size; k++) {
+			ds3_bulk_object* bulkObj = &list->list[k];
 			QString objName = QString(bulkObj->name->value);
 			// TODO objMap only holds objects for URLs that were
 			//      passed in and not files that were discovered

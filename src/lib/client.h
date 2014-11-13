@@ -29,6 +29,8 @@ class Session;
 class Client
 {
 public:
+	static const uint64_t MAX_NUM_BULK_PUT_OBJECTS;
+
 	Client(const Session* session);
 	~Client();
 
