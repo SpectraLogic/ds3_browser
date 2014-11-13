@@ -683,6 +683,9 @@ DS3BrowserModel::FetchMoreObjects(const QModelIndex& parent)
 		ds3_object rawObject = response->objects[i];
 
 		nextName = QString(QLatin1String(rawObject.name->value));
+		if (nextName == prefix) {
+			continue;
+		}
 		nextName.replace(QRegExp("^" + prefix), "");
 		objectData << nextName;
 
