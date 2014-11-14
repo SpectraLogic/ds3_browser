@@ -17,7 +17,6 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include <string>
 #include <QList>
 #include <QString>
 #include <QUrl>
@@ -35,13 +34,13 @@ public:
 	~Client();
 
 	ds3_get_service_response* GetService();
-	ds3_get_bucket_response* GetBucket(const std::string& bucketName,
-					   const std::string& prefix = std::string(),
-					   const std::string& delimiter = std::string(),
-					   const std::string& marker = std::string(),
+	ds3_get_bucket_response* GetBucket(const QString& bucketName,
+					   const QString& prefix,
+					   const QString& delimiter,
+					   const QString& marker,
 					   uint32_t maxKeys = 0);
 
-	void CreateBucket(const std::string& name);
+	void CreateBucket(const QString& name);
 
 	void BulkPut(const QString& bucketName,
 		     const QString& prefix,

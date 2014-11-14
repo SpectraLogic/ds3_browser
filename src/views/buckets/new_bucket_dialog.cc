@@ -84,5 +84,5 @@ NewBucketDialog::UpdateBucket()
 void
 NewBucketDialog::CreateBucket()
 {
-	m_client->CreateBucket(m_bucket.toUtf8().constData());
+	m_client->CreateBucket(m_bucket);
 }

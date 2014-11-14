@@ -15,7 +15,6 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
 #include <QDir>
 #include <QDirIterator>
 #include <QFileInfo>
@@ -72,28 +71,28 @@ Client::GetService()
 }
 
 ds3_get_bucket_response*
-Client::GetBucket(const std::string& bucketName,
-		  const std::string& prefix,
-		  const std::string& delimiter,
-		  const std::string& marker,
+Client::GetBucket(const QString& bucketName,
+		  const QString& prefix,
+		  const QString& delimiter,
+		  const QString& marker,
 		  uint32_t maxKeys)
 {
 	ds3_get_bucket_response *response;
-	ds3_request* request = ds3_init_get_bucket(bucketName.c_str());
+	ds3_request* request = ds3_init_get_bucket(bucketName.toUtf8().constData());
 	QString logMsg = "List Objects (GET " + m_endpoint + "/";
-	logMsg += QString::fromStdString(bucketName);
+	logMsg += bucketName;
 	QStringList logQueryParams;
-	if (!prefix.empty()) {
-		ds3_request_set_prefix(request, prefix.c_str());
-		logQueryParams << "prefix=" + QString::fromStdString(prefix);
+	if (!prefix.isEmpty()) {
+		ds3_request_set_prefix(request, prefix.toUtf8().constData());
+		logQueryParams << "prefix=" + prefix;
 	}
-	if (!delimiter.empty()) {
-		ds3_request_set_delimiter(request, delimiter.c_str());
-		logQueryParams << "delimiter=" + QString::fromStdString(delimiter);
+	if (!delimiter.isEmpty()) {
+		ds3_request_set_delimiter(request, delimiter.toUtf8().constData());
+		logQueryParams << "delimiter=" + delimiter;
 	}
-	if (!marker.empty()) {
-		ds3_request_set_marker(request, marker.c_str());
-		logQueryParams << "marker=" + QString::fromStdString(marker);
+	if (!marker.isEmpty()) {
+		ds3_request_set_marker(request, marker.toUtf8().constData());
+		logQueryParams << "marker=" + marker;
 	}
 	if (maxKeys > 0) {
 		ds3_request_set_max_keys(request, maxKeys);
@@ -118,12 +117,11 @@ Client::GetBucket(const std::string& bucketName,
 }
 
 void
-Client::CreateBucket(const std::string& name)
+Client::CreateBucket(const QString& name)
 {
-	ds3_request* request = ds3_init_put_bucket(name.c_str());
-	QString qname = QString::fromStdString(name);
-	LOG_INFO("Create Bucket " + qname + " (PUT " + m_endpoint + "/" + \
-		 qname + ")");
+	ds3_request* request = ds3_init_put_bucket(name.toUtf8().constData());
+	LOG_INFO("Create Bucket " + name + " (PUT " + m_endpoint + "/" + \
+		 name + ")");
 	ds3_error* error = ds3_put_bucket(m_client, request);
 	ds3_free_request(request);
 

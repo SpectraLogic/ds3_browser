@@ -625,11 +625,10 @@ DS3BrowserModel::FetchMoreObjects(const QModelIndex& parent)
 		prefix += name + "/";
 	}
 
-	std::string bucketNameS = bucketName.toUtf8().constData();
 	uint32_t maxKeys = parentItem->GetMaxKeys();
-	std::string nextMarker = parentItem->GetNextMarker().toUtf8().constData();
-	ds3_get_bucket_response* response = m_client->GetBucket(bucketNameS,
-								prefix.toUtf8().constData(),
+	QString nextMarker = parentItem->GetNextMarker();
+	ds3_get_bucket_response* response = m_client->GetBucket(bucketName,
+								prefix,
 								"/",
 								nextMarker,
 								maxKeys);
