@@ -62,9 +62,13 @@ public:
 
 	bool IsBucketOrFolder(const QModelIndex& index) const;
 	bool IsBreak(const QModelIndex& index) const;
+	bool IsFetching(const QModelIndex& parent) const;
 	QString GetPath(const QModelIndex& index) const;
 	void Refresh(const QModelIndex& rootIndex = QModelIndex());
 	void SetView(QTreeView* view);
+
+public slots:
+	void HandleGetServiceResponse();
 
 private:
 	void FetchMoreBuckets(const QModelIndex& parent);

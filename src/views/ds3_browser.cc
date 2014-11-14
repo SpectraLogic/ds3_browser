@@ -151,6 +151,10 @@ void
 DS3Browser::Refresh()
 {
 	QModelIndex index = m_treeView->rootIndex();
+	if (m_model->IsFetching(index)) {
+		return;
+	}
+
 	m_model->Refresh(index);
 	QString path = IndexToPath(index);
 	UpdatePathLabel(path);

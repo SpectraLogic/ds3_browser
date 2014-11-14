@@ -14,49 +14,31 @@
  * *****************************************************************************
  */
 
-#ifndef CLIENT_H
-#define CLIENT_H
+#ifndef GET_SERVICE_WATCHER_H
+#define GET_SERVICE_WATCHER_H
 
 #include <QFuture>
-#include <QList>
-#include <QString>
-#include <QUrl>
+#include <QFutureWatcher>
+#include <QModelIndex>
 
 #include <ds3.h>
 
-class Session;
-
-class Client
+class GetServiceWatcher : public QFutureWatcher<ds3_get_service_response*>
 {
 public:
-	static const uint64_t MAX_NUM_BULK_PUT_OBJECTS;
+	GetServiceWatcher(const QModelIndex& parentModelIndex,
+			  QObject* parent = 0);
 
-	Client(const Session* session);
-	~Client();
-
-	QFuture<ds3_get_service_response*> GetService();
-	ds3_get_bucket_response* GetBucket(const QString& bucketName,
-					   const QString& prefix,
-					   const QString& delimiter,
-					   const QString& marker,
-					   uint32_t maxKeys = 0);
-
-	void CreateBucket(const QString& name);
-
-	void BulkPut(const QString& bucketName,
-		     const QString& prefix,
-		     const QList<QUrl> urls);
-
-	void PutObject(const QString& bucket,
-		       const QString& object,
-		       const QString& fileName);
+	const QModelIndex& GetParentModelIndex() const;
 
 private:
-	ds3_get_service_response* DoGetService();
-
-	QString m_endpoint;
-	ds3_creds* m_creds;
-	ds3_client* m_client;
+	const QModelIndex m_parentModelIndex;
 };
+
+inline const QModelIndex&
+GetServiceWatcher::GetParentModelIndex() const
+{
+	return m_parentModelIndex;
+}
 
 #endif

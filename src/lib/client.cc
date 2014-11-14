@@ -15,6 +15,7 @@
  */
 
 #include <stdlib.h>
+#include <QtConcurrent>
 #include <QDir>
 #include <QDirIterator>
 #include <QFileInfo>
@@ -23,6 +24,8 @@
 #include "lib/client.h"
 #include "lib/logger.h"
 #include "models/session.h"
+
+using QtConcurrent::run;
 
 // The S3 server imposes this limit
 const uint64_t Client::MAX_NUM_BULK_PUT_OBJECTS = 500000;
@@ -51,23 +54,11 @@ Client::~Client()
 	ds3_cleanup();
 }
 
-ds3_get_service_response*
+QFuture<ds3_get_service_response*>
 Client::GetService()
 {
-	ds3_get_service_response *response;
-	ds3_request* request = ds3_init_get_service();
-	LOG_INFO("Get Buckets (GET " + m_endpoint + ")");
-	ds3_error* error = ds3_get_service(m_client,
-					   request,
-					   &response);
-	ds3_free_request(request);
-
-	if (error) {
-		// TODO Handle the error
-		ds3_free_error(error);
-	}
-
-	return response;
+	QFuture<ds3_get_service_response*> future = run(this, &Client::DoGetService);
+	return future;
 }
 
 ds3_get_bucket_response*
@@ -270,6 +261,25 @@ Client::PutObject(const QString& bucket,
 		// TODO Handle the error
 		ds3_free_error(error);
 	}
+}
+
+ds3_get_service_response*
+Client::DoGetService()
+{
+	ds3_get_service_response *response;
+	ds3_request* request = ds3_init_get_service();
+	LOG_INFO("Get Buckets (GET " + m_endpoint + ")");
+	ds3_error* error = ds3_get_service(m_client,
+					   request,
+					   &response);
+	ds3_free_request(request);
+
+	if (error) {
+		// TODO Handle the error
+		ds3_free_error(error);
+	}
+
+	return response;
 }
 
 static size_t
