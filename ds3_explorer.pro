@@ -42,6 +42,7 @@ HEADERS = \
 	src/helpers/number_helper.h \
 	src/lib/client.h \
 	src/lib/logger.h \
+	src/lib/watchers/get_bucket_watcher.h \
 	src/lib/watchers/get_service_watcher.h \
 	src/models/ds3_browser_model.h \
 	src/models/session.h \
@@ -58,6 +59,7 @@ SOURCES = \
 	src/main_window.cc \
 	src/helpers/number_helper.cc \
 	src/lib/client.cc \
+	src/lib/watchers/get_bucket_watcher.cc \
 	src/lib/watchers/get_service_watcher.cc \
 	src/models/ds3_browser_model.cc \
 	src/models/session.cc \

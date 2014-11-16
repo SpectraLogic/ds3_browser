@@ -27,6 +27,8 @@
 
 using QtConcurrent::run;
 
+const QString Client::DELIMITER = "/";
+
 // The S3 server imposes this limit
 const uint64_t Client::MAX_NUM_BULK_PUT_OBJECTS = 500000;
 
@@ -61,50 +63,17 @@ Client::GetService()
 	return future;
 }
 
-ds3_get_bucket_response*
-Client::GetBucket(const QString& bucketName,
-		  const QString& prefix,
-		  const QString& delimiter,
-		  const QString& marker,
-		  uint32_t maxKeys)
+QFuture<ds3_get_bucket_response*>
+Client::GetBucket(const QString& bucketName, const QString& prefix,
+		  const QString& marker, uint32_t maxKeys)
 {
-	ds3_get_bucket_response *response;
-	ds3_request* request = ds3_init_get_bucket(bucketName.toUtf8().constData());
-	QString logMsg = "List Objects (GET " + m_endpoint + "/";
-	logMsg += bucketName;
-	QStringList logQueryParams;
-	if (!prefix.isEmpty()) {
-		ds3_request_set_prefix(request, prefix.toUtf8().constData());
-		logQueryParams << "prefix=" + prefix;
-	}
-	if (!delimiter.isEmpty()) {
-		ds3_request_set_delimiter(request, delimiter.toUtf8().constData());
-		logQueryParams << "delimiter=" + delimiter;
-	}
-	if (!marker.isEmpty()) {
-		ds3_request_set_marker(request, marker.toUtf8().constData());
-		logQueryParams << "marker=" + marker;
-	}
-	if (maxKeys > 0) {
-		ds3_request_set_max_keys(request, maxKeys);
-		logQueryParams << "max-keys=" + QString::number(maxKeys);
-	}
-	if (!logQueryParams.isEmpty()) {
-		logMsg += "&" + logQueryParams.join("&");
-	}
-	logMsg += ")";
-	LOG_INFO(logMsg);
-	ds3_error* error = ds3_get_bucket(m_client,
-					  request,
-					  &response);
-	ds3_free_request(request);
-
-	if (error) {
-		// TODO Handle the error
-		ds3_free_error(error);
-	}
-
-	return response;
+	QFuture<ds3_get_bucket_response*> future = run(this,
+						       &Client::DoGetBucket,
+						       bucketName,
+						       prefix,
+						       marker,
+						       maxKeys);
+	return future;
 }
 
 void
@@ -272,6 +241,47 @@ Client::DoGetService()
 	ds3_error* error = ds3_get_service(m_client,
 					   request,
 					   &response);
+	ds3_free_request(request);
+
+	if (error) {
+		// TODO Handle the error
+		ds3_free_error(error);
+	}
+
+	return response;
+}
+
+ds3_get_bucket_response*
+Client::DoGetBucket(const QString& bucketName, const QString& prefix,
+		    const QString& marker, uint32_t maxKeys)
+{
+	ds3_get_bucket_response *response;
+	ds3_request* request = ds3_init_get_bucket(bucketName.toUtf8().constData());
+	QString logMsg = "List Objects (GET " + m_endpoint + "/";
+	logMsg += bucketName;
+	QStringList logQueryParams;
+	if (!prefix.isEmpty()) {
+		ds3_request_set_prefix(request, prefix.toUtf8().constData());
+		logQueryParams << "prefix=" + prefix;
+	}
+	ds3_request_set_delimiter(request, DELIMITER.toUtf8().constData());
+	logQueryParams << "delimiter=" + DELIMITER;
+	if (!marker.isEmpty()) {
+		ds3_request_set_marker(request, marker.toUtf8().constData());
+		logQueryParams << "marker=" + marker;
+	}
+	if (maxKeys > 0) {
+		ds3_request_set_max_keys(request, maxKeys);
+		logQueryParams << "max-keys=" + QString::number(maxKeys);
+	}
+	if (!logQueryParams.isEmpty()) {
+		logMsg += "&" + logQueryParams.join("&");
+	}
+	logMsg += ")";
+	LOG_INFO(logMsg);
+	ds3_error* error = ds3_get_bucket(m_client,
+					  request,
+					  &response);
 	ds3_free_request(request);
 
 	if (error) {

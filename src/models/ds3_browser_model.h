@@ -69,6 +69,7 @@ public:
 
 public slots:
 	void HandleGetServiceResponse();
+	void HandleGetBucketResponse();
 
 private:
 	void FetchMoreBuckets(const QModelIndex& parent);

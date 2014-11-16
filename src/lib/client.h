@@ -29,17 +29,17 @@ class Session;
 class Client
 {
 public:
+	static const QString DELIMITER;
 	static const uint64_t MAX_NUM_BULK_PUT_OBJECTS;
 
 	Client(const Session* session);
 	~Client();
 
 	QFuture<ds3_get_service_response*> GetService();
-	ds3_get_bucket_response* GetBucket(const QString& bucketName,
-					   const QString& prefix,
-					   const QString& delimiter,
-					   const QString& marker,
-					   uint32_t maxKeys = 0);
+	QFuture<ds3_get_bucket_response*> GetBucket(const QString& bucketName,
+						    const QString& prefix,
+						    const QString& marker,
+						    uint32_t maxKeys);
 
 	void CreateBucket(const QString& name);
 
@@ -53,6 +53,10 @@ public:
 
 private:
 	ds3_get_service_response* DoGetService();
+	ds3_get_bucket_response* DoGetBucket(const QString& bucketName,
+					     const QString& prefix,
+					     const QString& marker,
+					     uint32_t maxKeys);
 
 	QString m_endpoint;
 	ds3_creds* m_creds;
