@@ -164,7 +164,7 @@ DS3Browser::Refresh()
 void
 DS3Browser::OnModelItemClick(const QModelIndex& index)
 {
-	if (m_model->IsBreak(index)) {
+	if (m_model->IsPageBreak(index)) {
 		m_model->fetchMore(index.parent());
 	}
 }

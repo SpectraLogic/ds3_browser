@@ -36,7 +36,6 @@ static const QString VIEW_TIMESTAMP_FORMAT = "MMMM d, yyyy h:mm AP";
 static const QString BUCKET = "Bucket";
 static const QString OBJECT = "Object";
 static const QString FOLDER = "Folder";
-static const QString BREAK = "Break";
 
 //
 // DS3BrowserItem
@@ -49,7 +48,7 @@ public:
 		       QString bucketName = QString(),
 		       QString prefix = QString(),
 		       DS3BrowserItem* parent = 0);
-	~DS3BrowserItem();
+	virtual ~DS3BrowserItem();
 
 	void AppendChild(DS3BrowserItem* item);
 	bool GetCanFetchMore() const;
@@ -64,6 +63,7 @@ public:
 	QString GetPrefix() const;
 	int GetRow() const;
 	DS3BrowserItem* GetParent() const;
+	virtual bool IsPageBreak() const;
 	bool IsFetching() const;
 	void Reset();
 	QString GetPath() const;
@@ -73,7 +73,7 @@ public:
 	void SetMaxKeys(uint32_t maxKeys);
 	void SetNextMarker(const QString nextMarker);
 
-private:
+protected:
 	// m_canFetchMore only represents what DS3BrowserModel should report
 	// for canFetchMore and not necessarily if the previous get
 	// children request was truncated or not.
@@ -207,6 +207,12 @@ DS3BrowserItem::GetParent() const
 }
 
 inline bool
+DS3BrowserItem::IsPageBreak() const
+{
+	return false;
+}
+
+inline bool
 DS3BrowserItem::IsFetching() const
 {
 	return m_fetching;
@@ -266,6 +272,30 @@ inline void
 DS3BrowserItem::SetNextMarker(const QString nextMarker)
 {
 	m_nextMarker = nextMarker;
+}
+
+class PageBreakItem : public DS3BrowserItem
+{
+public:
+	PageBreakItem(QString bucketName = QString(),
+		      QString prefix = QString(),
+		      DS3BrowserItem* parent = 0);
+
+	bool IsPageBreak() const;
+};
+
+PageBreakItem::PageBreakItem(QString bucketName,
+			     QString prefix,
+			     DS3BrowserItem* parent)
+	: DS3BrowserItem(QList<QVariant>(), bucketName, prefix, parent)
+{
+	m_data << "Click to load more";
+}
+
+inline bool
+PageBreakItem::IsPageBreak() const
+{
+	return true;
 }
 
 //
@@ -328,7 +358,7 @@ DS3BrowserModel::data(const QModelIndex &index, int role) const
 	{
 	case Qt::DisplayRole:
 		data = item->GetData(column);
-		if (column == 0 && item->GetData(KIND) == BREAK) {
+		if (column == 0 && item->IsPageBreak()) {
 			m_view->setFirstColumnSpanned(index.row(), index.parent(), true);
 		}
 		break;
@@ -395,7 +425,7 @@ DS3BrowserModel::fetchMore(const QModelIndex& parent)
 	DS3BrowserItem* pageBreakItem = 0;
 	if (lastRow >= 0) {
 		DS3BrowserItem* lastChildItem = parentItem->GetChild(lastRow);
-		if (lastChildItem->GetData(KIND) == BREAK) {
+		if (lastChildItem->IsPageBreak()) {
 			pageBreakItem = lastChildItem;
 		}
 	}
@@ -533,11 +563,10 @@ DS3BrowserModel::IsBucketOrFolder(const QModelIndex& index) const
 }
 
 bool
-DS3BrowserModel::IsBreak(const QModelIndex& index) const
+DS3BrowserModel::IsPageBreak(const QModelIndex& index) const
 {
 	DS3BrowserItem* item = IndexToItem(index);
-	QVariant kind = item->GetData(KIND);
-	return (kind == BREAK);
+	return item->IsPageBreak();
 }
 
 bool
@@ -788,12 +817,9 @@ DS3BrowserModel::HandleGetBucketResponse()
 	parentItem->SetMaxKeys(response->max_keys);
 
 	if (response->is_truncated) {
-		QList<QVariant> pageBreakData;
-		pageBreakData << "Click to load more" << "" << "" << BREAK;
-		DS3BrowserItem* pageBreak = new DS3BrowserItem(pageBreakData,
-							       bucketName,
-							       prefix,
-							       parentItem);
+		DS3BrowserItem* pageBreak = new PageBreakItem(bucketName,
+							      prefix,
+							      parentItem);
 		newChildren << pageBreak;
 	}
 
