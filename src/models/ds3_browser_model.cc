@@ -63,6 +63,7 @@ public:
 	QString GetPrefix() const;
 	int GetRow() const;
 	DS3BrowserItem* GetParent() const;
+	virtual bool IsLoadingItem() const;
 	virtual bool IsPageBreak() const;
 	bool IsFetching() const;
 	void Reset();
@@ -207,6 +208,12 @@ DS3BrowserItem::GetParent() const
 }
 
 inline bool
+DS3BrowserItem::IsLoadingItem() const
+{
+	return false;
+}
+
+inline bool
 DS3BrowserItem::IsPageBreak() const
 {
 	return false;
@@ -298,6 +305,30 @@ PageBreakItem::IsPageBreak() const
 	return true;
 }
 
+class LoadingItem : public DS3BrowserItem
+{
+public:
+	LoadingItem(QString bucketName = QString(),
+		    QString prefix = QString(),
+		    DS3BrowserItem* parent = 0);
+
+	bool IsLoadingItem() const;
+};
+
+LoadingItem::LoadingItem(QString bucketName,
+			 QString prefix,
+			 DS3BrowserItem* parent)
+	: DS3BrowserItem(QList<QVariant>(), bucketName, prefix, parent)
+{
+	m_data << "Loading ...";
+}
+
+inline bool
+LoadingItem::IsLoadingItem() const
+{
+	return true;
+}
+
 //
 // DS3BrowserModel
 //
@@ -358,7 +389,7 @@ DS3BrowserModel::data(const QModelIndex &index, int role) const
 	{
 	case Qt::DisplayRole:
 		data = item->GetData(column);
-		if (column == 0 && item->IsPageBreak()) {
+		if (column == 0 && (item->IsPageBreak() || item->IsLoadingItem())) {
 			m_view->setFirstColumnSpanned(index.row(), index.parent(), true);
 		}
 		break;
@@ -422,20 +453,23 @@ DS3BrowserModel::fetchMore(const QModelIndex& parent)
 	}
 
 	int lastRow = parentItem->GetChildCount() - 1;
-	DS3BrowserItem* pageBreakItem = 0;
+
+	DS3BrowserItem* loadingItem = new LoadingItem("", "", parentItem);
+	int loadingItemRow = lastRow >= 0 ? lastRow : 0;
+	beginInsertRows(parent, loadingItemRow, loadingItemRow);
+	parentItem->AppendChild(loadingItem);
+	endInsertRows();
+
 	if (lastRow >= 0) {
 		DS3BrowserItem* lastChildItem = parentItem->GetChild(lastRow);
 		if (lastChildItem->IsPageBreak()) {
-			pageBreakItem = lastChildItem;
+			removeRow(lastRow, parent);
 		}
 	}
 
+
 	parentItem->SetFetching(true);
 	parentIsValid ? FetchMoreObjects(parent) : FetchMoreBuckets(parent);
-
-	if (pageBreakItem) {
-		removeRow(lastRow, parent);
-	}
 
 	// Always set CanFetchMore to false so the view doesn't automatically
 	// come right back around and ask to fetchMore when this model
@@ -518,18 +552,23 @@ DS3BrowserModel::parent(const QModelIndex& index) const
 }
 
 bool
-DS3BrowserModel::removeRows(int row, int count, const QModelIndex& parentIndex)
+DS3BrowserModel::removeRows(int row, int count, const QModelIndex& parent)
 {
-	if (row < 0 || count <= 0 || (row + count) > rowCount(parentIndex)) {
+	if (row < 0 || count <= 0 || (row + count) > rowCount(parent)) {
 		return false;
 	}
 
-	DS3BrowserItem* parent = IndexToItem(parentIndex);
+	DS3BrowserItem* parentItem;
+	if (parent.isValid()) {
+		parentItem = IndexToItem(parent);
+	} else {
+		parentItem = m_rootItem;
+	}
 
-	beginRemoveRows(parentIndex, row, row + count - 1);
+	beginRemoveRows(parent, row, row + count - 1);
 
 	for (int i = 0; i < count; i++) {
-		parent->RemoveChild(row + i);
+		parentItem->RemoveChild(row + i);
 	}
 
 	endRemoveRows();
@@ -649,6 +688,26 @@ DS3BrowserModel::FetchMoreObjects(const QModelIndex& parent)
 }
 
 void
+DS3BrowserModel::RemoveLoadingItem(const QModelIndex& parent)
+{
+	DS3BrowserItem* parentItem;
+	if (parent.isValid()) {
+		parentItem = IndexToItem(parent);
+	} else {
+		parentItem = m_rootItem;
+	}
+
+	// The "Loading..." row should always be the last one
+	int lastRow = parentItem->GetChildCount() - 1;
+	if (lastRow >= 0) {
+		DS3BrowserItem* lastChildItem = parentItem->GetChild(lastRow);
+		if (lastChildItem->IsLoadingItem()) {
+			removeRow(lastRow, parent);
+		}
+	}
+}
+
+void
 DS3BrowserModel::HandleGetServiceResponse()
 {
 	LOG_DEBUG("HandleGetServiceResponse");
@@ -669,8 +728,9 @@ DS3BrowserModel::HandleGetServiceResponse()
 	QString owner = QString(QLatin1String(response->owner->name->value));
 
 	size_t numBuckets = response->num_buckets;
+	int startRow = 0;
 	if (numBuckets > 0) {
-		int startRow = rowCount(parent);
+		startRow = rowCount(parent);
 		beginInsertRows(parent, startRow, startRow + numBuckets - 1);
 	}
 
@@ -707,6 +767,12 @@ DS3BrowserModel::HandleGetServiceResponse()
 
 	if (numBuckets > 0) {
 		endInsertRows();
+	}
+
+	int loadingRow = startRow > 0 ? startRow - 1 : 0;
+	DS3BrowserItem* loadingItem = parentItem->GetChild(loadingRow);
+	if (loadingItem && loadingItem->IsLoadingItem()) {
+		removeRow(loadingRow, parent);
 	}
 
 	ds3_free_service_response(response);
@@ -824,13 +890,20 @@ DS3BrowserModel::HandleGetBucketResponse()
 	}
 
 	int numNewChildren = newChildren.count();
+	int startRow = 0;
 	if (numNewChildren > 0) {
-		int startRow = rowCount(parent);
+		startRow = rowCount(parent);
 		beginInsertRows(parent, startRow, startRow + numNewChildren - 1);
 		for (int i = 0; i < numNewChildren; i++) {
 			parentItem->AppendChild(newChildren.at(i));
 		}
 		endInsertRows();
+	}
+
+	int loadingRow = startRow > 0 ? startRow - 1 : 0;
+	DS3BrowserItem* loadingItem = parentItem->GetChild(loadingRow);
+	if (loadingItem && loadingItem->IsLoadingItem()) {
+		removeRow(loadingRow, parent);
 	}
 
 	ds3_free_bucket_response(response);

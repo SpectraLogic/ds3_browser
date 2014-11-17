@@ -75,6 +75,7 @@ private:
 	void FetchMoreBuckets(const QModelIndex& parent);
 	void FetchMoreObjects(const QModelIndex& parent);
 	DS3BrowserItem* IndexToItem(const QModelIndex& index) const;
+	void RemoveLoadingItem(const QModelIndex& parent);
 
 	Client* m_client;
 	DS3BrowserItem* m_rootItem;
