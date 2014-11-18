@@ -284,17 +284,13 @@ DS3BrowserItem::SetNextMarker(const QString nextMarker)
 class PageBreakItem : public DS3BrowserItem
 {
 public:
-	PageBreakItem(QString bucketName = QString(),
-		      QString prefix = QString(),
-		      DS3BrowserItem* parent = 0);
+	PageBreakItem(DS3BrowserItem* parent = 0);
 
 	bool IsPageBreak() const;
 };
 
-PageBreakItem::PageBreakItem(QString bucketName,
-			     QString prefix,
-			     DS3BrowserItem* parent)
-	: DS3BrowserItem(QList<QVariant>(), bucketName, prefix, parent)
+PageBreakItem::PageBreakItem(DS3BrowserItem* parent)
+	: DS3BrowserItem(QList<QVariant>(), "", "", parent)
 {
 	m_data << "Click to load more";
 }
@@ -308,17 +304,13 @@ PageBreakItem::IsPageBreak() const
 class LoadingItem : public DS3BrowserItem
 {
 public:
-	LoadingItem(QString bucketName = QString(),
-		    QString prefix = QString(),
-		    DS3BrowserItem* parent = 0);
+	LoadingItem(DS3BrowserItem* parent = 0);
 
 	bool IsLoadingItem() const;
 };
 
-LoadingItem::LoadingItem(QString bucketName,
-			 QString prefix,
-			 DS3BrowserItem* parent)
-	: DS3BrowserItem(QList<QVariant>(), bucketName, prefix, parent)
+LoadingItem::LoadingItem(DS3BrowserItem* parent)
+	: DS3BrowserItem(QList<QVariant>(), "", "", parent)
 {
 	m_data << "Loading ...";
 }
@@ -454,7 +446,7 @@ DS3BrowserModel::fetchMore(const QModelIndex& parent)
 
 	int lastRow = parentItem->GetChildCount() - 1;
 
-	DS3BrowserItem* loadingItem = new LoadingItem("", "", parentItem);
+	DS3BrowserItem* loadingItem = new LoadingItem(parentItem);
 	int loadingItemRow = lastRow >= 0 ? lastRow : 0;
 	beginInsertRows(parent, loadingItemRow, loadingItemRow);
 	parentItem->AppendChild(loadingItem);
@@ -883,9 +875,7 @@ DS3BrowserModel::HandleGetBucketResponse()
 	parentItem->SetMaxKeys(response->max_keys);
 
 	if (response->is_truncated) {
-		DS3BrowserItem* pageBreak = new PageBreakItem(bucketName,
-							      prefix,
-							      parentItem);
+		DS3BrowserItem* pageBreak = new PageBreakItem(parentItem);
 		newChildren << pageBreak;
 	}
 
