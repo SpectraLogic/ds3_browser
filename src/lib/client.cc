@@ -194,7 +194,6 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 	return response;
 }
 
-// TODO Refactor to remove the duplicate directory iteration code
 void
 Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 {
@@ -207,44 +206,6 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 		normPrefix.replace(QRegExp("/$"), "");
 		normPrefix += "/";
 	}
-
-
-	QDirIterator* di = workItem->GetDirIterator();
-	if (di != NULL) {
-		// Previous page left off while in the middle of iterating
-		// through a URL's directory tree.  Finish it up.
-
-		QList<QUrl>::const_iterator& ui(workItem->GetUrlsIterator());
-		QString filePath = (*ui).toLocalFile();
-		// filePath could be either /foo or /foo/ if it's a directory.
-		// Run it through QDir to normalize it to the former.
-		filePath = QDir(filePath).path();
-		QFileInfo fileInfo(filePath);
-		QString fileName = fileInfo.fileName();
-		// The URL the iterator is pointing to must be a directory
-		// of the directory iterator wasn't null.
-		QString objName = normPrefix + fileName + "/";
-		while (di->hasNext()) {
-			if (numFiles >= BULK_PUT_PAGE_LIMIT) {
-				run(this, &Client::DoBulkPut, workItem);
-				return;
-			}
-			numFiles++;
-			QString subFilePath = di->next();
-			QFileInfo subFileInfo = di->fileInfo();
-			QString subFileName = subFilePath;
-			subFileName.replace(QRegExp("^" + filePath + "/"), "");
-			QString subObjName = objName + subFileName;
-			if (subFileInfo.isDir()) {
-				subObjName += "/";
-			}
-			LOG_DEBUG("Inserting " + subObjName + ", " + subFilePath);
-			workItem->InsertObjMap(subObjName, subFilePath);
-		}
-		workItem->DeleteDirIterator();
-		ui++;
-	}
-
 
 	for (QList<QUrl>::const_iterator& ui(workItem->GetUrlsIterator());
 	     ui != workItem->GetUrlsConstEnd();
@@ -261,14 +222,17 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 		QFileInfo fileInfo(filePath);
 		QString fileName = fileInfo.fileName();
 		QString objName = normPrefix + fileName;
-		bool fileIsDir = fileInfo.isDir();
-		if (fileIsDir) {
+		if (fileInfo.isDir()) {
 			objName += "/";
-		}
-		LOG_DEBUG("Inserting " + objName + ", " + filePath);
-		workItem->InsertObjMap(objName, filePath);
-		if (fileIsDir) {
-			QDirIterator* di = workItem->GetDirIterator(filePath);
+
+			// An existing DirIterator must have been caused by
+			// a previous BulkPut "page" that returned early while
+			// iterating over files under this URL.  Thus, take
+			// over where it left off.
+			QDirIterator* di = workItem->GetDirIterator();
+			if (di == NULL) {
+				di = workItem->GetDirIterator(filePath);
+			}
 			while (di->hasNext()) {
 				if (numFiles >= BULK_PUT_PAGE_LIMIT) {
 					run(this, &Client::DoBulkPut, workItem);
@@ -288,6 +252,8 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 			}
 			workItem->DeleteDirIterator();
 		}
+		LOG_DEBUG("Inserting " + objName + ", " + filePath);
+		workItem->InsertObjMap(objName, filePath);
 	}
 
 	if (numFiles > 0) {
