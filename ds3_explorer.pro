@@ -40,6 +40,7 @@ INCLUDEPATH += src
 HEADERS = \
 	src/main_window.h \
 	src/helpers/number_helper.h \
+	src/lib/work_items/bulk_put_work_item.h \
 	src/lib/client.h \
 	src/lib/logger.h \
 	src/lib/watchers/get_bucket_watcher.h \
@@ -58,6 +59,7 @@ SOURCES = \
 	src/main.cc \
 	src/main_window.cc \
 	src/helpers/number_helper.cc \
+	src/lib/work_items/bulk_put_work_item.cc \
 	src/lib/client.cc \
 	src/lib/watchers/get_bucket_watcher.cc \
 	src/lib/watchers/get_service_watcher.cc \

@@ -21,6 +21,7 @@
 #include <QFileInfo>
 #include <QHash>
 
+#include "lib/work_items/bulk_put_work_item.h"
 #include "lib/client.h"
 #include "lib/logger.h"
 #include "models/session.h"
@@ -29,8 +30,8 @@ using QtConcurrent::run;
 
 const QString Client::DELIMITER = "/";
 
-// The S3 server imposes this limit
-const uint64_t Client::MAX_NUM_BULK_PUT_OBJECTS = 500000;
+// The S3 server imposes this limit although we might want to lower it
+const uint64_t Client::BULK_PUT_PAGE_LIMIT = 500000;
 
 static size_t read_from_qfile(void* buffer, size_t size, size_t count, void* user_data);
 
@@ -91,112 +92,13 @@ Client::CreateBucket(const QString& name)
 	}
 }
 
-// TODO Paginate request if more than MAX_NUM_BULK_PUT_OBJECTS files
 void
 Client::BulkPut(const QString& bucketName,
 		const QString& prefix,
 		const QList<QUrl> urls)
 {
-	uint64_t numFiles = 0;
-	QString truncMsg = "Truncating request to " + \
-			   QString::number(MAX_NUM_BULK_PUT_OBJECTS) + \
-			   " objects";
-	QHash<QString, QString> objMap;
-	QString normPrefix = prefix;
-	if (!normPrefix.isEmpty()) {
-		normPrefix.replace(QRegExp("/$"), "");
-		normPrefix += "/";
-	}
-	int i;
-	for (i = 0; i < urls.count(); i++) {
-		if (numFiles >= MAX_NUM_BULK_PUT_OBJECTS) {
-			LOG_WARNING(truncMsg);
-			break;
-		}
-		numFiles++;
-		QString filePath = urls[i].toLocalFile();
-		// filePath could be either /foo or /foo/ if it's a directory.
-		// Run it through QDir to normalize it to the former.
-		filePath = QDir(filePath).path();
-		QFileInfo fileInfo(filePath);
-		QString fileName = fileInfo.fileName();
-		QString objName = normPrefix + fileName;
-		if (fileInfo.isDir()) {
-			objName += "/";
-
-			QDirIterator it(filePath,
-					QDir::AllDirs | QDir::Files | QDir::Hidden | QDir::Readable | QDir::System | QDir::NoDotAndDotDot,
-					QDirIterator::Subdirectories);
-			while (it.hasNext()) {
-				if (numFiles >= MAX_NUM_BULK_PUT_OBJECTS) {
-					LOG_WARNING(truncMsg);
-					break;
-				}
-				numFiles++;
-				QString subFilePath = it.next();
-				QFileInfo subFileInfo = it.fileInfo();
-				QString subFileName = subFilePath;
-				subFileName.replace(QRegExp("^" + filePath + "/"), "");
-				QString subObjName = objName + subFileName;
-				if (subFileInfo.isDir()) {
-					subObjName += "/";
-				}
-				objMap.insert(subObjName, subFilePath);
-			}
-		}
-		objMap.insert(objName, filePath);
-	}
-
-	ds3_bulk_object_list *bulkObjList = ds3_init_bulk_object_list(numFiles);
-
-	QHash<QString, QString>::const_iterator hi;
-	i = 0;
-	for (hi = objMap.constBegin(); hi != objMap.constEnd(); hi++) {
-		ds3_bulk_object* bulkObj = &bulkObjList->list[i];
-		QString objName = hi.key();
-		QString filePath = hi.value();
-		QFileInfo fileInfo(filePath);
-		uint64_t fileSize = 0;
-		if (!fileInfo.isDir()) {
-			fileSize = fileInfo.size();
-		}
-		bulkObj->name = ds3_str_init(objName.toUtf8().constData());
-		bulkObj->length = fileSize;
-		bulkObj->offset = 0;
-		i++;
-	}
-
-	ds3_request* request = ds3_init_put_bulk(bucketName.toUtf8().constData(), bulkObjList);
-	ds3_bulk_response *response = NULL;
-	ds3_error* error = ds3_bulk(m_client, request, &response);
-	ds3_free_request(request);
-	ds3_free_bulk_object_list(bulkObjList);
-
-	if (error) {
-		// TODO Handle the error
-		ds3_free_error(error);
-	}
-
-	if (response == NULL) {
-		// Bulk putting only empty folders will result in a 204
-		// response (no content) indicating there's nothing else to do.
-		return;
-	}
-
-	for (size_t j = 0; j < response->list_size; j++) {
-		ds3_bulk_object_list* list = response->list[j];
-		for (uint64_t k = 0; k < list->size; k++) {
-			ds3_bulk_object* bulkObj = &list->list[k];
-			QString objName = QString(bulkObj->name->value);
-			// TODO objMap only holds objects for URLs that were
-			//      passed in and not files that were discovered
-			//      underneath directories.  Account for that.
-			QString filePath = objMap[objName];
-			PutObject(bucketName, objName, filePath);
-		}
-	}
-
-	ds3_free_bulk_response(response);
+	BulkPutWorkItem* workItem = new BulkPutWorkItem(bucketName, prefix, urls);
+	run(this, &Client::PrepareBulkPuts, workItem);
 }
 
 void
@@ -290,6 +192,188 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 	}
 
 	return response;
+}
+
+// TODO Refactor to remove the duplicate directory iteration code
+void
+Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
+{
+	LOG_DEBUG("PrepareBulkPuts");
+
+	uint64_t numFiles = 0;
+	workItem->ClearObjMap();
+	QString normPrefix = workItem->GetPrefix();
+	if (!normPrefix.isEmpty()) {
+		normPrefix.replace(QRegExp("/$"), "");
+		normPrefix += "/";
+	}
+
+
+	QDirIterator* di = workItem->GetDirIterator();
+	if (di != NULL) {
+		// Previous page left off while in the middle of iterating
+		// through a URL's directory tree.  Finish it up.
+
+		QList<QUrl>::const_iterator& ui(workItem->GetUrlsIterator());
+		QString filePath = (*ui).toLocalFile();
+		// filePath could be either /foo or /foo/ if it's a directory.
+		// Run it through QDir to normalize it to the former.
+		filePath = QDir(filePath).path();
+		QFileInfo fileInfo(filePath);
+		QString fileName = fileInfo.fileName();
+		// The URL the iterator is pointing to must be a directory
+		// of the directory iterator wasn't null.
+		QString objName = normPrefix + fileName + "/";
+		while (di->hasNext()) {
+			if (numFiles >= BULK_PUT_PAGE_LIMIT) {
+				run(this, &Client::DoBulkPut, workItem);
+				return;
+			}
+			numFiles++;
+			QString subFilePath = di->next();
+			QFileInfo subFileInfo = di->fileInfo();
+			QString subFileName = subFilePath;
+			subFileName.replace(QRegExp("^" + filePath + "/"), "");
+			QString subObjName = objName + subFileName;
+			if (subFileInfo.isDir()) {
+				subObjName += "/";
+			}
+			LOG_DEBUG("Inserting " + subObjName + ", " + subFilePath);
+			workItem->InsertObjMap(subObjName, subFilePath);
+		}
+		workItem->DeleteDirIterator();
+		ui++;
+	}
+
+
+	for (QList<QUrl>::const_iterator& ui(workItem->GetUrlsIterator());
+	     ui != workItem->GetUrlsConstEnd();
+	     ui++) {
+		if (numFiles >= BULK_PUT_PAGE_LIMIT) {
+			run(this, &Client::DoBulkPut, workItem);
+			return;
+		}
+		numFiles++;
+		QString filePath = (*ui).toLocalFile();
+		// filePath could be either /foo or /foo/ if it's a directory.
+		// Run it through QDir to normalize it to the former.
+		filePath = QDir(filePath).path();
+		QFileInfo fileInfo(filePath);
+		QString fileName = fileInfo.fileName();
+		QString objName = normPrefix + fileName;
+		bool fileIsDir = fileInfo.isDir();
+		if (fileIsDir) {
+			objName += "/";
+		}
+		LOG_DEBUG("Inserting " + objName + ", " + filePath);
+		workItem->InsertObjMap(objName, filePath);
+		if (fileIsDir) {
+			QDirIterator* di = workItem->GetDirIterator(filePath);
+			while (di->hasNext()) {
+				if (numFiles >= BULK_PUT_PAGE_LIMIT) {
+					run(this, &Client::DoBulkPut, workItem);
+					return;
+				}
+				numFiles++;
+				QString subFilePath = di->next();
+				QFileInfo subFileInfo = di->fileInfo();
+				QString subFileName = subFilePath;
+				subFileName.replace(QRegExp("^" + filePath + "/"), "");
+				QString subObjName = objName + subFileName;
+				if (subFileInfo.isDir()) {
+					subObjName += "/";
+				}
+				LOG_DEBUG("Inserting " + subObjName + ", " + subFilePath);
+				workItem->InsertObjMap(subObjName, subFilePath);
+			}
+			workItem->DeleteDirIterator();
+		}
+	}
+
+	if (numFiles > 0) {
+		run(this, &Client::DoBulkPut, workItem);
+	}
+}
+
+void
+Client::DoBulkPut(BulkPutWorkItem* workItem)
+{
+	LOG_DEBUG("DoBulkPuts");
+
+	uint64_t numFiles = workItem->GetObjMapSize();
+	ds3_bulk_object_list *bulkObjList = ds3_init_bulk_object_list(numFiles);
+
+	QHash<QString, QString>::const_iterator hi;
+	int i = 0;
+	for (hi = workItem->GetObjMapConstBegin(); hi != workItem->GetObjMapConstEnd(); hi++) {
+		ds3_bulk_object* bulkObj = &bulkObjList->list[i];
+		QString objName = hi.key();
+		QString filePath = hi.value();
+		QFileInfo fileInfo(filePath);
+		uint64_t fileSize = 0;
+		if (!fileInfo.isDir()) {
+			fileSize = fileInfo.size();
+		}
+		bulkObj->name = ds3_str_init(objName.toUtf8().constData());
+		bulkObj->length = fileSize;
+		bulkObj->offset = 0;
+		i++;
+	}
+
+	const QString& bucketName = workItem->GetBucketName();
+	ds3_request* request = ds3_init_put_bulk(bucketName.toUtf8().constData(), bulkObjList);
+	ds3_bulk_response *response = NULL;
+	ds3_error* error = ds3_bulk(m_client, request, &response);
+	ds3_free_request(request);
+	ds3_free_bulk_object_list(bulkObjList);
+	workItem->SetResponse(response);
+
+	if (error) {
+		// TODO Handle the error
+		LOG_ERROR("BulkPut Error");
+		ds3_free_error(error);
+	}
+
+	if (response == NULL) {
+		// Bulk putting only empty folders will result in a 204
+		// response (no content) indicating there's nothing else to do.
+		LOG_DEBUG("No objects to put.  Deleting work item");
+		delete workItem;
+		return;
+	}
+
+	for (size_t j = 0; j < response->list_size; j++) {
+		LOG_DEBUG("Starting PutBulkOjbectList thread");
+		ds3_bulk_object_list* list = response->list[j];
+		workItem->IncWorkingObjListCount();
+		run(this, &Client::PutBulkObjectList, workItem, list);
+	}
+}
+
+void
+Client::PutBulkObjectList(BulkPutWorkItem* workItem,
+			  const ds3_bulk_object_list* list)
+{
+	QString bucketName = workItem->GetBucketName();
+	for (uint64_t k = 0; k < list->size; k++) {
+		ds3_bulk_object* bulkObj = &list->list[k];
+		QString objName = QString(bulkObj->name->value);
+		QString filePath = workItem->GetObjMapValue(objName);
+		PutObject(bucketName, objName, filePath);
+	}
+	workItem->DecWorkingObjListCount();
+
+	if (workItem->IsPageFinished()) {
+		if (workItem->IsFinished()) {
+			LOG_DEBUG("Finished with bulk put work item.  Deleting it.");
+			delete workItem;
+		} else {
+			LOG_DEBUG("More bulk put pages to go.  Starting PrepareBulkPuts again.");
+			run(this, &Client::PrepareBulkPuts, workItem);
+		}
+	} else {
+		LOG_DEBUG("PutBulkObjlistList done but more still running");
+	}
 }
 
 static size_t

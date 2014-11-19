@@ -25,12 +25,13 @@
 #include <ds3.h>
 
 class Session;
+class BulkPutWorkItem;
 
 class Client
 {
 public:
 	static const QString DELIMITER;
-	static const uint64_t MAX_NUM_BULK_PUT_OBJECTS;
+	static const uint64_t BULK_PUT_PAGE_LIMIT;
 
 	Client(const Session* session);
 	~Client();
@@ -57,6 +58,11 @@ private:
 					     const QString& prefix,
 					     const QString& marker,
 					     uint32_t maxKeys);
+
+	void PrepareBulkPuts(BulkPutWorkItem* workItem);
+	void DoBulkPut(BulkPutWorkItem* workItem);
+	void PutBulkObjectList(BulkPutWorkItem* workItem,
+			       const ds3_bulk_object_list* list);
 
 	QString m_endpoint;
 	ds3_creds* m_creds;
