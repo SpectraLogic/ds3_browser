@@ -300,11 +300,8 @@ Client::DoBulkPut(BulkPutWorkItem* workItem)
 		ds3_free_error(error);
 	}
 
-	if (response == NULL) {
-		// Bulk putting only empty folders will result in a 204
-		// response (no content) indicating there's nothing else to do.
-		LOG_DEBUG("No objects to put.  Deleting work item");
-		delete workItem;
+	if (response == NULL || (response != NULL && response->list_size == 0)) {
+		DeleteOrRequeueBulkPutWorkItem(workItem);
 		return;
 	}
 
@@ -328,7 +325,12 @@ Client::PutBulkObjectList(BulkPutWorkItem* workItem,
 		PutObject(bucketName, objName, filePath);
 	}
 	workItem->DecWorkingObjListCount();
+	DeleteOrRequeueBulkPutWorkItem(workItem);
+}
 
+void
+Client::DeleteOrRequeueBulkPutWorkItem(BulkPutWorkItem* workItem)
+{
 	if (workItem->IsPageFinished()) {
 		if (workItem->IsFinished()) {
 			LOG_DEBUG("Finished with bulk put work item.  Deleting it.");
@@ -338,7 +340,8 @@ Client::PutBulkObjectList(BulkPutWorkItem* workItem,
 			run(this, &Client::PrepareBulkPuts, workItem);
 		}
 	} else {
-		LOG_DEBUG("PutBulkObjlistList done but more still running");
+		LOG_DEBUG("Page not finished.  objlistcount: " +
+			  QString::number(workItem->GetWorkingObjListCount()));
 	}
 }
 

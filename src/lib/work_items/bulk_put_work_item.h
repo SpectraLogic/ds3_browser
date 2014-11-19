@@ -54,6 +54,7 @@ public:
 
 	void IncWorkingObjListCount();
 	void DecWorkingObjListCount();
+	int GetWorkingObjListCount() const;
 
 	bool IsPageFinished() const;
 	bool IsFinished() const;
@@ -168,6 +169,12 @@ BulkPutWorkItem::DecWorkingObjListCount()
 	m_workingObjListCountLock.lock();
 	m_workingObjListCount--;
 	m_workingObjListCountLock.unlock();
+}
+
+inline int
+BulkPutWorkItem::GetWorkingObjListCount() const
+{
+	return m_workingObjListCount;
 }
 
 inline ds3_bulk_response*

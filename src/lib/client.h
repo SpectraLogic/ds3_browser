@@ -63,6 +63,7 @@ private:
 	void DoBulkPut(BulkPutWorkItem* workItem);
 	void PutBulkObjectList(BulkPutWorkItem* workItem,
 			       const ds3_bulk_object_list* list);
+	void DeleteOrRequeueBulkPutWorkItem(BulkPutWorkItem* workItem);
 
 	QString m_endpoint;
 	ds3_creds* m_creds;
