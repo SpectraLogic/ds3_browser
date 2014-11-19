@@ -48,7 +48,7 @@ public:
 	void ClearObjMap();
 	QHash<QString, QString>::const_iterator GetObjMapConstBegin() const;
 	QHash<QString, QString>::const_iterator GetObjMapConstEnd() const;
-	int GetObjMapSize() const;
+	uint64_t GetObjMapSize() const;
 	const QString GetObjMapValue(const QString& objName) const;
 	void InsertObjMap(const QString& objName, const QString& filePath);
 
@@ -137,10 +137,10 @@ BulkPutWorkItem::GetObjMapConstEnd() const
 	return m_objMap.constEnd();
 }
 
-inline int
+inline uint64_t
 BulkPutWorkItem::GetObjMapSize() const
 {
-	return m_objMap.size();
+	return (uint64_t)m_objMap.size();
 }
 
 inline const QString

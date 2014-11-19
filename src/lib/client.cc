@@ -199,7 +199,6 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 {
 	LOG_DEBUG("PrepareBulkPuts");
 
-	uint64_t numFiles = 0;
 	workItem->ClearObjMap();
 	QString normPrefix = workItem->GetPrefix();
 	if (!normPrefix.isEmpty()) {
@@ -210,11 +209,10 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 	for (QList<QUrl>::const_iterator& ui(workItem->GetUrlsIterator());
 	     ui != workItem->GetUrlsConstEnd();
 	     ui++) {
-		if (numFiles >= BULK_PUT_PAGE_LIMIT) {
+		if (workItem->GetObjMapSize() >= BULK_PUT_PAGE_LIMIT) {
 			run(this, &Client::DoBulkPut, workItem);
 			return;
 		}
-		numFiles++;
 		QString filePath = (*ui).toLocalFile();
 		// filePath could be either /foo or /foo/ if it's a directory.
 		// Run it through QDir to normalize it to the former.
@@ -234,11 +232,10 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 				di = workItem->GetDirIterator(filePath);
 			}
 			while (di->hasNext()) {
-				if (numFiles >= BULK_PUT_PAGE_LIMIT) {
+				if (workItem->GetObjMapSize() >= BULK_PUT_PAGE_LIMIT) {
 					run(this, &Client::DoBulkPut, workItem);
 					return;
 				}
-				numFiles++;
 				QString subFilePath = di->next();
 				QFileInfo subFileInfo = di->fileInfo();
 				QString subFileName = subFilePath;
@@ -256,7 +253,7 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 		workItem->InsertObjMap(objName, filePath);
 	}
 
-	if (numFiles > 0) {
+	if (workItem->GetObjMapSize() > 0) {
 		run(this, &Client::DoBulkPut, workItem);
 	}
 }
