@@ -57,6 +57,8 @@ private:
 	QLabel* m_hostLabel;
 	QLineEdit* m_hostLineEdit;
 	QComboBox* m_portComboBox;
+	QLabel* m_proxyLabel;
+	QLineEdit* m_proxyLineEdit;
 	QLabel* m_accessIdLabel;
 	QLineEdit* m_accessIdLineEdit;
 	QLabel* m_secretKeyLabel;

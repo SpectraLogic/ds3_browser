@@ -48,6 +48,10 @@ Client::Client(const Session* session)
 	}
 
 	m_client = ds3_create_client(m_endpoint.toUtf8().constData(), m_creds);
+	QString proxy = session->GetProxy();
+	if (!proxy.isEmpty()) {
+		ds3_client_proxy(m_client, proxy.toUtf8().constData());
+	}
 }
 
 Client::~Client()

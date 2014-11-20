@@ -40,6 +40,9 @@ public:
 	QString GetPort() const;
 	void SetPort(const QString& port);
 
+	QString GetProxy() const;
+	void SetProxy(const QString& proxy);
+
 	bool GetWithCertificateVerification() const;
 	void SetWithCertificateVerification(bool verify);
 
@@ -53,6 +56,7 @@ private:
 	QString m_host;
 	Protocol m_protocol;
 	QString m_port;
+	QString m_proxy;
 	// Whether or not SSL certificates should be verified.  This is only
 	// applicable when using HTTPS.  If this is set to true, the user
 	// would have to configure their computer to trust their system's
@@ -108,6 +112,18 @@ inline void
 Session::SetPort(const QString& port)
 {
 	m_port = port;
+}
+
+inline QString
+Session::GetProxy() const
+{
+	return m_proxy;
+}
+
+inline void
+Session::SetProxy(const QString& proxy)
+{
+	m_proxy = proxy;
 }
 
 inline bool

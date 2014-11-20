@@ -27,6 +27,7 @@ SessionDialog::SessionDialog(QWidget* parent)
 	  m_form(new QFormLayout),
 	  m_hostLineEdit(new QLineEdit),
 	  m_portComboBox(new QComboBox),
+	  m_proxyLineEdit(new QLineEdit),
 	  m_accessIdLineEdit(new QLineEdit),
 	  m_secretKeyLineEdit(new QLineEdit),
 	  m_session(new Session)
@@ -43,6 +44,10 @@ SessionDialog::SessionDialog(QWidget* parent)
 	m_portComboBox->setToolTip("The port that the DS3 system's DS3 " \
 				   "service is running on (usually 80)");
 	m_form->addRow("BlackPearl DS3 Port", m_portComboBox);
+
+	m_proxyLineEdit->setToolTip("An optional server to proxy requests");
+	m_proxyLabel = new QLabel("Proxy Server");
+	m_form->addRow(m_proxyLabel, m_proxyLineEdit);
 
 	m_accessIdLabel = new QLabel("S3 Access ID");
 	m_form->addRow(m_accessIdLabel, m_accessIdLineEdit);
@@ -142,6 +147,7 @@ SessionDialog::UpdateSession()
 {
 	m_session->SetHost(m_hostLineEdit->text().trimmed().toUtf8().constData());
 	m_session->SetPort(m_portComboBox->currentText().trimmed().toUtf8().constData());
+	m_session->SetProxy(m_proxyLineEdit->text().trimmed().toUtf8().constData());
 	m_session->SetAccessId(m_accessIdLineEdit->text().trimmed().toUtf8().constData());
 	m_session->SetSecretKey(m_secretKeyLineEdit->text().trimmed().toUtf8().constData());
 }
@@ -157,6 +163,7 @@ SessionDialog::SaveSession()
 		settings.setArrayIndex(0);
 		settings.setValue("host", m_session->GetHost());
 		settings.setValue("protocol", m_session->GetProtocol());
+		settings.setValue("proxy", m_session->GetProxy());
 		settings.setValue("port", m_session->GetPort());
 		settings.setValue("withCertificateVerification", m_session->GetWithCertificateVerification());
 		settings.setValue("accessID", m_session->GetAccessId());
