@@ -125,6 +125,7 @@ SessionDialog::LoadSession()
 		m_session->SetHost(settings.value("host").toString());
 		m_session->SetProtocol(settings.value("protocol").toInt());
 		m_session->SetPort(settings.value("port").toString());
+		m_session->SetProxy(settings.value("proxy").toString());
 		m_session->SetWithCertificateVerification(settings.value("withCertificateVerification").toBool());
 		m_session->SetAccessId(settings.value("accessID").toString());
 		m_session->SetSecretKey(settings.value("secretKey").toString());
@@ -138,6 +139,7 @@ SessionDialog::LoadSession()
 	if (portIndex != -1) {
 		m_portComboBox->setCurrentIndex(portIndex);
 	}
+	m_proxyLineEdit->setText(m_session->GetProxy());
 	m_accessIdLineEdit->setText(m_session->GetAccessId());
 	m_secretKeyLineEdit->setText(m_session->GetSecretKey());
 }
