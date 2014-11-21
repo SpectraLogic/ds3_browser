@@ -19,16 +19,22 @@
 
 #include <QFuture>
 #include <QList>
+#include <QObject>
 #include <QString>
 #include <QUrl>
 
 #include <ds3.h>
 
+#include "models/job.h"
+
 class Session;
 class BulkPutWorkItem;
+class ObjectWorkItem;
 
-class Client
+class Client : public QObject
 {
+	Q_OBJECT
+
 public:
 	static const QString DELIMITER;
 	static const uint64_t BULK_PUT_PAGE_LIMIT;
@@ -50,7 +56,10 @@ public:
 
 	void PutObject(const QString& bucket,
 		       const QString& object,
-		       const QString& fileName);
+		       const QString& fileName,
+		       BulkPutWorkItem* bulkPutWorkItem);
+signals:
+	void JobProgressUpdate(const Job job);
 
 private:
 	ds3_get_service_response* DoGetService();
@@ -65,9 +74,16 @@ private:
 			       const ds3_bulk_object_list* list);
 	void DeleteOrRequeueBulkPutWorkItem(BulkPutWorkItem* workItem);
 
+	QString m_host;
 	QString m_endpoint;
 	ds3_creds* m_creds;
 	ds3_client* m_client;
+
+public:
+	// Meant to be private but called from the C SDK callback function
+	size_t ReadFile(ObjectWorkItem* workItem, char* buffer,
+			size_t size, size_t count);
+
 };
 
 #endif

@@ -17,11 +17,12 @@
 #ifndef DS3_BROWSER_H
 #define DS3_BROWSER_H
 
+#include "models/job.h"
 #include "views/browser.h"
 
+class Client;
 class DS3BrowserModel;
 class DS3BrowserTreeViewStyle;
-class Client;
 class Session;
 
 // DS3Browser, a Browser class used for browsing a DS3 system (e.g a
@@ -35,6 +36,9 @@ public:
 		   QWidget* parent = 0,
 		   Qt::WindowFlags flags = 0);
 	~DS3Browser();
+
+public slots:
+	void UpdateJobProgress(const Job job);
 
 protected:
 	void AddCustomToolBarActions();

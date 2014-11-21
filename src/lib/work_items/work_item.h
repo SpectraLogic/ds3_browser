@@ -14,30 +14,14 @@
  * *****************************************************************************
  */
 
-#include <QApplication>
+#ifndef WORK_ITEM_H
+#define WORK_ITEM_H
 
-#include "models/job.h"
-
-#include "main_window.h"
-
-int
-main(int argc, char *argv[])
+// WorkItem, a container class that holds data necessary for Client to perform
+// a DS3 request and handle its response.  These are only intended to be used
+// by the Client and not necessarily the GUI.
+class WorkItem
 {
-	QApplication app(argc, argv);
-	app.setOrganizationName("Spectra Logic");
-	app.setOrganizationDomain("spectralogic.com");
-	app.setApplicationName("DS3 Explorer");
+};
 
-	// Job is used as an argument in a signal/slot connection
-	qRegisterMetaType<Job>();
-
-	MainWindow mainWindow;
-	if (mainWindow.IsFinished())
-	{
-		// User closed/cancelled the New Session dialog
-		return 0;
-	}
-	mainWindow.show();
-
-	return app.exec();
-}
+#endif

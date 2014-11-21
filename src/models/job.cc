@@ -14,30 +14,8 @@
  * *****************************************************************************
  */
 
-#include <QApplication>
-
 #include "models/job.h"
 
-#include "main_window.h"
-
-int
-main(int argc, char *argv[])
+Job::Job()
 {
-	QApplication app(argc, argv);
-	app.setOrganizationName("Spectra Logic");
-	app.setOrganizationDomain("spectralogic.com");
-	app.setApplicationName("DS3 Explorer");
-
-	// Job is used as an argument in a signal/slot connection
-	qRegisterMetaType<Job>();
-
-	MainWindow mainWindow;
-	if (mainWindow.IsFinished())
-	{
-		// User closed/cancelled the New Session dialog
-		return 0;
-	}
-	mainWindow.show();
-
-	return app.exec();
 }

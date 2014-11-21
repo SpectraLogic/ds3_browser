@@ -16,15 +16,15 @@
 
 #include "lib/work_items/bulk_put_work_item.h"
 
-BulkPutWorkItem::BulkPutWorkItem(const QString& bucketName,
+BulkPutWorkItem::BulkPutWorkItem(const QString& host,
+				 const QString& bucketName,
 				 const QString& prefix,
 				 const QList<QUrl> urls)
-	: m_bucketName(bucketName),
+	: BulkWorkItem(host, bucketName),
 	  m_prefix(prefix),
 	  m_urls(urls),
 	  m_urlsIterator(m_urls.constBegin()),
 	  m_dirIterator(NULL),
-	  m_response(NULL),
 	  m_workingObjListCount(0)
 {
 }

@@ -20,6 +20,7 @@
 #include <QProxyStyle>
 
 #include "lib/client.h"
+#include "lib/logger.h"
 #include "models/ds3_browser_model.h"
 #include "models/session.h"
 #include "views/buckets/new_bucket_dialog.h"
@@ -86,6 +87,9 @@ DS3Browser::DS3Browser(Session* session, QWidget* parent, Qt::WindowFlags flags)
 
 	connect(m_treeView, SIGNAL(clicked(const QModelIndex&)),
 		this, SLOT(OnModelItemClick(const QModelIndex&)));
+
+	connect(m_client, SIGNAL(JobProgressUpdate(const Job)),
+		this, SLOT(UpdateJobProgress(const Job)));
 }
 
 DS3Browser::~DS3Browser()
@@ -167,4 +171,10 @@ DS3Browser::OnModelItemClick(const QModelIndex& index)
 	if (m_model->IsPageBreak(index)) {
 		m_model->fetchMore(index.parent());
 	}
+}
+
+void
+DS3Browser::UpdateJobProgress(const Job job)
+{
+	LOG_DEBUG("Job Progress Update - Host: " + job.GetHost() + ", Bucket: " + job.GetBucketName());
 }

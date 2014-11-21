@@ -22,6 +22,7 @@
 #include <QHash>
 
 #include "lib/work_items/bulk_put_work_item.h"
+#include "lib/work_items/object_work_item.h"
 #include "lib/client.h"
 #include "lib/logger.h"
 #include "models/session.h"
@@ -33,7 +34,15 @@ const QString Client::DELIMITER = "/";
 // The S3 server imposes this limit although we might want to lower it
 const uint64_t Client::BULK_PUT_PAGE_LIMIT = 500000;
 
-static size_t read_from_qfile(void* buffer, size_t size, size_t count, void* user_data);
+static size_t read_from_file(void* buffer, size_t size, size_t count, void* user_data);
+
+// Simple struct to wrap a Client and an ObjectWorkItem so the C SDK can
+// send both to the file read/write callback functions.
+struct ClientAndObjectWorkItem
+{
+	Client* client;
+	ObjectWorkItem* objectWorkItem;
+};
 
 Client::Client(const Session* session)
 {
@@ -41,7 +50,8 @@ Client::Client(const Session* session)
 				   session->GetSecretKey().toUtf8().constData());
 
 	QString protocol = session->GetProtocolName();
-	m_endpoint = protocol + "://" + session->GetHost();
+	m_host = session->GetHost();
+	m_endpoint = protocol + "://" + m_host;
 	QString port = session->GetPort();
 	if (!port.isEmpty() && port != "80" && port != "443") {
 		m_endpoint += ":" + port;
@@ -101,14 +111,16 @@ Client::BulkPut(const QString& bucketName,
 		const QString& prefix,
 		const QList<QUrl> urls)
 {
-	BulkPutWorkItem* workItem = new BulkPutWorkItem(bucketName, prefix, urls);
+	BulkPutWorkItem* workItem = new BulkPutWorkItem(m_host, bucketName,
+							prefix, urls);
 	run(this, &Client::PrepareBulkPuts, workItem);
 }
 
 void
 Client::PutObject(const QString& bucket,
 		  const QString& object,
-		  const QString& fileName)
+		  const QString& fileName,
+		  BulkPutWorkItem* bulkPutWorkItem)
 {
 	LOG_DEBUG("PUT OBJECT: " + object + ", FILE: " + fileName);
 
@@ -123,9 +135,14 @@ Client::PutObject(const QString& bucket,
 		error = ds3_put_object(m_client, request, NULL, NULL);
 	} else {
 		QFile file(fileName);
-		if (file.open(QIODevice::ReadOnly)) {
-			error = ds3_put_object(m_client, request, &file, read_from_qfile);
-			file.close();
+		ObjectWorkItem objWorkItem(bucket, object, fileName, bulkPutWorkItem);
+		ClientAndObjectWorkItem caowi;
+		caowi.client = this;
+		caowi.objectWorkItem = &objWorkItem;
+		if (objWorkItem.OpenFile(QIODevice::ReadOnly)) {
+			error = ds3_put_object(m_client, request,
+					       &caowi,
+					       read_from_file);
 		} else {
 			LOG_ERROR("PUT object failed: unable to open file " + fileName);
 		}
@@ -323,7 +340,7 @@ Client::PutBulkObjectList(BulkPutWorkItem* workItem,
 		ds3_bulk_object* bulkObj = &list->list[k];
 		QString objName = QString(bulkObj->name->value);
 		QString filePath = workItem->GetObjMapValue(objName);
-		PutObject(bucketName, objName, filePath);
+		PutObject(bucketName, objName, filePath, workItem);
 	}
 	workItem->DecWorkingObjListCount();
 	DeleteOrRequeueBulkPutWorkItem(workItem);
@@ -347,8 +364,23 @@ Client::DeleteOrRequeueBulkPutWorkItem(BulkPutWorkItem* workItem)
 }
 
 static size_t
-read_from_qfile(void* buffer, size_t size, size_t count, void* user_data)
+read_from_file(void* buffer, size_t size, size_t count, void* user_data)
 {
-	QFile* qfile = (QFile*)user_data;
-	return (qfile->read((char*)buffer, size * count));
+	ClientAndObjectWorkItem* caowi = static_cast<ClientAndObjectWorkItem*>(user_data);
+	Client* client = caowi->client;
+	ObjectWorkItem* workItem = caowi->objectWorkItem;
+	return client->ReadFile(workItem, (char*)buffer, size, count);
+}
+
+size_t
+Client::ReadFile(ObjectWorkItem* workItem, char* buffer,
+		 size_t size, size_t count)
+{
+	size_t bytesRead = workItem->ReadFile(buffer, size, count);
+	BulkWorkItem* bulkWorkItem = workItem->GetBulkWorkItem();
+	if (bulkWorkItem != NULL) {
+		Job job = bulkWorkItem->ToJob();
+		emit JobProgressUpdate(job);
+	}
+	return bytesRead;
 }

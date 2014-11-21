@@ -14,30 +14,32 @@
  * *****************************************************************************
  */
 
-#include <QApplication>
+#include "lib/work_items/bulk_work_item.h"
+#include "lib/work_items/object_work_item.h"
 
-#include "models/job.h"
-
-#include "main_window.h"
-
-int
-main(int argc, char *argv[])
+ObjectWorkItem::ObjectWorkItem(const QString& bucketName,
+			       const QString& objectName,
+			       const QString& fileName,
+			       BulkWorkItem* bulkWorkItem)
+	: WorkItem(),
+	  m_bucketName(bucketName),
+	  m_objectName(objectName),
+	  m_file(fileName),
+	  m_bulkWorkItem(bulkWorkItem)
 {
-	QApplication app(argc, argv);
-	app.setOrganizationName("Spectra Logic");
-	app.setOrganizationDomain("spectralogic.com");
-	app.setApplicationName("DS3 Explorer");
+}
 
-	// Job is used as an argument in a signal/slot connection
-	qRegisterMetaType<Job>();
+ObjectWorkItem::~ObjectWorkItem()
+{
+	m_file.close();
+}
 
-	MainWindow mainWindow;
-	if (mainWindow.IsFinished())
-	{
-		// User closed/cancelled the New Session dialog
-		return 0;
+size_t
+ObjectWorkItem::ReadFile(char* data, size_t size, size_t count)
+{
+	size_t bytesRead = m_file.read(data, size * count);
+	if (m_bulkWorkItem != NULL) {
+		m_bulkWorkItem->UpdateBytesTransferred(bytesRead);
 	}
-	mainWindow.show();
-
-	return app.exec();
+	return bytesRead;
 }

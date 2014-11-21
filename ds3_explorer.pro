@@ -40,12 +40,16 @@ INCLUDEPATH += src
 HEADERS = \
 	src/main_window.h \
 	src/helpers/number_helper.h \
+	src/lib/work_items/bulk_work_item.h \
 	src/lib/work_items/bulk_put_work_item.h \
+	src/lib/work_items/object_work_item.h \
+	src/lib/work_items/work_item.h \
 	src/lib/client.h \
 	src/lib/logger.h \
 	src/lib/watchers/get_bucket_watcher.h \
 	src/lib/watchers/get_service_watcher.h \
 	src/models/ds3_browser_model.h \
+	src/models/job.h \
 	src/models/session.h \
 	src/views/browser.h \
 	src/views/buckets/new_bucket_dialog.h \
@@ -59,11 +63,14 @@ SOURCES = \
 	src/main.cc \
 	src/main_window.cc \
 	src/helpers/number_helper.cc \
+	src/lib/work_items/bulk_work_item.cc \
 	src/lib/work_items/bulk_put_work_item.cc \
+	src/lib/work_items/object_work_item.cc \
 	src/lib/client.cc \
 	src/lib/watchers/get_bucket_watcher.cc \
 	src/lib/watchers/get_service_watcher.cc \
 	src/models/ds3_browser_model.cc \
+	src/models/job.cc \
 	src/models/session.cc \
 	src/views/browser.cc \
 	src/views/buckets/new_bucket_dialog.cc \

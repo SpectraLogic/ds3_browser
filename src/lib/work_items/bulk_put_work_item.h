@@ -24,19 +24,19 @@
 #include <QString>
 #include <QUrl>
 
-#include <ds3.h>
+#include "lib/work_items/bulk_work_item.h"
 
 // BulkPutWorkItem, a container class that stores all data necessary to perform
 // a DS3 bulk put operation.
-class BulkPutWorkItem
+class BulkPutWorkItem : public BulkWorkItem
 {
 public:
-	BulkPutWorkItem(const QString& bucketName,
+	BulkPutWorkItem(const QString& host,
+			const QString& bucketName,
 			const QString& prefix,
 			const QList<QUrl> urls);
 	~BulkPutWorkItem();
 
-	const QString& GetBucketName() const;
 	const QString& GetPrefix() const;
 	QList<QUrl>::const_iterator& GetUrlsIterator();
 	const QList<QUrl>::const_iterator GetUrlsConstEnd() const;
@@ -59,29 +59,18 @@ public:
 	bool IsPageFinished() const;
 	bool IsFinished() const;
 
-	ds3_bulk_response* GetResponse() const;
-	void SetResponse(ds3_bulk_response* response);
-
 private:
-	QString m_bucketName;
 	QString m_prefix;
 	QList<QUrl> m_urls;
 	QList<QUrl>::const_iterator m_urlsIterator;
 	QDirIterator* m_dirIterator;
 	QHash<QString, QString> m_objMap;
-	ds3_bulk_response* m_response;
 
 	// The number of active object list threads.  This is used to determine
 	// if the Client is finished with this work item's bulkput page.
 	int m_workingObjListCount;
 	mutable QMutex m_workingObjListCountLock;
 };
-
-inline const QString&
-BulkPutWorkItem::GetBucketName() const
-{
-	return m_bucketName;
-}
 
 inline const QString&
 BulkPutWorkItem::GetPrefix() const
@@ -175,18 +164,6 @@ inline int
 BulkPutWorkItem::GetWorkingObjListCount() const
 {
 	return m_workingObjListCount;
-}
-
-inline ds3_bulk_response*
-BulkPutWorkItem::GetResponse() const
-{
-	return m_response;
-}
-
-inline void
-BulkPutWorkItem::SetResponse(ds3_bulk_response* response)
-{
-	m_response = response;
 }
 
 #endif
