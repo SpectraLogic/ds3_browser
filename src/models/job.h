@@ -21,6 +21,10 @@
 #include <QMetaType>
 #include <QString>
 
+// Job, a container class that is a higher-level version of BulkWorkItem that's
+// intended to be used by the Client to report job progress updates to the GUI
+// components (e.g. DS3Browser).  This holds the minimum information necessary
+// to report progress updates to the user.
 class Job
 {
 public:
