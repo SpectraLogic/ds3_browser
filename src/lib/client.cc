@@ -122,8 +122,6 @@ Client::PutObject(const QString& bucket,
 		  const QString& fileName,
 		  BulkPutWorkItem* bulkPutWorkItem)
 {
-	LOG_DEBUG("PUT OBJECT: " + object + ", FILE: " + fileName);
-
 	QFileInfo fileInfo(fileName);
 	ds3_request* request = ds3_init_put_object(bucket.toUtf8().constData(),
 						   object.toUtf8().constData(),
@@ -265,12 +263,10 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 				if (subFileInfo.isDir()) {
 					subObjName += "/";
 				}
-				LOG_DEBUG("Inserting " + subObjName + ", " + subFilePath);
 				workItem->InsertObjMap(subObjName, subFilePath);
 			}
 			workItem->DeleteDirIterator();
 		}
-		LOG_DEBUG("Inserting " + objName + ", " + filePath);
 		workItem->InsertObjMap(objName, filePath);
 	}
 
