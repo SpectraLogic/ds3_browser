@@ -38,7 +38,6 @@ Console::Instance()
 
 Console::Console(QWidget* parent)
 	: QWidget(parent),
-	  m_lock(new QMutex),
 	  m_logLevel(DEFAULT_LOG_LEVEL),
 	  m_numLines(0)
 {
@@ -83,7 +82,7 @@ Console::LogPrivate(int level, const QString& msg)
 		break;
 	};
 
-	m_lock->lock();
+	m_lock.lock();
 	if (m_numLines >= MAX_LINES) {
 		m_text->moveCursor(QTextCursor::Start,
 				   QTextCursor::MoveAnchor);
@@ -100,5 +99,5 @@ Console::LogPrivate(int level, const QString& msg)
 	m_text->append(fullMsg);
 	m_numLines++;
 	m_text->ensureCursorVisible();
-	m_lock->unlock();
+	m_lock.unlock();
 }
