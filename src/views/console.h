@@ -43,7 +43,7 @@ private:
 
 	static Console* s_instance;
 
-	QMutex* m_lock;;
+	QMutex* m_lock;
 	Level m_logLevel;
 	unsigned int m_numLines;
 	QTextEdit* m_text;
