@@ -56,6 +56,7 @@ HEADERS = \
 	src/views/console.h \
 	src/views/ds3_browser.h \
 	src/views/host_browser.h \
+	src/views/job_view.h \
 	src/views/jobs_view.h \
 	src/views/session_dialog.h \
 	src/views/session_view.h

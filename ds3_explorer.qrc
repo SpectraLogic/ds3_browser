@@ -3,5 +3,6 @@
 	<file>resources/icons/bucket.png</file>
 	<file>resources/icons/file.png</file>
 	<file>resources/icons/files.png</file>
+	<file>resources/stylesheets/main.qss</file>
 </qresource>
 </RCC>

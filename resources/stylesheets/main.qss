@@ -1,0 +1,10 @@
+JobView QLabel {
+	font-size: 12px;
+}
+
+JobView QLabel#type {
+	font-size: 20px;
+	font-weight: bold;
+}
+
+JobView { background-color: red; }

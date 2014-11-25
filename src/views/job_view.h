@@ -14,37 +14,43 @@
  * *****************************************************************************
  */
 
-#include <QApplication>
-#include <QFile>
+#include <QGridLayout>
+#include <QLabel>
+#include <QPainter>
+#include <QProgressBar>
+#include <QString>
+#include <QStyleOption>
+#include <QWidget>
 
 #include "models/job.h"
 
-#include "main_window.h"
-
-int
-main(int argc, char *argv[])
+class JobView : public QWidget
 {
-	QApplication app(argc, argv);
-	app.setOrganizationName("Spectra Logic");
-	app.setOrganizationDomain("spectralogic.com");
-	app.setApplicationName("DS3 Explorer");
+	Q_OBJECT
 
-	QFile qssf(":/resources/stylesheets/main.qss");
-	qssf.open(QFile::ReadOnly);
-	QString qss(qssf.readAll());
-	qssf.close();
-	app.setStyleSheet(qss);
+public:
+	static const QString s_types[];
 
-	// Job is used as an argument in a signal/slot connection
-	qRegisterMetaType<Job>();
+	JobView(Job job, QWidget* parent = 0);
 
-	MainWindow mainWindow;
-	if (mainWindow.IsFinished())
-	{
-		// User closed/cancelled the New Session dialog
-		return 0;
-	}
-	mainWindow.show();
+	void Update(Job job);
+	const QString ToProgressSummary(Job) const;
+	const QString& ToTypeString(Job) const;
 
-	return app.exec();
+protected:
+	void paintEvent(QPaintEvent* event);
+
+private:
+	QLabel* m_host;
+	QLabel* m_type;
+	QProgressBar* m_progressBar;
+	QLabel* m_progressSummary;
+	QLabel* m_start;
+	QGridLayout* m_layout;
+};
+
+inline const QString&
+JobView::ToTypeString(Job job) const
+{
+	return s_types[job.GetType()];
 }

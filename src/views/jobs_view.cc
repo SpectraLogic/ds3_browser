@@ -14,37 +14,14 @@
  * *****************************************************************************
  */
 
-#include <QProgressBar>
-#include <QGridLayout>
-#include <QLabel>
-
 #include "lib/logger.h"
 #include "helpers/number_helper.h"
+#include "views/job_view.h"
 #include "views/jobs_view.h"
 
 //
 // JobView
 //
-
-class JobView : public QWidget
-{
-public:
-	static const QString s_types[];
-
-	JobView(Job job, QWidget* parent = 0);
-
-	void Update(Job job);
-	const QString ToProgressSummary(Job) const;
-	const QString& ToTypeString(Job) const;
-
-private:
-	QLabel* m_host;
-	QLabel* m_type;
-	QProgressBar* m_progressBar;
-	QLabel* m_progressSummary;
-	QLabel* m_start;
-	QGridLayout* m_layout;
-};
 
 const QString JobView::s_types[] = { "GET", "PUT" };
 
@@ -55,6 +32,7 @@ JobView::JobView(Job job, QWidget* parent)
 	setLayout(m_layout);
 
 	m_type = new QLabel;
+	m_type->setObjectName("type");
 	m_host = new QLabel;
 	m_start = new QLabel;
 
@@ -70,6 +48,9 @@ JobView::JobView(Job job, QWidget* parent)
 	m_layout->addWidget(m_start, 2, 0);
 	m_layout->addWidget(m_progressBar, 1, 1);
 	m_layout->addWidget(m_progressSummary, 2, 1);
+
+	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	setFixedSize(400, 100);
 }
 
 void
@@ -82,7 +63,7 @@ JobView::Update(Job job)
 	m_type->setText(ToTypeString(job));
 }
 
-inline const QString
+const QString
 JobView::ToProgressSummary(Job job) const
 {
 	QString total = NumberHelper::ToHumanSize(job.GetSize());
@@ -107,10 +88,15 @@ JobView::ToProgressSummary(Job job) const
 	return summary;
 }
 
-inline const QString&
-JobView::ToTypeString(Job job) const
+// Necessary since JobView has a styles applied to it via the main QSS file.
+// See Qt Style Sheets Reference.
+void
+JobView::paintEvent(QPaintEvent* /*event*/)
 {
-	return s_types[job.GetType()];
+	QStyleOption opt;
+	opt.init(this);
+	QPainter p(this);
+	style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
 
 //
@@ -121,6 +107,8 @@ JobsView::JobsView(QWidget* parent)
 	: QWidget(parent)
 {
 	m_layout = new QVBoxLayout(this);
+	m_layout->setAlignment(Qt::AlignTop);
+	m_layout->setContentsMargins(0, 0, 0, 0);
 	setLayout(m_layout);
 }
 
