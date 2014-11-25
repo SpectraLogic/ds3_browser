@@ -14,8 +14,6 @@
  * *****************************************************************************
  */
 
-#include <QApplication>
-#include <QItemDelegate>
 #include <QProgressBar>
 #include <QStyle>
 #include <QStyleOptionProgressBar>
