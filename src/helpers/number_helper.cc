@@ -51,4 +51,3 @@ NumberHelper::ToHumanSize(uint64_t bytes)
 
 	return (QString::number(num, 'f', precision) + " " + units);
 }
-

@@ -30,6 +30,13 @@ public:
 	static const uint64_t TB;
 
 	static QString ToHumanSize(uint64_t bytes);
+	static QString ToHumanRate(uint64_t bytes);
 };
+
+inline QString
+NumberHelper::ToHumanRate(uint64_t bytes)
+{
+	return (ToHumanSize(bytes) + "/S");
+}
 
 #endif

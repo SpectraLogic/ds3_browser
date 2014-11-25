@@ -76,6 +76,7 @@ BulkWorkItem::ToJob() const
 	job.SetID(GetID());
 	job.SetType(GetType());
 	job.SetStart(GetStart());
+	job.SetTransferStart(GetTransferStart());
 	job.SetState(GetState());
 	job.SetHost(GetHost());
 	job.SetBucketName(GetBucketName());

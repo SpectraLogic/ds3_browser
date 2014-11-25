@@ -86,8 +86,24 @@ inline const QString
 JobView::ToProgressSummary(Job job) const
 {
 	QString total = NumberHelper::ToHumanSize(job.GetSize());
-	QString transferred = NumberHelper::ToHumanSize(job.GetBytesTransferred());
+	uint64_t rawTransferred = job.GetBytesTransferred();
+	QString transferred = NumberHelper::ToHumanSize(rawTransferred);
+
+	QDateTime transferStartDT = job.GetTransferStart();
+	QString rate;
+	if (transferStartDT.isValid()) {
+		qint64 transferStart = transferStartDT.toMSecsSinceEpoch();
+		qint64 now = QDateTime::currentDateTime().toMSecsSinceEpoch();
+		qint64 elapsed = (now - transferStart) / 1000;
+		if (elapsed > 0) {
+			rate = NumberHelper::ToHumanRate(rawTransferred / elapsed);
+		}
+	}
+
 	QString summary = transferred + " of " + total;
+	if (!rate.isEmpty()) {
+		summary += " - " + rate;
+	}
 	return summary;
 }
 

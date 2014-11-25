@@ -42,6 +42,7 @@ public:
 	const QUuid GetID() const;
 	Type GetType() const;
 	const QDateTime& GetStart() const;
+	const QDateTime& GetTransferStart() const;
 	State GetState() const;
 	const QString& GetHost() const;
 	const QString& GetBucketName() const;
@@ -53,6 +54,7 @@ public:
 	void SetID(const QUuid& id);
 	void SetType(Type type);
 	void SetStart(const QDateTime& start);
+	void SetTransferStart(const QDateTime& start);
 	void SetState(State state);
 	void SetHost(const QString& host);
 	void SetBucketName(const QString& bucketName);
@@ -63,6 +65,7 @@ private:
 	QUuid m_id;
 	Type m_type;
 	QDateTime m_start;
+	QDateTime m_transferStart;
 	State m_state;
 	QString m_host;
 	QString m_bucketName;
@@ -89,6 +92,12 @@ inline const QDateTime&
 Job::GetStart() const
 {
 	return m_start;
+}
+
+inline const QDateTime&
+Job::GetTransferStart() const
+{
+	return m_transferStart;
 }
 
 inline Job::State
@@ -142,6 +151,12 @@ inline void
 Job::SetStart(const QDateTime& start)
 {
 	m_start = start;
+}
+
+inline void
+Job::SetTransferStart(const QDateTime& start)
+{
+	m_transferStart = start;
 }
 
 inline void

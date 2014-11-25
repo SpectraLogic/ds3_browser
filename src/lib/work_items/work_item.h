@@ -30,10 +30,17 @@ public:
 
 	const QUuid GetID() const;
 	const QDateTime& GetStart() const;
+	const QDateTime& GetTransferStart() const;
+
+	void SetTransferStartIfNull();
 
 private:
 	QUuid m_id;
+	// Time the WorkItem was created
 	QDateTime m_start;
+	// Time the actual transfer started, which could be different than
+	// m_start if a lot of prep time is required.
+	QDateTime m_transferStart;
 };
 
 inline const QUuid
@@ -46,6 +53,20 @@ inline const QDateTime&
 WorkItem::GetStart() const
 {
 	return m_start;
+}
+
+inline const QDateTime&
+WorkItem::GetTransferStart() const
+{
+	return m_transferStart;
+}
+
+inline void
+WorkItem::SetTransferStartIfNull()
+{
+	if (m_transferStart.isNull()) {
+		m_transferStart = QDateTime::currentDateTime();
+	}
 }
 
 #endif

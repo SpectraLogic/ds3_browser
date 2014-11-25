@@ -288,6 +288,7 @@ Client::DoBulkPut(BulkPutWorkItem* workItem)
 	LOG_DEBUG("DoBulkPuts");
 
 	workItem->SetState(Job::INPROGRESS);
+	workItem->SetTransferStartIfNull();
 	Job job = workItem->ToJob();
 	emit JobProgressUpdate(job);
 
