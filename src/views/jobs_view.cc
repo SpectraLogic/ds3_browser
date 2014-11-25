@@ -19,7 +19,6 @@
 #include <QProgressBar>
 #include <QStyle>
 #include <QStyleOptionProgressBar>
-#include <QListWidgetItem>
 
 #include "lib/logger.h"
 #include "views/jobs_view.h"
