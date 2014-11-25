@@ -17,6 +17,7 @@
 #include "lib/work_items/work_item.h"
 
 WorkItem::WorkItem()
-	: m_id(QUuid::createUuid())
+	: m_id(QUuid::createUuid()),
+	  m_start(QDateTime::currentDateTime())
 {
 }

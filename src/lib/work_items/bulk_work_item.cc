@@ -27,6 +27,10 @@ BulkWorkItem::BulkWorkItem(const QString& host, const QString& bucketName)
 {
 }
 
+BulkWorkItem::~BulkWorkItem()
+{
+}
+
 uint64_t
 BulkWorkItem::GetBytesTransferred() const
 {
@@ -70,6 +74,8 @@ BulkWorkItem::ToJob() const
 {
 	Job job;
 	job.SetID(GetID());
+	job.SetType(GetType());
+	job.SetStart(GetStart());
 	job.SetState(GetState());
 	job.SetHost(GetHost());
 	job.SetBucketName(GetBucketName());

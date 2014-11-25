@@ -15,8 +15,11 @@
  */
 
 #include <QProgressBar>
+#include <QGridLayout>
+#include <QLabel>
 
 #include "lib/logger.h"
+#include "helpers/number_helper.h"
 #include "views/jobs_view.h"
 
 //
@@ -26,34 +29,72 @@
 class JobView : public QWidget
 {
 public:
+	static const QString s_types[];
+
 	JobView(Job job, QWidget* parent = 0);
 
 	void Update(Job job);
+	const QString ToProgressSummary(Job) const;
+	const QString& ToTypeString(Job) const;
 
 private:
-	QVBoxLayout* m_layout;
-	QProgressBar* m_bar;
+	QLabel* m_host;
+	QLabel* m_type;
+	QProgressBar* m_progressBar;
+	QLabel* m_progressSummary;
+	QLabel* m_start;
+	QGridLayout* m_layout;
 };
+
+const QString JobView::s_types[] = { "GET", "PUT" };
 
 JobView::JobView(Job job, QWidget* parent)
 	: QWidget(parent)
 {
-	m_layout = new QVBoxLayout(this);
+	m_layout = new QGridLayout(this);
 	setLayout(m_layout);
 
-	m_bar = new QProgressBar();
-	m_bar->setMinimum(0);
-	m_bar->setMaximum(100);
+	m_type = new QLabel;
+	m_host = new QLabel;
+	m_start = new QLabel;
+
+	m_progressBar = new QProgressBar;
+	m_progressBar->setMinimum(0);
+	m_progressBar->setMaximum(100);
+	m_progressSummary = new QLabel;
 
 	Update(job);
 
-	m_layout->addWidget(m_bar);
+	m_layout->addWidget(m_type, 0, 0, 2, 1);
+	m_layout->addWidget(m_host, 1, 0);
+	m_layout->addWidget(m_start, 2, 0);
+	m_layout->addWidget(m_progressBar, 1, 1);
+	m_layout->addWidget(m_progressSummary, 2, 1);
 }
 
 void
 JobView::Update(Job job)
 {
-	m_bar->setValue(job.GetProgress());
+	m_host->setText(job.GetHost());
+	m_progressBar->setValue(job.GetProgress());
+	m_progressSummary->setText(ToProgressSummary(job));
+	m_start->setText(job.GetStart().toLocalTime().toString("M/d/yyyy h:mm AP"));
+	m_type->setText(ToTypeString(job));
+}
+
+inline const QString
+JobView::ToProgressSummary(Job job) const
+{
+	QString total = NumberHelper::ToHumanSize(job.GetSize());
+	QString transferred = NumberHelper::ToHumanSize(job.GetBytesTransferred());
+	QString summary = transferred + " of " + total;
+	return summary;
+}
+
+inline const QString&
+JobView::ToTypeString(Job job) const
+{
+	return s_types[job.GetType()];
 }
 
 //

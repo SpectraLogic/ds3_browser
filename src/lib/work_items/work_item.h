@@ -17,6 +17,7 @@
 #ifndef WORK_ITEM_H
 #define WORK_ITEM_H
 
+#include <QDateTime>
 #include <QUuid>
 
 // WorkItem, a container class that holds data necessary for Client to perform
@@ -28,15 +29,23 @@ public:
 	WorkItem();
 
 	const QUuid GetID() const;
+	const QDateTime& GetStart() const;
 
 private:
 	QUuid m_id;
+	QDateTime m_start;
 };
 
 inline const QUuid
 WorkItem::GetID() const
 {
 	return m_id;
+}
+
+inline const QDateTime&
+WorkItem::GetStart() const
+{
+	return m_start;
 }
 
 #endif

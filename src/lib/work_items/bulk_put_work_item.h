@@ -37,6 +37,8 @@ public:
 			const QList<QUrl> urls);
 	~BulkPutWorkItem();
 
+	Job::Type GetType() const;
+
 	const QString& GetPrefix() const;
 	QList<QUrl>::const_iterator& GetUrlsIterator();
 	const QList<QUrl>::const_iterator GetUrlsConstEnd() const;
@@ -71,6 +73,12 @@ private:
 	int m_workingObjListCount;
 	mutable QMutex m_workingObjListCountLock;
 };
+
+inline Job::Type
+BulkPutWorkItem::GetType() const
+{
+	return Job::PUT;
+}
 
 inline const QString&
 BulkPutWorkItem::GetPrefix() const

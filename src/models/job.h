@@ -18,6 +18,7 @@
 #define JOB_H
 
 #include <stdint.h>
+#include <QDateTime>
 #include <QMetaType>
 #include <QString>
 #include <QUuid>
@@ -36,7 +37,11 @@ public:
 	// store.
 	enum State { INITIALIZING, QUEUED, PREPARING, INPROGRESS, FINISHED };
 
+	enum Type { GET, PUT };
+
 	const QUuid GetID() const;
+	Type GetType() const;
+	const QDateTime& GetStart() const;
 	State GetState() const;
 	const QString& GetHost() const;
 	const QString& GetBucketName() const;
@@ -46,6 +51,8 @@ public:
 	bool IsFinished() const;
 
 	void SetID(const QUuid& id);
+	void SetType(Type type);
+	void SetStart(const QDateTime& start);
 	void SetState(State state);
 	void SetHost(const QString& host);
 	void SetBucketName(const QString& bucketName);
@@ -54,6 +61,8 @@ public:
 
 private:
 	QUuid m_id;
+	Type m_type;
+	QDateTime m_start;
 	State m_state;
 	QString m_host;
 	QString m_bucketName;
@@ -68,6 +77,18 @@ inline const QUuid
 Job::GetID() const
 {
 	return m_id;
+}
+
+inline Job::Type
+Job::GetType() const
+{
+	return m_type;
+}
+
+inline const QDateTime&
+Job::GetStart() const
+{
+	return m_start;
 }
 
 inline Job::State
@@ -109,6 +130,18 @@ inline void
 Job::SetID(const QUuid& id)
 {
 	m_id = id;
+}
+
+inline void
+Job::SetType(Type type)
+{
+	m_type = type;
+}
+
+inline void
+Job::SetStart(const QDateTime& start)
+{
+	m_start = start;
 }
 
 inline void

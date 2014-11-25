@@ -30,10 +30,12 @@ class BulkWorkItem : public WorkItem
 {
 public:
 	BulkWorkItem(const QString& host, const QString& bucketName);
+	virtual ~BulkWorkItem();
 
 	// The S3 server assigned ID for this job.  This isn't valid until
 	// a ds3_bulk_response response, with a valid job ID, has been set.
 	const QString GetJobID() const;
+	virtual Job::Type GetType() const = 0;
 	Job::State GetState() const;
 	const QString& GetHost() const;
 	const QString& GetBucketName() const;
