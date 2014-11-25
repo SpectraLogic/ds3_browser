@@ -23,6 +23,7 @@
 class Client;
 class DS3BrowserModel;
 class DS3BrowserTreeViewStyle;
+class JobsView;
 class Session;
 
 // DS3Browser, a Browser class used for browsing a DS3 system (e.g a
@@ -33,12 +34,10 @@ class DS3Browser : public Browser
 
 public:
 	DS3Browser(Session* session,
+		   JobsView* jobsView,
 		   QWidget* parent = 0,
 		   Qt::WindowFlags flags = 0);
 	~DS3Browser();
-
-public slots:
-	void UpdateJobProgress(const Job job);
 
 protected:
 	void AddCustomToolBarActions();
@@ -58,6 +57,7 @@ private:
 	DS3BrowserModel* m_model;
 	DS3BrowserTreeViewStyle* m_treeViewStyle;
 	Client* m_client;
+	JobsView* m_jobsView;
 };
 
 #endif

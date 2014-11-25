@@ -24,15 +24,17 @@
 #include <ds3.h>
 
 #include "lib/work_items/work_item.h"
-
-class Job;
+#include "models/job.h"
 
 class BulkWorkItem : public WorkItem
 {
 public:
 	BulkWorkItem(const QString& host, const QString& bucketName);
 
+	// The S3 server assigned ID for this job.  This isn't valid until
+	// a ds3_bulk_response response, with a valid job ID, has been set.
 	const QString GetJobID() const;
+	Job::State GetState() const;
 	const QString& GetHost() const;
 	const QString& GetBucketName() const;
 	uint64_t GetSize() const;
@@ -42,9 +44,12 @@ public:
 	ds3_bulk_response* GetResponse() const;
 	void SetResponse(ds3_bulk_response* response);
 
+	void SetState(Job::State state);
+
 	const Job ToJob() const;
 
 protected:
+	Job::State m_state;
 	QString m_host;
 	QString m_bucketName;
 	uint64_t m_bytesTransferred;
@@ -56,6 +61,12 @@ inline const QString&
 BulkWorkItem::GetHost() const
 {
 	return m_host;
+}
+
+inline Job::State
+BulkWorkItem::GetState() const
+{
+	return m_state;
 }
 
 inline const QString&
@@ -74,6 +85,12 @@ inline void
 BulkWorkItem::SetResponse(ds3_bulk_response* response)
 {
 	m_response = response;
+}
+
+inline void
+BulkWorkItem::SetState(Job::State state)
+{
+	m_state = state;
 }
 
 #endif

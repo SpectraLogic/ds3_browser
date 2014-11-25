@@ -22,8 +22,10 @@
 #include <QDockWidget>
 #include <QMenu>
 #include <QTabWidget>
+#include <QScrollArea>
 
 class Console;
+class JobsView;
 class Session;
 class SessionView;
 
@@ -53,7 +55,11 @@ private:
 	QTabWidget* m_sessionTabs;
 	SessionView* m_sessionView;
 
-	Console* m_console;;
+	JobsView* m_jobsView;
+	QDockWidget* m_jobsDock;
+	QScrollArea* m_jobsScroll;
+
+	Console* m_console;
 	QDockWidget* m_consoleDock;
 
 private slots:

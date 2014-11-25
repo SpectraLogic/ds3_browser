@@ -21,6 +21,7 @@
 #include "main_window.h"
 #include "models/session.h"
 #include "views/console.h"
+#include "views/jobs_view.h"
 #include "views/session_dialog.h"
 #include "views/session_view.h"
 
@@ -42,12 +43,24 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
 	CreateMenus();
 
+	m_jobsDock = new QDockWidget("Jobs", this);
+	m_jobsDock->setObjectName("jobs dock");
+	m_jobsView = new JobsView(this);
+	m_jobsScroll = new QScrollArea;
+	m_jobsScroll->setWidget(m_jobsView);
+	m_jobsScroll->setWidgetResizable(true);
+	m_jobsDock->setWidget(m_jobsScroll);
+	addDockWidget(Qt::BottomDockWidgetArea, m_jobsDock);
+
 	m_consoleDock = new QDockWidget("Log", this);
 	m_consoleDock->setObjectName("console dock");
 	m_consoleDock->setWidget(Console::Instance());
 	addDockWidget(Qt::BottomDockWidgetArea, m_consoleDock);
 
-	m_sessionView = new SessionView(session, this);
+	tabifyDockWidget(m_jobsDock, m_consoleDock);
+	setTabPosition(Qt::BottomDockWidgetArea, QTabWidget::North);
+
+	m_sessionView = new SessionView(session, m_jobsView, this);
 	m_sessionTabs->addTab(m_sessionView,
 			      session->GetHost());
 	setCentralWidget(m_sessionTabs);

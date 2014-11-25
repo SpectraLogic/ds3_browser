@@ -56,6 +56,7 @@ HEADERS = \
 	src/views/console.h \
 	src/views/ds3_browser.h \
 	src/views/host_browser.h \
+	src/views/jobs_view.h \
 	src/views/session_dialog.h \
 	src/views/session_view.h
 
@@ -66,6 +67,7 @@ SOURCES = \
 	src/lib/work_items/bulk_work_item.cc \
 	src/lib/work_items/bulk_put_work_item.cc \
 	src/lib/work_items/object_work_item.cc \
+	src/lib/work_items/work_item.cc \
 	src/lib/client.cc \
 	src/lib/watchers/get_bucket_watcher.cc \
 	src/lib/watchers/get_service_watcher.cc \
@@ -77,6 +79,7 @@ SOURCES = \
 	src/views/console.cc \
 	src/views/ds3_browser.cc \
 	src/views/host_browser.cc \
+	src/views/jobs_view.cc \
 	src/views/session_dialog.cc \
 	src/views/session_view.cc
 

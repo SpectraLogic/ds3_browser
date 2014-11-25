@@ -113,6 +113,9 @@ Client::BulkPut(const QString& bucketName,
 {
 	BulkPutWorkItem* workItem = new BulkPutWorkItem(m_host, bucketName,
 							prefix, urls);
+	workItem->SetState(Job::QUEUED);
+	Job job = workItem->ToJob();
+	emit JobProgressUpdate(job);
 	run(this, &Client::PrepareBulkPuts, workItem);
 }
 
@@ -218,6 +221,10 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 {
 	LOG_DEBUG("PrepareBulkPuts");
 
+	workItem->SetState(Job::PREPARING);
+	Job job = workItem->ToJob();
+	emit JobProgressUpdate(job);
+
 	workItem->ClearObjMap();
 	QString normPrefix = workItem->GetPrefix();
 	if (!normPrefix.isEmpty()) {
@@ -279,6 +286,10 @@ void
 Client::DoBulkPut(BulkPutWorkItem* workItem)
 {
 	LOG_DEBUG("DoBulkPuts");
+
+	workItem->SetState(Job::INPROGRESS);
+	Job job = workItem->ToJob();
+	emit JobProgressUpdate(job);
 
 	uint64_t numFiles = workItem->GetObjMapSize();
 	ds3_bulk_object_list *bulkObjList = ds3_init_bulk_object_list(numFiles);
@@ -348,6 +359,9 @@ Client::DeleteOrRequeueBulkPutWorkItem(BulkPutWorkItem* workItem)
 	if (workItem->IsPageFinished()) {
 		if (workItem->IsFinished()) {
 			LOG_DEBUG("Finished with bulk put work item.  Deleting it.");
+			workItem->SetState(Job::FINISHED);
+			Job job = workItem->ToJob();
+			emit JobProgressUpdate(job);
 			delete workItem;
 		} else {
 			LOG_DEBUG("More bulk put pages to go.  Starting PrepareBulkPuts again.");

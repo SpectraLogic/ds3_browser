@@ -17,14 +17,15 @@
 #include "models/session.h"
 #include "views/ds3_browser.h"
 #include "views/host_browser.h"
+#include "views/jobs_view.h"
 #include "views/session_view.h"
 
-SessionView::SessionView(Session* session, QWidget* parent)
+SessionView::SessionView(Session* session, JobsView* jobsView, QWidget* parent)
 	: QWidget(parent),
 	  m_session(session)
 {
 	m_hostBrowser = new HostBrowser;
-	m_ds3Browser = new DS3Browser(m_session);
+	m_ds3Browser = new DS3Browser(m_session, jobsView);
 
 	m_splitter = new QSplitter;
 	m_splitter->addWidget(m_hostBrowser);

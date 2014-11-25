@@ -17,5 +17,25 @@
 #include "models/job.h"
 
 Job::Job()
+	: m_state(INITIALIZING),
+	  m_size(0),
+	  m_bytesTransferred(0)
 {
 }
+
+int
+Job::GetProgress() const
+{
+	if (m_size == 0) {
+		return 0;
+	}
+
+	int progress = (m_bytesTransferred * 100) / m_size;
+	if (progress < 0) {
+		progress = 0;
+	} else if (progress > 100) {
+		progress = 100;
+	}
+	return progress;
+}
+

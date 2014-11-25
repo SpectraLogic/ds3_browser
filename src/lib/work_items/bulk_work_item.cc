@@ -19,6 +19,7 @@
 
 BulkWorkItem::BulkWorkItem(const QString& host, const QString& bucketName)
 	: WorkItem(),
+	  m_state(Job::INITIALIZING),
 	  m_host(host),
 	  m_bucketName(bucketName),
 	  m_bytesTransferred(0),
@@ -68,7 +69,8 @@ const Job
 BulkWorkItem::ToJob() const
 {
 	Job job;
-	job.SetID(GetJobID());
+	job.SetID(GetID());
+	job.SetState(GetState());
 	job.SetHost(GetHost());
 	job.SetBucketName(GetBucketName());
 	job.SetSize(GetSize());

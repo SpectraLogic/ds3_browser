@@ -25,6 +25,7 @@
 #include "models/session.h"
 #include "views/buckets/new_bucket_dialog.h"
 #include "views/ds3_browser.h"
+#include "views/jobs_view.h"
 
 // A custom DS3Browser QTreeView style to override how the drag/drop indicator
 // rectangle is drawn.  The default is to draw a rectangle around the table
@@ -70,8 +71,10 @@ DS3BrowserTreeViewStyle::drawPrimitive(PrimitiveElement element,
 	QProxyStyle::drawPrimitive(element, option, painter, widget);
 }
 
-DS3Browser::DS3Browser(Session* session, QWidget* parent, Qt::WindowFlags flags)
-	: Browser(parent, flags)
+DS3Browser::DS3Browser(Session* session, JobsView* jobsView,
+		       QWidget* parent, Qt::WindowFlags flags)
+	: Browser(parent, flags),
+	  m_jobsView(jobsView)
 {
 	AddCustomToolBarActions();
 
@@ -89,7 +92,7 @@ DS3Browser::DS3Browser(Session* session, QWidget* parent, Qt::WindowFlags flags)
 		this, SLOT(OnModelItemClick(const QModelIndex&)));
 
 	connect(m_client, SIGNAL(JobProgressUpdate(const Job)),
-		this, SLOT(UpdateJobProgress(const Job)));
+		m_jobsView, SLOT(UpdateJob(const Job)));
 }
 
 DS3Browser::~DS3Browser()
@@ -171,10 +174,4 @@ DS3Browser::OnModelItemClick(const QModelIndex& index)
 	if (m_model->IsPageBreak(index)) {
 		m_model->fetchMore(index.parent());
 	}
-}
-
-void
-DS3Browser::UpdateJobProgress(const Job job)
-{
-	LOG_DEBUG("Job Progress Update - Host: " + job.GetHost() + ", Bucket: " + job.GetBucketName());
 }

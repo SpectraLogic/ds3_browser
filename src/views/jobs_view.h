@@ -14,34 +14,35 @@
  * *****************************************************************************
  */
 
-#ifndef SESSION_VIEW_H
-#define SESSION_VIEW_H
+#ifndef JOBS_VIEW_H
+#define JOBS_VIEW_H
 
+#include <QHash>
+#include <QList>
+#include <QMutex>
+#include <QString>
+#include <QUuid>
 #include <QVBoxLayout>
-#include <QSplitter>
 #include <QWidget>
 
-class DS3Browser;
-class HostBrowser;
-class JobsView;
-class Session;
+#include "models/job.h"
 
-// SessionView, the overall view that is used for each session.  It represents
-// the host and DS3 system in a split pane with the host on the left and
-// DS3 system on the right.
-class SessionView : public QWidget
+class JobView;
+
+class JobsView : public QWidget
 {
+	Q_OBJECT
+
 public:
-	SessionView(Session* session, JobsView* jobsView, QWidget* parent);
-	~SessionView();
+	JobsView(QWidget* parent = 0);
+
+public slots:
+	void UpdateJob(const Job job);
 
 private:
-	DS3Browser* m_ds3Browser;
-	HostBrowser* m_hostBrowser;
-	Session* m_session;
-
-	QVBoxLayout* m_topLayout;
-	QSplitter* m_splitter;
+	QHash<QUuid, JobView*> m_jobViews;
+	mutable QMutex m_jobsLock;
+	QVBoxLayout* m_layout;
 };
 
 #endif

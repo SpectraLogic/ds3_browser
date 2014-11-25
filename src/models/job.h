@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <QMetaType>
 #include <QString>
+#include <QUuid>
 
 // Job, a container class that is a higher-level version of BulkWorkItem that's
 // intended to be used by the Client to report job progress updates to the GUI
@@ -30,20 +31,30 @@ class Job
 public:
 	Job();
 
-	const QString& GetID() const;
+	// FINISHED currently means the job has been successfully transferred
+	// to the DS3 system's cache and not necessarily it's backing tape
+	// store.
+	enum State { INITIALIZING, QUEUED, PREPARING, INPROGRESS, FINISHED };
+
+	const QUuid GetID() const;
+	State GetState() const;
 	const QString& GetHost() const;
 	const QString& GetBucketName() const;
 	uint64_t GetSize() const;
 	uint64_t GetBytesTransferred() const;
+	int GetProgress() const;
+	bool IsFinished() const;
 
-	void SetID(const QString& id);
+	void SetID(const QUuid& id);
+	void SetState(State state);
 	void SetHost(const QString& host);
 	void SetBucketName(const QString& bucketName);
 	void SetSize(uint64_t);
 	void SetBytesTransferred(uint64_t);
 
 private:
-	QString m_id;
+	QUuid m_id;
+	State m_state;
 	QString m_host;
 	QString m_bucketName;
 	uint64_t m_size;
@@ -53,10 +64,16 @@ private:
 // Job is used as an argument in a signal/slot connection
 Q_DECLARE_METATYPE(Job)
 
-inline const QString&
+inline const QUuid
 Job::GetID() const
 {
 	return m_id;
+}
+
+inline Job::State
+Job::GetState() const
+{
+	return m_state;
 }
 
 inline const QString&
@@ -83,10 +100,21 @@ Job::GetBytesTransferred() const
 	return m_bytesTransferred;
 }
 
+inline bool Job::IsFinished() const
+{
+	return m_state == FINISHED;
+}
+
 inline void
-Job::SetID(const QString& id)
+Job::SetID(const QUuid& id)
 {
 	m_id = id;
+}
+
+inline void
+Job::SetState(State state)
+{
+	m_state = state;
 }
 
 inline void

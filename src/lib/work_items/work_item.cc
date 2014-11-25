@@ -14,34 +14,9 @@
  * *****************************************************************************
  */
 
-#ifndef SESSION_VIEW_H
-#define SESSION_VIEW_H
+#include "lib/work_items/work_item.h"
 
-#include <QVBoxLayout>
-#include <QSplitter>
-#include <QWidget>
-
-class DS3Browser;
-class HostBrowser;
-class JobsView;
-class Session;
-
-// SessionView, the overall view that is used for each session.  It represents
-// the host and DS3 system in a split pane with the host on the left and
-// DS3 system on the right.
-class SessionView : public QWidget
+WorkItem::WorkItem()
+	: m_id(QUuid::createUuid())
 {
-public:
-	SessionView(Session* session, JobsView* jobsView, QWidget* parent);
-	~SessionView();
-
-private:
-	DS3Browser* m_ds3Browser;
-	HostBrowser* m_hostBrowser;
-	Session* m_session;
-
-	QVBoxLayout* m_topLayout;
-	QSplitter* m_splitter;
-};
-
-#endif
+}

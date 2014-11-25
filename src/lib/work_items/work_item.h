@@ -17,11 +17,26 @@
 #ifndef WORK_ITEM_H
 #define WORK_ITEM_H
 
+#include <QUuid>
+
 // WorkItem, a container class that holds data necessary for Client to perform
 // a DS3 request and handle its response.  These are only intended to be used
 // by the Client and not necessarily the GUI.
 class WorkItem
 {
+public:
+	WorkItem();
+
+	const QUuid GetID() const;
+
+private:
+	QUuid m_id;
 };
+
+inline const QUuid
+WorkItem::GetID() const
+{
+	return m_id;
+}
 
 #endif
