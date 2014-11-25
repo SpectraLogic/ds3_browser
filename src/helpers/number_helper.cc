@@ -25,25 +25,26 @@ const uint64_t NumberHelper::TB = NumberHelper::GB * 1024;
 QString
 NumberHelper::ToHumanSize(uint64_t bytes)
 {
+	double dbytes = static_cast<double>(bytes);
 	double num;
 	QString units;
 	int precision = 1;
 
 	if (bytes > TB) {
-		num = bytes / TB;
+		num = static_cast<double>(dbytes / TB);
 		units = "TB";
 	} else if (bytes > GB) {
-		num = bytes / GB;
+		num = static_cast<double>(dbytes / GB);
 		units = "GB";
 	} else if (bytes > MB) {
-		num = bytes / MB;
+		num = static_cast<double>(dbytes / MB);
 		units = "MB";
 	} else if (bytes > KB) {
-		num = bytes / KB;
+		num = static_cast<double>(dbytes / KB);
 		units = "KB";
 		precision = 0;
 	} else {
-		num = bytes;
+		num = dbytes;
 		units = "Bytes";
 		precision = 0;
 	}
