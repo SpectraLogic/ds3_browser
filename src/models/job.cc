@@ -30,11 +30,11 @@ Job::GetProgress() const
 		return 0;
 	}
 
-	int progress = (m_bytesTransferred * 100) / m_size;
+	int progress = (m_bytesTransferred * 1000) / m_size;
 	if (progress < 0) {
 		progress = 0;
-	} else if (progress > 100) {
-		progress = 100;
+	} else if (progress > 1000) {
+		progress = 1000;
 	}
 	return progress;
 }

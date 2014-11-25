@@ -60,7 +60,7 @@ JobView::JobView(Job job, QWidget* parent)
 
 	m_progressBar = new QProgressBar;
 	m_progressBar->setMinimum(0);
-	m_progressBar->setMaximum(100);
+	m_progressBar->setMaximum(1000);
 	m_progressSummary = new QLabel;
 
 	Update(job);
