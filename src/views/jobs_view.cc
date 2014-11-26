@@ -44,8 +44,8 @@ JobView::JobView(Job job, QWidget* parent)
 	Update(job);
 
 	m_layout->addWidget(m_type, 0, 0, 2, 1);
-	m_layout->addWidget(m_host, 1, 0);
-	m_layout->addWidget(m_start, 2, 0);
+	m_layout->addWidget(m_host, 2, 0);
+	m_layout->addWidget(m_start, 3, 0);
 	m_layout->addWidget(m_progressBar, 1, 1);
 	m_layout->addWidget(m_progressSummary, 2, 1);
 
