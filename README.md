@@ -92,9 +92,3 @@ Thus, deleting the plist file is not enough to clear the setting.  You must
 then either restart, logout/login, or execute `killall -u yourusername cfprefsd`
 
 TODO - Update for Windows
-
-Known Bugs
-----------
-
-* qmake does not appear to generate XCode project files correctly when there
-  is a space in the .pro's TARGET definition.
