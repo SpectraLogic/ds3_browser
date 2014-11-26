@@ -25,16 +25,23 @@ Windows Builds
 --------------
 
 The application is currently setup to use Microsoft Visual Studio (Express).
+Build the [DS3 C SDK](https://github.com/SpectraLogic/ds3_c_sdk).
 In the Microsoft Visual Studio Developer Command Prompt:
 
     cd <ds3_explorer directory>
     mkdir build 
     cd build
     qmake ../ds3_explorer.pro
-    nmake
+    copy <ds3_c_sdk directory>\src\ds3.h .\
+    copy <ds3_c_sdk directory>\win32\output\lib\*.lib .\
+    copy <ds3_c_sdk directory>\win32\output\bin\*.dll .\release
+    nmake release
 
-Debug and release executables will be located under build/debug and
-build/release.
+TODO add instructions for copying ds3.h, ds3.lib and the various C SDK
+.dlls to the appropriate directories.
+
+A release executable will be located under build/release.  Running `nmake`
+without any targets specified will build the debug version to build/debug.
 
 Microsoft Visual Studio can also be used to build/develop the application.
 To generate a Microsoft Visual Studio project file:
