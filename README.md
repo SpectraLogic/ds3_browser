@@ -47,16 +47,18 @@ To generate a Microsoft Visual Studio project file:
 Mac OSX Builds
 --------------
 
-Install XCode if you have not already done so.  In Terminal:
+Install XCode if you have not already done so.  Build and install the
+[DS3 C SDK](https://github.com/SpectraLogic/ds3_c_sdk) and it's dependencies.
+Then, in Terminal:
 
     cd <ds3_explorer directory>
     mkdir build
     cd build
     qmake ../ds3_explorer.pro
-    make
+    make release
 
-Debug and release app bundles will be located under build/debug and
-build/release.
+A release app bundle will be located under build/release.  Running `make`
+without any targets specified will build the debug version to build/debug.
 
 XCode can also be used to build/develop the application.  To generate an
 XCode project file:
@@ -65,6 +67,18 @@ XCode project file:
     mkdir build
     cd build
     qmake -spec macx-xcode ../ds3_explorer.pro
+
+Packaging and Deploying
+-----------------------
+
+The easiest way to package up and deploy the application is to build the
+application and deploy all of its dependencies (Qt libraries, C SDK, etc) along
+with the app.  Qt provides `macdeloyqt`, `windeployqt`, etc tools to make this
+easy.  They are located in your Qt's bin directory (where `qmake` is located).
+Just run the appropriate `deployqt` tool, for your host platform, and point it
+to where your built executable is; on OSX, point it to the .app bundle.
+On OSX, it copies all the dependencies to the .app bundle.  On Windows, it
+copies all the dependencies to the directory where the .exe file is.
 
 Session Persistence
 -------------------
