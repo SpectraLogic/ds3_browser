@@ -29,6 +29,9 @@ JobView::JobView(Job job, QWidget* parent)
 	: QWidget(parent)
 {
 	m_layout = new QGridLayout(this);
+	m_layout->setContentsMargins(5, 2, 5, 5);
+	m_layout->setSpacing(0);
+	m_layout->setAlignment(Qt::AlignTop);
 	setLayout(m_layout);
 
 	m_type = new QLabel;
@@ -50,7 +53,7 @@ JobView::JobView(Job job, QWidget* parent)
 	m_layout->addWidget(m_progressSummary, 2, 1);
 
 	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-	setFixedSize(400, 100);
+	setFixedWidth(500);
 }
 
 void
@@ -109,6 +112,7 @@ JobsView::JobsView(QWidget* parent)
 	m_layout = new QVBoxLayout(this);
 	m_layout->setAlignment(Qt::AlignTop);
 	m_layout->setContentsMargins(0, 0, 0, 0);
+	m_layout->setSpacing(0);
 	setLayout(m_layout);
 
 	// AddDebugJobs();
