@@ -37,9 +37,6 @@ In the Microsoft Visual Studio Developer Command Prompt:
     copy <ds3_c_sdk directory>\win32\output\bin\*.dll .\release
     nmake release
 
-TODO add instructions for copying ds3.h, ds3.lib and the various C SDK
-.dlls to the appropriate directories.
-
 A release executable will be located under build/release.  Running `nmake`
 without any targets specified will build the debug version to build/debug.
 
