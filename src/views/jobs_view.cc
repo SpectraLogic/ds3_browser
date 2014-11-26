@@ -110,6 +110,8 @@ JobsView::JobsView(QWidget* parent)
 	m_layout->setAlignment(Qt::AlignTop);
 	m_layout->setContentsMargins(0, 0, 0, 0);
 	setLayout(m_layout);
+
+	// AddDebugJobs();
 }
 
 void
@@ -139,4 +141,23 @@ JobsView::UpdateJob(const Job job)
 	}
 
 	m_jobsLock.unlock();
+}
+
+void
+JobsView::AddDebugJobs()
+{
+	for (int i = 0; i < 10; i++) {
+		Job job;
+		QString is(QString::number(i));
+		job.SetID(is);
+		job.SetType(Job::PUT);
+		job.SetHost("host" + is);
+		job.SetBucketName("bucket" + is);
+		job.SetState(Job::INPROGRESS);
+		job.SetTransferStart(QDateTime::currentDateTime());
+		job.SetSize(1000);
+		job.SetBytesTransferred(500);
+		JobView* jobView = new JobView(job, this);
+		m_layout->addWidget(jobView);
+	}
 }

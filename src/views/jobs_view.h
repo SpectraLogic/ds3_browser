@@ -40,6 +40,10 @@ public slots:
 	void UpdateJob(const Job job);
 
 private:
+	// Add some debug JobView widgets.  Useful when working on the
+	// look/feel of JobView.
+	void AddDebugJobs();
+
 	QHash<QUuid, JobView*> m_jobViews;
 	mutable QMutex m_jobsLock;
 	QVBoxLayout* m_layout;
