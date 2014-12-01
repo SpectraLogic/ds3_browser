@@ -26,6 +26,8 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+class BrowserTreeViewStyle;
+
 // Browser, an abstract class that represents a host or remote file browser
 class Browser : public QWidget
 {
@@ -44,6 +46,7 @@ protected:
 	QLabel* m_path;
 	QToolBar* m_toolBar;
 	QTreeView* m_treeView;
+	BrowserTreeViewStyle* m_treeViewStyle;
 
 	QAction* m_parentAction;
 	QAction* m_rootAction;

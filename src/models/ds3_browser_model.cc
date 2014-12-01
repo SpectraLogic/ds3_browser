@@ -14,6 +14,7 @@
  * *****************************************************************************
  */
 
+#include <QDebug>
 #include <QDateTime>
 #include <QFuture>
 #include <QIcon>
@@ -426,6 +427,7 @@ DS3BrowserModel::flags(const QModelIndex& index) const
 	if (index.isValid()) {
 		DS3BrowserItem* item = IndexToItem(index);
 		QVariant kind = item->GetData(KIND);
+		flags |= Qt::ItemIsDragEnabled;
 		if (kind == BUCKET || kind == FOLDER) {
 			flags |= Qt::ItemIsDropEnabled;
 		}
@@ -518,10 +520,33 @@ DS3BrowserModel::index(int row, int column, const QModelIndex &parent) const
 	}
 }
 
+QMimeData*
+DS3BrowserModel::mimeData(const QModelIndexList& indexes) const
+{
+	if (indexes.isEmpty()) {
+		return 0;
+	}
+
+	QByteArray encodedUrls;
+	QDataStream stream(&encodedUrls, QIODevice::WriteOnly);
+	QString endpoint = m_client->GetEndpoint();
+	for (int i = 0; i < indexes.size(); i++) {
+		QModelIndex index = indexes.at(i);
+		if (index.column() == 0) {
+			DS3BrowserItem* item = IndexToItem(index);
+			QUrl url(endpoint + item->GetPath());
+			stream << url;
+		}
+	}
+	QMimeData* mimeData = new QMimeData;
+	mimeData->setData("text/spectra-ds3-uri-list", encodedUrls);
+	return mimeData;
+}
+
 QStringList
 DS3BrowserModel::mimeTypes() const
 {
-	QStringList types = QAbstractItemModel::mimeTypes();
+	QStringList types;
 	types << "text/uri-list";
 	return types;
 }

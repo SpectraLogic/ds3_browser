@@ -1,0 +1,55 @@
+/*
+ * *****************************************************************************
+ *   Copyright 2014 Spectra Logic Corporation. All Rights Reserved.
+ *   Licensed under the Apache License, Version 2.0 (the "License"). You may not
+ *   use this file except in compliance with the License. A copy of the License
+ *   is located at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   or in the "license" file accompanying this file.
+ *   This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ *   CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ *   specific language governing permissions and limitations under the License.
+ * *****************************************************************************
+ */
+
+#include <QMimeData>
+
+#include "lib/logger.h"
+#include "models/host_browser_model.h"
+
+HostBrowserModel::HostBrowserModel(QObject* parent)
+	: QFileSystemModel(parent)
+{
+}
+
+QStringList
+HostBrowserModel::mimeTypes() const
+{
+	QStringList types = QFileSystemModel::mimeTypes();
+	types << "text/spectra-ds3-uri-list";
+	return types;
+}
+
+bool
+HostBrowserModel::dropMimeData(const QMimeData* data,
+			       Qt::DropAction action,
+			       int row, int column,
+			       const QModelIndex& parentIndex)
+{
+	if (!data->hasFormat("text/spectra-ds3-uri-list")) {
+		return QFileSystemModel::dropMimeData(data, action, row, column, parentIndex);
+	}
+
+	QByteArray encodedUrls = data->data("text/spectra-ds3-uri-list");
+	QDataStream stream(&encodedUrls, QIODevice::ReadOnly);
+	QString destination = filePath(parentIndex);
+	while (!stream.atEnd()) {
+		QUrl url;
+		stream >> url;
+		LOG_DEBUG("Dropping " + url.toString() + " to " + destination);
+	}
+
+	return true;
+}

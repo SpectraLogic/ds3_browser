@@ -42,6 +42,8 @@ public:
 	Client(const Session* session);
 	~Client();
 
+	QString GetEndpoint() const;
+
 	QFuture<ds3_get_service_response*> GetService();
 	QFuture<ds3_get_bucket_response*> GetBucket(const QString& bucketName,
 						    const QString& prefix,
@@ -85,5 +87,11 @@ public:
 			size_t size, size_t count);
 
 };
+
+inline QString
+Client::GetEndpoint() const
+{
+	return m_endpoint;
+}
 
 #endif

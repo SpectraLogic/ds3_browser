@@ -15,6 +15,7 @@
  */
 
 #include "views/browser.h"
+#include "views/browser_tree_view_style.h"
 
 Browser::Browser(QWidget* parent, Qt::WindowFlags flags)
 	: QWidget(parent, flags),
@@ -35,9 +36,15 @@ Browser::Browser(QWidget* parent, Qt::WindowFlags flags)
 		this, SLOT(OnModelItemDoubleClick(const QModelIndex&)));
 
 	m_treeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+	m_treeView->setDragDropMode(QAbstractItemView::DragDrop);
+	m_treeView->setDropIndicatorShown(true);
+	m_treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
 	// Remove the focus rectangle around the tree view on OSX.
 	m_treeView->setAttribute(Qt::WA_MacShowFocusRect, 0);
+
+	m_treeViewStyle = new BrowserTreeViewStyle(style());
+	m_treeView->setStyle(m_treeViewStyle);
 
 	m_layout->setContentsMargins (0, 0, 0, 0);
 	m_layout->addWidget(m_toolBar);

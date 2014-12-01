@@ -17,26 +17,24 @@
 #include <QMenu>
 
 #include "lib/logger.h"
+#include "models/host_browser_model.h"
 #include "views/host_browser.h"
 
 HostBrowser::HostBrowser(QWidget* parent, Qt::WindowFlags flags)
 	: Browser(parent, flags),
-	  m_model(new QFileSystemModel(this))
+	  m_model(new HostBrowserModel(this))
 {
 	AddCustomToolBarActions();
 
 	QString rootPath = m_model->myComputer().toString();
 	UpdatePathLabel(rootPath);
+	m_model->setReadOnly(false);
 	m_model->setRootPath(rootPath);
 	m_model->setFilter(QDir::AllDirs |
 			   QDir::AllEntries |
 			   QDir::NoDotAndDotDot |
 			   QDir::Hidden);
 	m_treeView->setModel(m_model);
-
-	m_treeView->setDragDropMode(QAbstractItemView::DragOnly);
-
-	m_treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 }
 
 void

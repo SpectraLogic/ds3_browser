@@ -14,36 +14,22 @@
  * *****************************************************************************
  */
 
-#ifndef HOST_BROWSER_H
-#define HOST_BROWSER_H
+#ifndef FILE_SYSTEM_MODEL_H
+#define FILE_SYSTEM_MODEL_H
 
-#include <QList>
+#include <QFileSystemModel>
 
-#include "views/browser.h"
-
-class HostBrowserModel;
-
-// HostBrowser, a Browser class used for the local/host system
-class HostBrowser : public Browser
+// A QFileSystemModel model that is capable of receiving DS3Browser drag/drops
+class HostBrowserModel : public QFileSystemModel
 {
-	Q_OBJECT
-
 public:
-	HostBrowser(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+	HostBrowserModel(QObject* parent = 0);
 
-protected:
-	void AddCustomToolBarActions();
-	QString IndexToPath(const QModelIndex& index) const;
-	void UpdatePathLabel(const QString& path);
-	void OnContextMenuRequested(const QPoint& pos);
-	void OnModelItemDoubleClick(const QModelIndex& index);
-
-private:
-	QAction* m_homeAction;
-	HostBrowserModel* m_model;
-
-private slots:
-	void GoToHome();
+	bool dropMimeData(const QMimeData* data,
+			  Qt::DropAction action,
+			  int row, int column,
+			  const QModelIndex& parent);
+	QStringList mimeTypes() const;
 };
 
 #endif

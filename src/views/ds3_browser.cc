@@ -17,7 +17,6 @@
 #include <QDragEnterEvent>
 #include <QMimeData>
 #include <QMenu>
-#include <QProxyStyle>
 
 #include "lib/client.h"
 #include "lib/logger.h"
@@ -26,50 +25,6 @@
 #include "views/buckets/new_bucket_dialog.h"
 #include "views/ds3_browser.h"
 #include "views/jobs_view.h"
-
-// A custom DS3Browser QTreeView style to override how the drag/drop indicator
-// rectangle is drawn.  The default is to draw a rectangle around the table
-// cell that the dragged item is over.  This class instead draws a rectangle
-// around the entire row with the left-edge starting at the correct indentation
-// level.
-class DS3BrowserTreeViewStyle : public QProxyStyle {
-public:
-	DS3BrowserTreeViewStyle(QStyle* style = 0);
-
-	void drawPrimitive (PrimitiveElement element,
-			    const QStyleOption* option,
-			    QPainter* painter,
-			    const QWidget* widget = 0 ) const;
-};
-
-DS3BrowserTreeViewStyle::DS3BrowserTreeViewStyle(QStyle* style)
-	: QProxyStyle(style)
-{
-}
-
-void
-DS3BrowserTreeViewStyle::drawPrimitive(PrimitiveElement element,
-				       const QStyleOption* option,
-				       QPainter* painter,
-				       const QWidget* widget) const
-{
-	if (element == QStyle::PE_IndicatorItemViewItemDrop &&
-	    !option->rect.isNull()) {
-		QStyleOption opt(*option);
-		if (widget) {
-			const QTreeView* treeView = static_cast<const QTreeView*>(widget);
-			QPoint cellCenter = opt.rect.center();
-			QModelIndex cell = treeView->indexAt(cellCenter);
-			QModelIndex column0Cell = treeView->model()->index(cell.row(), 0, cell.parent());
-			QRect column0CellRect = treeView->visualRect(column0Cell);
-			opt.rect.setLeft(column0CellRect.left());
-			opt.rect.setRight(widget->width());
-		}
-		QProxyStyle::drawPrimitive(element, &opt, painter, widget);
-		return;
-	}
-	QProxyStyle::drawPrimitive(element, option, painter, widget);
-}
 
 DS3Browser::DS3Browser(Session* session, JobsView* jobsView,
 		       QWidget* parent, Qt::WindowFlags flags)
@@ -82,11 +37,6 @@ DS3Browser::DS3Browser(Session* session, JobsView* jobsView,
 	m_model = new DS3BrowserModel(m_client, this);
 	m_model->SetView(m_treeView);
 	m_treeView->setModel(m_model);
-
-	m_treeView->setDragDropMode(QAbstractItemView::DropOnly);
-	m_treeView->setDropIndicatorShown(true);
-	m_treeViewStyle = new DS3BrowserTreeViewStyle(style());
-	m_treeView->setStyle(m_treeViewStyle);
 
 	connect(m_treeView, SIGNAL(clicked(const QModelIndex&)),
 		this, SLOT(OnModelItemClick(const QModelIndex&)));

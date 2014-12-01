@@ -14,36 +14,25 @@
  * *****************************************************************************
  */
 
-#ifndef HOST_BROWSER_H
-#define HOST_BROWSER_H
+#ifndef BROWSER_TREE_VIEW_STYLE_H
+#define BROWSER_TREE_VIEW_STYLE_H
 
-#include <QList>
+#include <QProxyStyle>
+#include <QStyleOption>
 
-#include "views/browser.h"
-
-class HostBrowserModel;
-
-// HostBrowser, a Browser class used for the local/host system
-class HostBrowser : public Browser
-{
-	Q_OBJECT
-
+// A custom DS3/Host Browser QTreeView style to override how the drag/drop
+// indicator rectangle is drawn.  The default is to draw a rectangle around the
+// table cell that the dragged item is over.  This class instead draws a
+// rectangle around the entire row with the left-edge starting at the correct
+// indentation level.
+class BrowserTreeViewStyle : public QProxyStyle {
 public:
-	HostBrowser(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+	BrowserTreeViewStyle(QStyle* style = 0);
 
-protected:
-	void AddCustomToolBarActions();
-	QString IndexToPath(const QModelIndex& index) const;
-	void UpdatePathLabel(const QString& path);
-	void OnContextMenuRequested(const QPoint& pos);
-	void OnModelItemDoubleClick(const QModelIndex& index);
-
-private:
-	QAction* m_homeAction;
-	HostBrowserModel* m_model;
-
-private slots:
-	void GoToHome();
+	void drawPrimitive (PrimitiveElement element,
+			    const QStyleOption* option,
+			    QPainter* painter,
+			    const QWidget* widget = 0 ) const;
 };
 
 #endif

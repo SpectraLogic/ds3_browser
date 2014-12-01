@@ -22,7 +22,6 @@
 
 class Client;
 class DS3BrowserModel;
-class DS3BrowserTreeViewStyle;
 class JobsView;
 class Session;
 
@@ -55,7 +54,6 @@ private:
 	void CreateBucket();
 
 	DS3BrowserModel* m_model;
-	DS3BrowserTreeViewStyle* m_treeViewStyle;
 	Client* m_client;
 	JobsView* m_jobsView;
 };

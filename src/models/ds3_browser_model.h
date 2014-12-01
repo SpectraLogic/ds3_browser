@@ -53,6 +53,7 @@ public:
 			    int role = Qt::DisplayRole) const;
 	QModelIndex index(int row, int column = 0,
 			  const QModelIndex &parent = QModelIndex()) const;
+	QMimeData* mimeData(const QModelIndexList& indexes) const;
 	QStringList mimeTypes() const;
 	QModelIndex parent(const QModelIndex &index) const;
 	bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex());
