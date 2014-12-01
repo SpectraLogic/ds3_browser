@@ -14,7 +14,6 @@
  * *****************************************************************************
  */
 
-#include <QDebug>
 #include <QDateTime>
 #include <QFuture>
 #include <QIcon>
