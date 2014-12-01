@@ -88,20 +88,3 @@ HostBrowser::OnModelItemDoubleClick(const QModelIndex& index)
 		UpdatePathLabel(path);
 	}
 }
-
-// Get all selected files/directories for upload to the DS3 system.  This
-// does not recursively search directories since this could be called
-// during a context menu, or drag/drop, event handler.
-QList<QString>
-HostBrowser::GetSelectedFiles() const
-{
-	QList<QString> filesToUpload;
-
-	QModelIndexList selectedIndexes = m_treeView->selectionModel()->selectedRows();
-	foreach(QModelIndex selectedIndex, selectedIndexes)
-	{
-		filesToUpload << m_model->filePath(selectedIndex);
-	}
-
-	return filesToUpload;
-}

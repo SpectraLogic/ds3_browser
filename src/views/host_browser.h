@@ -38,8 +38,6 @@ protected:
 	void OnModelItemDoubleClick(const QModelIndex& index);
 
 private:
-	QList<QString> GetSelectedFiles() const;
-
 	QAction* m_homeAction;
 	QFileSystemModel* m_model;
 
