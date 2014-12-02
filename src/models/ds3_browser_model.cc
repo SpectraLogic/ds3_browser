@@ -17,12 +17,12 @@
 #include <QDateTime>
 #include <QFuture>
 #include <QIcon>
-#include <QMimeData>
 #include <QSet>
 
 #include "helpers/number_helper.h"
 #include "lib/client.h"
 #include "lib/logger.h"
+#include "lib/mime_data.h"
 #include "lib/watchers/get_service_watcher.h"
 #include "lib/watchers/get_bucket_watcher.h"
 #include "models/ds3_browser_model.h"
@@ -526,19 +526,18 @@ DS3BrowserModel::mimeData(const QModelIndexList& indexes) const
 		return 0;
 	}
 
-	QByteArray encodedUrls;
-	QDataStream stream(&encodedUrls, QIODevice::WriteOnly);
+	QList<QUrl> urls;
 	QString endpoint = m_client->GetEndpoint();
 	for (int i = 0; i < indexes.size(); i++) {
 		QModelIndex index = indexes.at(i);
 		if (index.column() == 0) {
 			DS3BrowserItem* item = IndexToItem(index);
 			QUrl url(endpoint + item->GetPath());
-			stream << url;
+			urls << url;
 		}
 	}
-	QMimeData* mimeData = new QMimeData;
-	mimeData->setData("text/spectra-ds3-uri-list", encodedUrls);
+	MimeData* mimeData = new MimeData;
+	mimeData->SetDS3URLs(urls);
 	return mimeData;
 }
 

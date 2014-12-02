@@ -46,6 +46,7 @@ HEADERS = \
 	src/lib/work_items/work_item.h \
 	src/lib/client.h \
 	src/lib/logger.h \
+	src/lib/mime_data.h \
 	src/lib/watchers/get_bucket_watcher.h \
 	src/lib/watchers/get_service_watcher.h \
 	src/models/ds3_browser_model.h \
@@ -72,6 +73,7 @@ SOURCES = \
 	src/lib/work_items/object_work_item.cc \
 	src/lib/work_items/work_item.cc \
 	src/lib/client.cc \
+	src/lib/mime_data.cc \
 	src/lib/watchers/get_bucket_watcher.cc \
 	src/lib/watchers/get_service_watcher.cc \
 	src/models/ds3_browser_model.cc \

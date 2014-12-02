@@ -14,39 +14,32 @@
  * *****************************************************************************
  */
 
-#include "lib/logger.h"
 #include "lib/mime_data.h"
-#include "models/host_browser_model.h"
 
-HostBrowserModel::HostBrowserModel(QObject* parent)
-	: QFileSystemModel(parent)
-{
-}
+const QString MimeData::DS3_MIME_TYPE = "text/spectra-ds3-uri-list";
 
-QStringList
-HostBrowserModel::mimeTypes() const
-{
-	QStringList types = QFileSystemModel::mimeTypes();
-	types << MimeData::DS3_MIME_TYPE;
-	return types;
-}
 
-bool
-HostBrowserModel::dropMimeData(const QMimeData* data,
-			       Qt::DropAction action,
-			       int row, int column,
-			       const QModelIndex& parentIndex)
+QList<QUrl>
+MimeData::GetDS3URLs() const
 {
-	const MimeData* mimeData = qobject_cast<const MimeData*>(data);
-	if (!mimeData->HasDS3URLs()) {
-		return QFileSystemModel::dropMimeData(data, action, row, column, parentIndex);
+	QList<QUrl> urls;
+	QByteArray encodedUrls = data(DS3_MIME_TYPE);
+	QDataStream stream(&encodedUrls, QIODevice::ReadOnly);
+	while (!stream.atEnd()) {
+		QUrl url;
+		stream >> url;
+		urls << url;
 	}
+	return urls;
+}
 
-	QList<QUrl> urls = mimeData->GetDS3URLs();
-	QString destination = filePath(parentIndex);
+void
+MimeData::SetDS3URLs(const QList<QUrl>& urls)
+{
+	QByteArray encodedUrls;
+	QDataStream stream(&encodedUrls, QIODevice::WriteOnly);
 	for (int i = 0; i < urls.size(); i++) {
-		LOG_DEBUG("Dropping " + urls.at(i).toString() + " to " + destination);
+		stream << urls.at(i);
 	}
-
-	return true;
+	setData(DS3_MIME_TYPE, encodedUrls);
 }
