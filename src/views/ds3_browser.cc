@@ -14,8 +14,6 @@
  * *****************************************************************************
  */
 
-#include <QDragEnterEvent>
-#include <QMimeData>
 #include <QMenu>
 
 #include "lib/client.h"
