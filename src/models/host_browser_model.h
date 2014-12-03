@@ -14,8 +14,8 @@
  * *****************************************************************************
  */
 
-#ifndef FILE_SYSTEM_MODEL_H
-#define FILE_SYSTEM_MODEL_H
+#ifndef HOST_BROWSER_MODEL_H
+#define HOST_BROWSER_MODEL_H
 
 #include <QFileSystemModel>
 
