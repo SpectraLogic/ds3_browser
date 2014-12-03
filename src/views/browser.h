@@ -26,6 +26,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+class Client;
 class BrowserTreeViewStyle;
 
 // Browser, an abstract class that represents a host or remote file browser
@@ -34,7 +35,9 @@ class Browser : public QWidget
 	Q_OBJECT
 
 public:
-	Browser(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+	Browser(Client* client,
+		QWidget* parent = 0,
+		Qt::WindowFlags flags = 0);
 	virtual ~Browser();
 
 protected:
@@ -50,6 +53,8 @@ protected:
 
 	QAction* m_parentAction;
 	QAction* m_rootAction;
+
+	Client* m_client;
 
 protected slots:
 	void GoToParent();

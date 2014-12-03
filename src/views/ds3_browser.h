@@ -20,10 +20,8 @@
 #include "models/job.h"
 #include "views/browser.h"
 
-class Client;
 class DS3BrowserModel;
 class JobsView;
-class Session;
 
 // DS3Browser, a Browser class used for browsing a DS3 system (e.g a
 // BlackPearl)
@@ -32,7 +30,7 @@ class DS3Browser : public Browser
 	Q_OBJECT
 
 public:
-	DS3Browser(Session* session,
+	DS3Browser(Client* client,
 		   JobsView* jobsView,
 		   QWidget* parent = 0,
 		   Qt::WindowFlags flags = 0);
@@ -54,7 +52,6 @@ private:
 	void CreateBucket();
 
 	DS3BrowserModel* m_model;
-	Client* m_client;
 	JobsView* m_jobsView;
 };
 

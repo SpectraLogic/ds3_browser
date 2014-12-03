@@ -14,6 +14,7 @@
  * *****************************************************************************
  */
 
+#include "lib/client.h"
 #include "models/session.h"
 #include "views/ds3_browser.h"
 #include "views/host_browser.h"
@@ -24,8 +25,10 @@ SessionView::SessionView(Session* session, JobsView* jobsView, QWidget* parent)
 	: QWidget(parent),
 	  m_session(session)
 {
-	m_hostBrowser = new HostBrowser;
-	m_ds3Browser = new DS3Browser(m_session, jobsView);
+	m_client = new Client(session);
+
+	m_hostBrowser = new HostBrowser(m_client);
+	m_ds3Browser = new DS3Browser(m_client, jobsView);
 
 	m_splitter = new QSplitter;
 	m_splitter->addWidget(m_hostBrowser);
@@ -42,5 +45,6 @@ SessionView::SessionView(Session* session, JobsView* jobsView, QWidget* parent)
 
 SessionView::~SessionView()
 {
+	delete m_client;
 	delete m_session;
 }

@@ -29,7 +29,9 @@ class HostBrowser : public Browser
 	Q_OBJECT
 
 public:
-	HostBrowser(QWidget* parent = 0, Qt::WindowFlags flags = 0);
+	HostBrowser(Client* client,
+		    QWidget* parent = 0,
+		    Qt::WindowFlags flags = 0);
 
 protected:
 	void AddCustomToolBarActions();

@@ -25,6 +25,7 @@ class DS3Browser;
 class HostBrowser;
 class JobsView;
 class Session;
+class Client;
 
 // SessionView, the overall view that is used for each session.  It represents
 // the host and DS3 system in a split pane with the host on the left and
@@ -39,6 +40,7 @@ private:
 	DS3Browser* m_ds3Browser;
 	HostBrowser* m_hostBrowser;
 	Session* m_session;
+	Client* m_client;
 
 	QVBoxLayout* m_topLayout;
 	QSplitter* m_splitter;

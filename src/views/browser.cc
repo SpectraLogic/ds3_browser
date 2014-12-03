@@ -14,15 +14,17 @@
  * *****************************************************************************
  */
 
+#include "lib/client.h"
 #include "views/browser.h"
 #include "views/browser_tree_view_style.h"
 
-Browser::Browser(QWidget* parent, Qt::WindowFlags flags)
+Browser::Browser(Client* client, QWidget* parent, Qt::WindowFlags flags)
 	: QWidget(parent, flags),
 	  m_layout(new QVBoxLayout(this)),
 	  m_path(new QLabel("/")),
 	  m_toolBar(new QToolBar),
-	  m_treeView(new QTreeView)
+	  m_treeView(new QTreeView),
+	  m_client(client)
 {
 	AddToolBarActions();
 

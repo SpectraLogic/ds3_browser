@@ -16,12 +16,13 @@
 
 #include <QMenu>
 
+#include "lib/client.h"
 #include "lib/logger.h"
 #include "models/host_browser_model.h"
 #include "views/host_browser.h"
 
-HostBrowser::HostBrowser(QWidget* parent, Qt::WindowFlags flags)
-	: Browser(parent, flags),
+HostBrowser::HostBrowser(Client* client, QWidget* parent, Qt::WindowFlags flags)
+	: Browser(client, parent, flags),
 	  m_model(new HostBrowserModel(this))
 {
 	AddCustomToolBarActions();

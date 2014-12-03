@@ -24,14 +24,13 @@
 #include "views/ds3_browser.h"
 #include "views/jobs_view.h"
 
-DS3Browser::DS3Browser(Session* session, JobsView* jobsView,
+DS3Browser::DS3Browser(Client* client, JobsView* jobsView,
 		       QWidget* parent, Qt::WindowFlags flags)
-	: Browser(parent, flags),
+	: Browser(client, parent, flags),
 	  m_jobsView(jobsView)
 {
 	AddCustomToolBarActions();
 
-	m_client = new Client(session);
 	m_model = new DS3BrowserModel(m_client, this);
 	m_model->SetView(m_treeView);
 	m_treeView->setModel(m_model);
