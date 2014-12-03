@@ -42,11 +42,6 @@ DS3Browser::DS3Browser(Client* client, JobsView* jobsView,
 		m_jobsView, SLOT(UpdateJob(const Job)));
 }
 
-DS3Browser::~DS3Browser()
-{
-	delete m_client;
-}
-
 void
 DS3Browser::AddCustomToolBarActions()
 {

@@ -34,7 +34,6 @@ public:
 		   JobsView* jobsView,
 		   QWidget* parent = 0,
 		   Qt::WindowFlags flags = 0);
-	~DS3Browser();
 
 protected:
 	void AddCustomToolBarActions();
