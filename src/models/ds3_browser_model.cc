@@ -403,10 +403,15 @@ DS3BrowserModel::data(const QModelIndex &index, int role) const
 
 bool
 DS3BrowserModel::dropMimeData(const QMimeData* data,
-			      Qt::DropAction /*action*/,
-			      int /*row*/, int /*column*/,
+			      Qt::DropAction action,
+			      int row, int column,
 			      const QModelIndex& parentIndex)
 {
+	if (!data->hasUrls()) {
+		return QAbstractItemModel::dropMimeData(data, action, row,
+							column, parentIndex);
+	}
+
 	DS3BrowserItem* parent = IndexToItem(parentIndex);
 	QString bucketName = parent->GetBucketName();
 	QString prefix = parent->GetPrefix();
