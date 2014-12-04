@@ -30,16 +30,16 @@ NumberHelper::ToHumanSize(uint64_t bytes)
 	QString units;
 	int precision = 1;
 
-	if (bytes > TB) {
+	if (bytes >= TB) {
 		num = static_cast<double>(dbytes / TB);
 		units = "TB";
-	} else if (bytes > GB) {
+	} else if (bytes >= GB) {
 		num = static_cast<double>(dbytes / GB);
 		units = "GB";
-	} else if (bytes > MB) {
+	} else if (bytes >= MB) {
 		num = static_cast<double>(dbytes / MB);
 		units = "MB";
-	} else if (bytes > KB) {
+	} else if (bytes >= KB) {
 		num = static_cast<double>(dbytes / KB);
 		units = "KB";
 		precision = 0;

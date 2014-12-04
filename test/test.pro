@@ -27,12 +27,14 @@ INCLUDEPATH += ../src
 
 HEADERS = \
 	test.h \
+	helpers/number_helper_test.h \
 	lib/mime_data_test.h \
 	models/ds3_url_test.h
 
 SOURCES = \
 	main.cc \
 	test.cc \
+	helpers/number_helper_test.cc \
 	lib/mime_data_test.cc \
 	models/ds3_url_test.cc
 
@@ -40,9 +42,11 @@ SOURCES = \
 # TODO share this with the main .pro file
 
 HEADERS += \
+	../src/helpers/number_helper.h \
 	../src/lib/mime_data.h \
 	../src/models/ds3_url.h
 
 SOURCES += \
+	../src/helpers/number_helper.cc \
 	../src/lib/mime_data.cc \
 	../src/models/ds3_url.cc
