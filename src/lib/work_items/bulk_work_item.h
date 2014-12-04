@@ -18,8 +18,10 @@
 #define BULK_WORK_ITEM_H
 
 #include <stdlib.h>
+#include <QList>
 #include <QString>
 #include <QMutex>
+#include <QUrl>
 
 #include <ds3.h>
 
@@ -29,7 +31,7 @@
 class BulkWorkItem : public WorkItem
 {
 public:
-	BulkWorkItem(const QString& host, const QString& bucketName);
+	BulkWorkItem(const QString& host, const QList<QUrl> urls);
 	virtual ~BulkWorkItem();
 
 	// The S3 server assigned ID for this job.  This isn't valid until
@@ -39,9 +41,22 @@ public:
 	Job::State GetState() const;
 	const QString& GetHost() const;
 	const QString& GetBucketName() const;
+	const QList<QUrl> GetURLs() const;
+	QList<QUrl>::const_iterator& GetUrlsIterator();
+	const QList<QUrl>::const_iterator GetUrlsConstEnd() const;
+	virtual const QString GetDestination() const = 0;
 	uint64_t GetSize() const;
 	uint64_t GetBytesTransferred() const;
 	void UpdateBytesTransferred(size_t bytes);
+
+	void SetBucketName(const QString& bucketName);
+
+	void ClearObjMap();
+	QHash<QString, QString>::const_iterator GetObjMapConstBegin() const;
+	QHash<QString, QString>::const_iterator GetObjMapConstEnd() const;
+	uint64_t GetObjMapSize() const;
+	const QString GetObjMapValue(const QString& objName) const;
+	void InsertObjMap(const QString& objName, const QString& filePath);
 
 	ds3_bulk_response* GetResponse() const;
 	void SetResponse(ds3_bulk_response* response);
@@ -50,13 +65,25 @@ public:
 
 	const Job ToJob() const;
 
+	void IncWorkingObjListCount();
+	void DecWorkingObjListCount();
+	int GetWorkingObjListCount() const;
+
 protected:
 	Job::State m_state;
 	QString m_host;
 	QString m_bucketName;
+	QList<QUrl> m_urls;
+	QList<QUrl>::const_iterator m_urlsIterator;
 	uint64_t m_bytesTransferred;
 	mutable QMutex m_bytesTransferredLock;
+	QHash<QString, QString> m_objMap;
 	ds3_bulk_response* m_response;
+
+	// The number of active object list threads.  This is used to determine
+	// if the Client is finished with this work item's bulkput page.
+	int m_workingObjListCount;
+	mutable QMutex m_workingObjListCountLock;
 };
 
 inline const QString&
@@ -65,16 +92,76 @@ BulkWorkItem::GetHost() const
 	return m_host;
 }
 
-inline Job::State
-BulkWorkItem::GetState() const
-{
-	return m_state;
-}
-
 inline const QString&
 BulkWorkItem::GetBucketName() const
 {
 	return m_bucketName;
+}
+
+inline const QList<QUrl>
+BulkWorkItem::GetURLs() const
+{
+	return m_urls;
+}
+
+inline QList<QUrl>::const_iterator&
+BulkWorkItem::GetUrlsIterator()
+{
+	return m_urlsIterator;
+}
+
+inline const QList<QUrl>::const_iterator
+BulkWorkItem::GetUrlsConstEnd() const
+{
+	return m_urls.constEnd();
+}
+
+inline void
+BulkWorkItem::SetBucketName(const QString& bucketName)
+{
+	m_bucketName = bucketName;
+}
+
+inline void
+BulkWorkItem::ClearObjMap()
+{
+	m_objMap.clear();
+}
+
+inline QHash<QString,QString>::const_iterator
+BulkWorkItem::GetObjMapConstBegin() const
+{
+	return m_objMap.constBegin();
+}
+
+inline QHash<QString,QString>::const_iterator
+BulkWorkItem::GetObjMapConstEnd() const
+{
+	return m_objMap.constEnd();
+}
+
+inline uint64_t
+BulkWorkItem::GetObjMapSize() const
+{
+	return (uint64_t)m_objMap.size();
+}
+
+inline const QString
+BulkWorkItem::GetObjMapValue(const QString& objName) const
+{
+	return m_objMap[objName];
+}
+
+inline void
+BulkWorkItem::InsertObjMap(const QString& objName, const QString& filePath)
+{
+	m_objMap.insert(objName, filePath);
+}
+
+inline Job::State
+BulkWorkItem::GetState() const
+{
+	return m_state;
 }
 
 inline ds3_bulk_response*
@@ -93,6 +180,28 @@ inline void
 BulkWorkItem::SetState(Job::State state)
 {
 	m_state = state;
+}
+
+inline void
+BulkWorkItem::IncWorkingObjListCount()
+{
+	m_workingObjListCountLock.lock();
+	m_workingObjListCount++;
+	m_workingObjListCountLock.unlock();
+}
+
+inline void
+BulkWorkItem::DecWorkingObjListCount()
+{
+	m_workingObjListCountLock.lock();
+	m_workingObjListCount--;
+	m_workingObjListCountLock.unlock();
+}
+
+inline int
+BulkWorkItem::GetWorkingObjListCount() const
+{
+	return m_workingObjListCount;
 }
 
 #endif

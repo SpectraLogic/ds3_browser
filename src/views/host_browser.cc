@@ -23,7 +23,7 @@
 
 HostBrowser::HostBrowser(Client* client, QWidget* parent, Qt::WindowFlags flags)
 	: Browser(client, parent, flags),
-	  m_model(new HostBrowserModel(this))
+	  m_model(new HostBrowserModel(client, this))
 {
 	AddCustomToolBarActions();
 

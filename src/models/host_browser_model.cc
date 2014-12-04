@@ -14,12 +14,13 @@
  * *****************************************************************************
  */
 
-#include "lib/logger.h"
+#include "lib/client.h"
 #include "lib/mime_data.h"
 #include "models/host_browser_model.h"
 
-HostBrowserModel::HostBrowserModel(QObject* parent)
-	: QFileSystemModel(parent)
+HostBrowserModel::HostBrowserModel(Client* client, QObject* parent)
+	: QFileSystemModel(parent),
+	  m_client(client)
 {
 }
 
@@ -44,9 +45,7 @@ HostBrowserModel::dropMimeData(const QMimeData* data,
 
 	QList<QUrl> urls = mimeData->GetDS3URLs();
 	QString destination = filePath(parentIndex);
-	for (int i = 0; i < urls.size(); i++) {
-		LOG_DEBUG("Dropping " + urls.at(i).toString() + " to " + destination);
-	}
+	m_client->BulkGet(urls, destination);
 
 	return true;
 }

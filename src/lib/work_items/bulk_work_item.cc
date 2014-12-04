@@ -17,13 +17,15 @@
 #include "lib/work_items/bulk_work_item.h"
 #include "models/job.h"
 
-BulkWorkItem::BulkWorkItem(const QString& host, const QString& bucketName)
+BulkWorkItem::BulkWorkItem(const QString& host, const QList<QUrl> urls)
 	: WorkItem(),
 	  m_state(Job::INITIALIZING),
 	  m_host(host),
-	  m_bucketName(bucketName),
+	  m_urls(urls),
+	  m_urlsIterator(m_urls.constBegin()),
 	  m_bytesTransferred(0),
-	  m_response(NULL)
+	  m_response(NULL),
+	  m_workingObjListCount(0)
 {
 }
 
@@ -79,7 +81,7 @@ BulkWorkItem::ToJob() const
 	job.SetTransferStart(GetTransferStart());
 	job.SetState(GetState());
 	job.SetHost(GetHost());
-	job.SetBucketName(GetBucketName());
+	job.SetDestination(GetDestination());
 	job.SetSize(GetSize());
 	job.SetBytesTransferred(GetBytesTransferred());
 	return job;

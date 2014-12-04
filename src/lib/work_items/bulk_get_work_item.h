@@ -14,27 +14,44 @@
  * *****************************************************************************
  */
 
-#ifndef HOST_BROWSER_MODEL_H
-#define HOST_BROWSER_MODEL_H
+#ifndef BULK_GET_WORK_ITEM_H
+#define BULK_GET_WORK_ITEM_H
 
-#include <QFileSystemModel>
+#include <QList>
+#include <QString>
+#include <QUrl>
 
-class Client;
+#include "lib/work_items/bulk_work_item.h"
 
-// A QFileSystemModel model that is capable of receiving DS3Browser drag/drops
-class HostBrowserModel : public QFileSystemModel
+// BulkGetWorkItem, a container class that stores all data necessary to perform
+// a DS3 bulk put operation.
+class BulkGetWorkItem : public BulkWorkItem
 {
 public:
-	HostBrowserModel(Client* client, QObject* parent = 0);
+	BulkGetWorkItem(const QString& host,
+			const QList<QUrl> urls,
+			const QString& destination);
 
-	bool dropMimeData(const QMimeData* data,
-			  Qt::DropAction action,
-			  int row, int column,
-			  const QModelIndex& parent);
-	QStringList mimeTypes() const;
+	const QString GetDestination() const;
+	Job::Type GetType() const;
 
 private:
-	Client* m_client;
+	void SortURLsByBucket();
+	static bool CompareQUrls(const QUrl& a, const QUrl& b);
+
+	QString m_destination;
 };
+
+inline const QString
+BulkGetWorkItem::GetDestination() const
+{
+	return m_destination;
+}
+
+inline Job::Type
+BulkGetWorkItem::GetType() const
+{
+	return Job::GET;
+}
 
 #endif

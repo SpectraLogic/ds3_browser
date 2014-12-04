@@ -27,9 +27,10 @@
 
 #include "models/job.h"
 
-class Session;
+class BulkGetWorkItem;
 class BulkPutWorkItem;
 class ObjectWorkItem;
+class Session;
 
 class Client : public QObject
 {
@@ -37,7 +38,7 @@ class Client : public QObject
 
 public:
 	static const QString DELIMITER;
-	static const uint64_t BULK_PUT_PAGE_LIMIT;
+	static const uint64_t BULK_PAGE_LIMIT;
 
 	Client(const Session* session);
 	~Client();
@@ -52,9 +53,16 @@ public:
 
 	void CreateBucket(const QString& name);
 
+	void BulkGet(const QList<QUrl> urls, const QString& destination);
+
 	void BulkPut(const QString& bucketName,
 		     const QString& prefix,
 		     const QList<QUrl> urls);
+
+	void GetObject(const QString& bucket,
+		       const QString& object,
+		       const QString& fileName,
+		       BulkGetWorkItem* bulkGetWorkItem);
 
 	void PutObject(const QString& bucket,
 		       const QString& object,
@@ -69,6 +77,11 @@ private:
 					     const QString& prefix,
 					     const QString& marker,
 					     uint32_t maxKeys);
+
+	void PrepareBulkGets(BulkGetWorkItem* workItem);
+	void DoBulkGet(BulkGetWorkItem* workItem);
+	void GetBulkObjectList(BulkGetWorkItem* workItem,
+			       const ds3_bulk_object_list* list);
 
 	void PrepareBulkPuts(BulkPutWorkItem* workItem);
 	void DoBulkPut(BulkPutWorkItem* workItem);

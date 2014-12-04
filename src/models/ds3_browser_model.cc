@@ -537,7 +537,12 @@ DS3BrowserModel::mimeData(const QModelIndexList& indexes) const
 		QModelIndex index = indexes.at(i);
 		if (index.column() == 0) {
 			DS3BrowserItem* item = IndexToItem(index);
-			QUrl url(endpoint + item->GetPath());
+			QString path = item->GetPath();
+			QVariant kind = item->GetData(KIND);
+			if (kind == FOLDER && !path.endsWith("/")) {
+				path += "/";
+			}
+			QUrl url(endpoint + path);
 			urls << url;
 		}
 	}

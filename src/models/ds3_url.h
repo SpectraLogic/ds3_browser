@@ -14,27 +14,24 @@
  * *****************************************************************************
  */
 
-#ifndef HOST_BROWSER_MODEL_H
-#define HOST_BROWSER_MODEL_H
+#ifndef DS3_URL_H
+#define DS3_URL_H
 
-#include <QFileSystemModel>
+#include <QString>
+#include <QUrl>
 
-class Client;
-
-// A QFileSystemModel model that is capable of receiving DS3Browser drag/drops
-class HostBrowserModel : public QFileSystemModel
+// A QUrl convenience class that makes it easy to do things like pull
+// the bucket name out of a DS3-based URL.
+class DS3URL : public QUrl
 {
 public:
-	HostBrowserModel(Client* client, QObject* parent = 0);
+	static const QString PATH_REGEX;
 
-	bool dropMimeData(const QMimeData* data,
-			  Qt::DropAction action,
-			  int row, int column,
-			  const QModelIndex& parent);
-	QStringList mimeTypes() const;
-
-private:
-	Client* m_client;
+	DS3URL(const QUrl& other);
+	QString GetBucketName() const;
+	QString GetObjectName() const;
+	QString GetLastObjectNamePart() const;
+	bool IsBucketOrFolder() const;
 };
 
 #endif

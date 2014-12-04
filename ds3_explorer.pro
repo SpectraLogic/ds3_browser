@@ -41,6 +41,7 @@ HEADERS = \
 	src/main_window.h \
 	src/helpers/number_helper.h \
 	src/lib/work_items/bulk_work_item.h \
+	src/lib/work_items/bulk_get_work_item.h \
 	src/lib/work_items/bulk_put_work_item.h \
 	src/lib/work_items/object_work_item.h \
 	src/lib/work_items/work_item.h \
@@ -50,6 +51,7 @@ HEADERS = \
 	src/lib/watchers/get_bucket_watcher.h \
 	src/lib/watchers/get_service_watcher.h \
 	src/models/ds3_browser_model.h \
+	src/models/ds3_url.h \
 	src/models/host_browser_model.h \
 	src/models/job.h \
 	src/models/session.h \
@@ -69,6 +71,7 @@ SOURCES = \
 	src/main_window.cc \
 	src/helpers/number_helper.cc \
 	src/lib/work_items/bulk_work_item.cc \
+	src/lib/work_items/bulk_get_work_item.cc \
 	src/lib/work_items/bulk_put_work_item.cc \
 	src/lib/work_items/object_work_item.cc \
 	src/lib/work_items/work_item.cc \
@@ -77,6 +80,7 @@ SOURCES = \
 	src/lib/watchers/get_bucket_watcher.cc \
 	src/lib/watchers/get_service_watcher.cc \
 	src/models/ds3_browser_model.cc \
+	src/models/ds3_url.cc \
 	src/models/host_browser_model.cc \
 	src/models/job.cc \
 	src/models/session.cc \

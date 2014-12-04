@@ -14,50 +14,35 @@
  * *****************************************************************************
  */
 
-#include "lib/work_items/bulk_put_work_item.h"
+#include <QMap>
 
-BulkPutWorkItem::BulkPutWorkItem(const QString& host,
+#include "lib/work_items/bulk_get_work_item.h"
+
+BulkGetWorkItem::BulkGetWorkItem(const QString& host,
 				 const QList<QUrl> urls,
-				 const QString& bucketName,
-				 const QString& prefix)
+				 const QString& destination)
 	: BulkWorkItem(host, urls),
-	  m_prefix(prefix),
-	  m_dirIterator(NULL)
+	  m_destination(destination)
 {
-	  m_bucketName = bucketName;
+	SortURLsByBucket();
 }
 
-BulkPutWorkItem::~BulkPutWorkItem()
-{
-	DeleteDirIterator();
-	if (m_response != NULL) {
-		ds3_free_bulk_response(m_response);
-	}
-}
-
+// A DS3 bulk get request can only be for a single bucket, however,
+// urls could contain objects from different buckets.
 void
-BulkPutWorkItem::DeleteDirIterator()
+BulkGetWorkItem::SortURLsByBucket()
 {
-	if (m_dirIterator != NULL) {
-		delete m_dirIterator;
-		m_dirIterator = NULL;
+	QMap<QString, QUrl> sortMap;
+	for (int i = 0; i < m_urls.size(); i++) {
+		QUrl url = m_urls.at(i);
+		sortMap.insert(url.toString(), url);
 	}
+	m_urls = sortMap.values();
+	m_urlsIterator = m_urls.constBegin();
 }
 
 bool
-BulkPutWorkItem::IsPageFinished() const
+BulkGetWorkItem::CompareQUrls(const QUrl& a, const QUrl& b)
 {
-	m_workingObjListCountLock.lock();
-	bool finished = m_workingObjListCount == 0;
-	m_workingObjListCountLock.unlock();
-	return finished;
-}
-
-bool
-BulkPutWorkItem::IsFinished() const
-{
-	bool finished = IsPageFinished() &&
-			m_urlsIterator == GetUrlsConstEnd() &&
-			m_dirIterator == NULL;
-	return finished;
+	return (a.toString() < b.toString());
 }

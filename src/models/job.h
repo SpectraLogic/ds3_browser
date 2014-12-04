@@ -45,7 +45,7 @@ public:
 	const QDateTime& GetTransferStart() const;
 	State GetState() const;
 	const QString& GetHost() const;
-	const QString& GetBucketName() const;
+	const QString& GetDestination() const;
 	uint64_t GetSize() const;
 	uint64_t GetBytesTransferred() const;
 	int GetProgress() const;
@@ -57,7 +57,7 @@ public:
 	void SetTransferStart(const QDateTime& start);
 	void SetState(State state);
 	void SetHost(const QString& host);
-	void SetBucketName(const QString& bucketName);
+	void SetDestination(const QString& destination);
 	void SetSize(uint64_t);
 	void SetBytesTransferred(uint64_t);
 
@@ -68,7 +68,7 @@ private:
 	QDateTime m_transferStart;
 	State m_state;
 	QString m_host;
-	QString m_bucketName;
+	QString m_destination;
 	uint64_t m_size;
 	uint64_t m_bytesTransferred;
 };
@@ -113,9 +113,9 @@ Job::GetHost() const
 }
 
 inline const QString&
-Job::GetBucketName() const
+Job::GetDestination() const
 {
-	return m_bucketName;
+	return m_destination;
 }
 
 inline uint64_t
@@ -172,9 +172,9 @@ Job::SetHost(const QString& host)
 }
 
 inline void
-Job::SetBucketName(const QString& bucketName)
+Job::SetDestination(const QString& destination)
 {
-	m_bucketName = bucketName;
+	m_destination = destination;
 }
 
 inline void

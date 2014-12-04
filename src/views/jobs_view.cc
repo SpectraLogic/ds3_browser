@@ -156,7 +156,7 @@ JobsView::AddDebugJobs()
 		job.SetID(is);
 		job.SetType(Job::PUT);
 		job.SetHost("host" + is);
-		job.SetBucketName("bucket" + is);
+		job.SetDestination("bucket" + is);
 		job.SetState(Job::INPROGRESS);
 		job.SetStart(QDateTime::currentDateTime());
 		job.SetTransferStart(QDateTime::currentDateTime());

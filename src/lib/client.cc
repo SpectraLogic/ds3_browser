@@ -21,10 +21,12 @@
 #include <QFileInfo>
 #include <QHash>
 
+#include "lib/work_items/bulk_get_work_item.h"
 #include "lib/work_items/bulk_put_work_item.h"
 #include "lib/work_items/object_work_item.h"
 #include "lib/client.h"
 #include "lib/logger.h"
+#include "models/ds3_url.h"
 #include "models/session.h"
 
 using QtConcurrent::run;
@@ -32,7 +34,7 @@ using QtConcurrent::run;
 const QString Client::DELIMITER = "/";
 
 // The S3 server imposes this limit although we might want to lower it
-const uint64_t Client::BULK_PUT_PAGE_LIMIT = 500000;
+const uint64_t Client::BULK_PAGE_LIMIT = 500000;
 
 static size_t read_from_file(void* buffer, size_t size, size_t count, void* user_data);
 
@@ -107,16 +109,36 @@ Client::CreateBucket(const QString& name)
 }
 
 void
+Client::BulkGet(const QList<QUrl> urls, const QString& destination)
+{
+	BulkGetWorkItem* workItem = new BulkGetWorkItem(m_host, urls,
+							destination);
+	workItem->SetState(Job::QUEUED);
+	Job job = workItem->ToJob();
+	emit JobProgressUpdate(job);
+	run(this, &Client::PrepareBulkGets, workItem);
+}
+
+void
 Client::BulkPut(const QString& bucketName,
 		const QString& prefix,
 		const QList<QUrl> urls)
 {
-	BulkPutWorkItem* workItem = new BulkPutWorkItem(m_host, bucketName,
-							prefix, urls);
+	BulkPutWorkItem* workItem = new BulkPutWorkItem(m_host, urls,
+							bucketName, prefix);
 	workItem->SetState(Job::QUEUED);
 	Job job = workItem->ToJob();
 	emit JobProgressUpdate(job);
 	run(this, &Client::PrepareBulkPuts, workItem);
+}
+
+void
+Client::GetObject(const QString& /*bucket*/,
+		  const QString& object,
+		  const QString& destination,
+		  BulkGetWorkItem* /*bulkGetWorkItem*/)
+{
+	LOG_DEBUG("GetObject " + object + " to " + destination);
 }
 
 void
@@ -217,6 +239,119 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 }
 
 void
+Client::PrepareBulkGets(BulkGetWorkItem* workItem)
+{
+	LOG_DEBUG("PrepareBulkGets");
+
+	workItem->SetState(Job::PREPARING);
+	Job job = workItem->ToJob();
+	emit JobProgressUpdate(job);
+
+	workItem->ClearObjMap();
+
+	QString prevBucket;
+
+	for (QList<QUrl>::const_iterator& ui(workItem->GetUrlsIterator());
+	     ui != workItem->GetUrlsConstEnd();
+	     ui++) {
+		DS3URL url(*ui);
+		QString bucket = url.GetBucketName();
+		workItem->SetBucketName(bucket);
+		if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT ||
+		    (!prevBucket.isEmpty() && prevBucket != bucket)) {
+			run(this, &Client::DoBulkGet, workItem);
+			return;
+		}
+
+		QString fullObjName = url.GetObjectName();
+		QString lastObjNamePart = url.GetLastObjectNamePart();
+		QString filePath = QDir::cleanPath(workItem->GetDestination() +
+						   "/" + lastObjNamePart);
+		if (url.IsBucketOrFolder()) {
+		// 	get all objects underneath and add to the objmap.
+		//
+		//	if (no objects underneath) {
+		//		directly create the folder
+		//	}
+		} else {
+			workItem->InsertObjMap(fullObjName, filePath);
+		}
+
+		prevBucket = bucket;
+	}
+
+	if (workItem->GetObjMapSize() > 0) {
+		run(this, &Client::DoBulkGet, workItem);
+	}
+}
+
+void
+Client::DoBulkGet(BulkGetWorkItem* workItem)
+{
+	LOG_DEBUG("DoBulkGets");
+
+	workItem->SetState(Job::INPROGRESS);
+	workItem->SetTransferStartIfNull();
+	Job job = workItem->ToJob();
+	emit JobProgressUpdate(job);
+
+	uint64_t numObjs = workItem->GetObjMapSize();
+	ds3_bulk_object_list *bulkObjList = ds3_init_bulk_object_list(numObjs);
+
+	QHash<QString, QString>::const_iterator hi;
+	int i = 0;
+	for (hi = workItem->GetObjMapConstBegin(); hi != workItem->GetObjMapConstEnd(); hi++) {
+		ds3_bulk_object* bulkObj = &bulkObjList->list[i];
+		QString objName = hi.key();
+		QString filePath = hi.value();
+		QFileInfo fileInfo(filePath);
+		bulkObj->name = ds3_str_init(objName.toUtf8().constData());
+		i++;
+	}
+
+	const QString& bucketName = workItem->GetBucketName();
+	ds3_request* request = ds3_init_get_bulk(bucketName.toUtf8().constData(), bulkObjList);
+	ds3_bulk_response *response = NULL;
+	ds3_error* error = ds3_bulk(m_client, request, &response);
+	ds3_free_request(request);
+	ds3_free_bulk_object_list(bulkObjList);
+	workItem->SetResponse(response);
+
+	if (error) {
+		// TODO Handle the error
+		LOG_ERROR("BulkGet Error");
+		ds3_free_error(error);
+	}
+
+	if (response == NULL || (response != NULL && response->list_size == 0)) {
+		//DeleteOrRequeueBulkGetWorkItem(workItem);
+		return;
+	}
+
+	for (size_t j = 0; j < response->list_size; j++) {
+		LOG_DEBUG("Starting GetBulkOjbectList thread");
+		ds3_bulk_object_list* list = response->list[j];
+		workItem->IncWorkingObjListCount();
+		run(this, &Client::GetBulkObjectList, workItem, list);
+	}
+}
+
+void
+Client::GetBulkObjectList(BulkGetWorkItem* workItem,
+			  const ds3_bulk_object_list* list)
+{
+	QString bucketName = workItem->GetBucketName();
+	for (uint64_t k = 0; k < list->size; k++) {
+		ds3_bulk_object* bulkObj = &list->list[k];
+		QString objName = QString(bulkObj->name->value);
+		QString filePath = workItem->GetObjMapValue(objName);
+		GetObject(bucketName, objName, filePath, workItem);
+	}
+	workItem->DecWorkingObjListCount();
+	//DeleteOrRequeueBulkPutWorkItem(workItem);
+}
+
+void
 Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 {
 	LOG_DEBUG("PrepareBulkPuts");
@@ -235,7 +370,7 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 	for (QList<QUrl>::const_iterator& ui(workItem->GetUrlsIterator());
 	     ui != workItem->GetUrlsConstEnd();
 	     ui++) {
-		if (workItem->GetObjMapSize() >= BULK_PUT_PAGE_LIMIT) {
+		if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT) {
 			run(this, &Client::DoBulkPut, workItem);
 			return;
 		}
@@ -258,7 +393,7 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 				di = workItem->GetDirIterator(filePath);
 			}
 			while (di->hasNext()) {
-				if (workItem->GetObjMapSize() >= BULK_PUT_PAGE_LIMIT) {
+				if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT) {
 					run(this, &Client::DoBulkPut, workItem);
 					return;
 				}
