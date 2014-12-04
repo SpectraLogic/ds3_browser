@@ -14,6 +14,7 @@
  * *****************************************************************************
  */
 
+#include <qDebug>
 #include <QTest>
 
 #include "test.h"
@@ -28,6 +29,13 @@ main(int /*argc*/, char** /*argv[]*/)
 		if (result != 0) {
 			failed++;
 		}
+	}
+
+	qDebug();
+	if (failed == 0) {
+		qDebug() << "All Tests Passed";
+	} else {
+		qDebug() << failed << "Test Suite(s) Contained Failures";
 	}
 
 	return failed;
