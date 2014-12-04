@@ -18,8 +18,6 @@
 
 #include "models/ds3_url.h"
 
-#include "lib/logger.h"
-
 const QString DS3URL::PATH_REGEX = "^/?([^/]+)/?(?:/(.*))?$";
 
 DS3URL::DS3URL(const QUrl& other)
