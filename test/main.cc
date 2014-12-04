@@ -14,27 +14,21 @@
  * *****************************************************************************
  */
 
-#ifndef DS3_URL_H
-#define DS3_URL_H
+#include <QTest>
 
-#include <QString>
-#include <QUrl>
+#include "test.h"
 
-// A QUrl convenience class that makes it easy to do things like pull
-// the bucket name out of a DS3-based URL.
-class DS3URL : public QUrl
+int
+main(int /*argc*/, char** /*argv[]*/)
 {
-public:
-	static const QString PATH_REGEX;
+	int failed = 0;
 
-	DS3URL();
-	DS3URL(const QUrl& other);
-	DS3URL(const QString& url, ParsingMode parsingMode = TolerantMode);
+	for (int i = 0; i < Test::s_tests.size(); i++) {
+		int result = QTest::qExec(Test::s_tests.at(i));
+		if (result != 0) {
+			failed++;
+		}
+	}
 
-	QString GetBucketName() const;
-	QString GetObjectName() const;
-	QString GetLastPathPart() const;
-	bool IsBucketOrFolder() const;
-};
-
-#endif
+	return failed;
+}

@@ -264,9 +264,9 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 		}
 
 		QString fullObjName = url.GetObjectName();
-		QString lastObjNamePart = url.GetLastObjectNamePart();
+		QString lastPathPart = url.GetLastPathPart();
 		QString filePath = QDir::cleanPath(workItem->GetDestination() +
-						   "/" + lastObjNamePart);
+						   "/" + lastPathPart);
 		if (url.IsBucketOrFolder()) {
 		// 	get all objects underneath and add to the objmap.
 		//

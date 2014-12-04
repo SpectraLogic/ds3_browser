@@ -96,3 +96,18 @@ Thus, deleting the plist file is not enough to clear the setting.  You must
 then either restart, logout/login, or execute `killall -u yourusername cfprefsd`
 
 TODO - Update for Windows
+
+Running Tests
+-------------
+
+Qt's unit test framework is used for testing.  A separate `test` console
+application is provided under the `test/` directory that will run all the
+tests.  To run the tests, build and run the test application like any
+other Qt application.
+
+    cd <ds3_explorer directory>/test
+    mkdir build
+    cd build
+    qmake ../test.pro
+    make
+    ./test

@@ -12,6 +12,8 @@
 #  specific language governing permissions and limitations under the License.
 ################################################################################
 
+include(common.pri)
+
 TARGET = SpectraLogicDS3Explorer
 VERSION = 0.0.0
 
@@ -107,7 +109,6 @@ macx {
 
 msvc {
 	LIBS += ds3.lib
-	QMAKE_CXXFLAGS += /WX /D_CRT_SECURE_NO_WARNINGS
 } else {
 	# Necessary on OSX at least
 	exists(/usr/local/include) {
@@ -120,5 +121,3 @@ msvc {
 
 	LIBS += -lds3 -lcurl
 }
-
-gcc: QMAKE_CXXFLAGS += -Werror

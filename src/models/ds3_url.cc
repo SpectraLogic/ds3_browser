@@ -20,8 +20,18 @@
 
 const QString DS3URL::PATH_REGEX = "^/?([^/]+)/?(?:/(.*))?$";
 
+DS3URL::DS3URL()
+	: QUrl()
+{
+}
+
 DS3URL::DS3URL(const QUrl& other)
 	: QUrl(other)
+{
+}
+
+DS3URL::DS3URL(const QString& url, ParsingMode parsingMode)
+	: QUrl(url, parsingMode)
 {
 }
 
@@ -50,18 +60,16 @@ DS3URL::GetObjectName() const
 }
 
 QString
-DS3URL::GetLastObjectNamePart() const
+DS3URL::GetLastPathPart() const
 {
 	QRegExp regex("([^/]+/?)$");
-	QString objName;
+	QString part;
 	int pos = regex.indexIn(path());
 	if (pos > -1) {
 		QString match = regex.cap(1);
-		if (match != GetBucketName()) {
-			objName = match;
-		}
+		part = match;
 	}
-	return objName;
+	return part;
 }
 
 bool
