@@ -14,31 +14,27 @@
  * *****************************************************************************
  */
 
+#include <QList>
+#include <QUrl>
+
+#include "lib/mime_data_test.h"
 #include "lib/mime_data.h"
 
-const QString MimeData::DS3_MIME_TYPE = "text/spectra-ds3-uri-list";
-
-QList<QUrl>
-MimeData::GetDS3URLs() const
-{
-	QList<QUrl> urls;
-	QByteArray encodedUrls = data(DS3_MIME_TYPE);
-	QDataStream stream(&encodedUrls, QIODevice::ReadOnly);
-	while (!stream.atEnd()) {
-		QUrl url;
-		stream >> url;
-		urls << url;
-	}
-	return urls;
-}
+static MimeDataTest instance;
 
 void
-MimeData::SetDS3URLs(const QList<QUrl>& urls)
+MimeDataTest::TestURLRoundTrip()
 {
-	QByteArray encodedUrls;
-	QDataStream stream(&encodedUrls, QIODevice::WriteOnly);
-	for (int i = 0; i < urls.size(); i++) {
-		stream << urls.at(i);
-	}
-	setData(DS3_MIME_TYPE, encodedUrls);
+	MimeData data;
+	QVERIFY(!data.HasDS3URLs());
+
+	QList<QUrl> urls;
+	urls << QUrl("http://endpoint/bucket/object1");
+	urls << QUrl("http://endpoint/bucket/object2");
+	data.SetDS3URLs(urls);
+	QVERIFY(data.HasDS3URLs());
+
+	QList<QUrl> urls2 = data.GetDS3URLs();
+	QCOMPARE(urls2.at(0), urls.at(0));
+	QCOMPARE(urls2.at(1), urls.at(1));
 }

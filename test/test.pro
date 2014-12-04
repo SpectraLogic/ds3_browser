@@ -27,18 +27,22 @@ INCLUDEPATH += ../src
 
 HEADERS = \
 	test.h \
+	lib/mime_data_test.h \
 	models/ds3_url_test.h
 
 SOURCES = \
 	main.cc \
 	test.cc \
+	lib/mime_data_test.cc \
 	models/ds3_url_test.cc
 
 # Code that is being tested.
 # TODO share this with the main .pro file
 
 HEADERS += \
+	../src/lib/mime_data.h \
 	../src/models/ds3_url.h
 
 SOURCES += \
+	../src/lib/mime_data.cc \
 	../src/models/ds3_url.cc

@@ -14,31 +14,17 @@
  * *****************************************************************************
  */
 
-#include "lib/mime_data.h"
+#ifndef MIME_DATA_TEST_H
+#define MIME_DATA_TEST_H
 
-const QString MimeData::DS3_MIME_TYPE = "text/spectra-ds3-uri-list";
+#include "test.h"
 
-QList<QUrl>
-MimeData::GetDS3URLs() const
+class MimeDataTest : public Test
 {
-	QList<QUrl> urls;
-	QByteArray encodedUrls = data(DS3_MIME_TYPE);
-	QDataStream stream(&encodedUrls, QIODevice::ReadOnly);
-	while (!stream.atEnd()) {
-		QUrl url;
-		stream >> url;
-		urls << url;
-	}
-	return urls;
-}
+	Q_OBJECT
 
-void
-MimeData::SetDS3URLs(const QList<QUrl>& urls)
-{
-	QByteArray encodedUrls;
-	QDataStream stream(&encodedUrls, QIODevice::WriteOnly);
-	for (int i = 0; i < urls.size(); i++) {
-		stream << urls.at(i);
-	}
-	setData(DS3_MIME_TYPE, encodedUrls);
-}
+private slots:
+	void TestURLRoundTrip();
+};
+
+#endif
