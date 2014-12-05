@@ -310,7 +310,7 @@ Client::DoBulkGet(BulkGetWorkItem* workItem)
 	}
 
 	const QString& bucketName = workItem->GetBucketName();
-	ds3_request* request = ds3_init_get_bulk(bucketName.toUtf8().constData(), bulkObjList);
+	ds3_request* request = ds3_init_get_bulk(bucketName.toUtf8().constData(), bulkObjList, NONE);
 	ds3_bulk_response *response = NULL;
 	ds3_error* error = ds3_bulk(m_client, request, &response);
 	ds3_free_request(request);
