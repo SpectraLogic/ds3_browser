@@ -37,6 +37,7 @@ const QString Client::DELIMITER = "/";
 const uint64_t Client::BULK_PAGE_LIMIT = 500000;
 
 static size_t read_from_file(void* buffer, size_t size, size_t count, void* user_data);
+static size_t write_to_file(void* buffer, size_t size, size_t count, void* user_data);
 
 // Simple struct to wrap a Client and an ObjectWorkItem so the C SDK can
 // send both to the file read/write callback functions.
@@ -133,12 +134,38 @@ Client::BulkPut(const QString& bucketName,
 }
 
 void
-Client::GetObject(const QString& /*bucket*/,
+Client::GetObject(const QString& bucket,
 		  const QString& object,
-		  const QString& destination,
-		  BulkGetWorkItem* /*bulkGetWorkItem*/)
+		  const QString& fileName,
+		  BulkGetWorkItem* bulkGetWorkItem)
 {
-	LOG_DEBUG("GetObject " + object + " to " + destination);
+	LOG_DEBUG("GetObject " + object + " to " + fileName);
+
+	if (object.endsWith("/")) {
+		// TODO create the "fileName" directory
+		return;
+	}
+
+	ds3_request* request = ds3_init_get_object(bucket.toUtf8().constData(),
+						   object.toUtf8().constData());
+	ds3_error* error = NULL;
+	ObjectWorkItem objWorkItem(bucket, object, fileName, bulkGetWorkItem);
+	ClientAndObjectWorkItem caowi;
+	caowi.client = this;
+	caowi.objectWorkItem = &objWorkItem;
+	if (objWorkItem.OpenFile(QIODevice::WriteOnly)) {
+		error = ds3_get_object(m_client, request,
+				       &caowi, write_to_file);
+	} else {
+		LOG_ERROR("GET object failed: unable to open file " + fileName);
+	}
+
+	ds3_free_request(request);
+
+	if (error) {
+		// TODO Handle the error
+		ds3_free_error(error);
+	}
 }
 
 void
@@ -157,15 +184,13 @@ Client::PutObject(const QString& bucket,
 		// data associated with them
 		error = ds3_put_object(m_client, request, NULL, NULL);
 	} else {
-		QFile file(fileName);
 		ObjectWorkItem objWorkItem(bucket, object, fileName, bulkPutWorkItem);
 		ClientAndObjectWorkItem caowi;
 		caowi.client = this;
 		caowi.objectWorkItem = &objWorkItem;
 		if (objWorkItem.OpenFile(QIODevice::ReadOnly)) {
 			error = ds3_put_object(m_client, request,
-					       &caowi,
-					       read_from_file);
+					       &caowi, read_from_file);
 		} else {
 			LOG_ERROR("PUT object failed: unable to open file " + fileName);
 		}
@@ -529,4 +554,26 @@ Client::ReadFile(ObjectWorkItem* workItem, char* buffer,
 		emit JobProgressUpdate(job);
 	}
 	return bytesRead;
+}
+
+static size_t
+write_to_file(void* buffer, size_t size, size_t count, void* user_data)
+{
+	ClientAndObjectWorkItem* caowi = static_cast<ClientAndObjectWorkItem*>(user_data);
+	Client* client = caowi->client;
+	ObjectWorkItem* workItem = caowi->objectWorkItem;
+	return client->WriteFile(workItem, (char*)buffer, size, count);
+}
+
+size_t
+Client::WriteFile(ObjectWorkItem* workItem, char* buffer,
+		  size_t size, size_t count)
+{
+	size_t bytesWritten = workItem->WriteFile(buffer, size, count);
+	BulkWorkItem* bulkWorkItem = workItem->GetBulkWorkItem();
+	if (bulkWorkItem != NULL) {
+		Job job = bulkWorkItem->ToJob();
+		emit JobProgressUpdate(job);
+	}
+	return bytesWritten;
 }

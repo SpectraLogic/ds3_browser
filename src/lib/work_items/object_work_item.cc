@@ -43,3 +43,13 @@ ObjectWorkItem::ReadFile(char* data, size_t size, size_t count)
 	}
 	return bytesRead;
 }
+
+size_t
+ObjectWorkItem::WriteFile(char* data, size_t size, size_t count)
+{
+	size_t bytesWritten = m_file.write(data, size * count);
+	if (m_bulkWorkItem != NULL) {
+		m_bulkWorkItem->UpdateBytesTransferred(bytesWritten);
+	}
+	return bytesWritten;
+}

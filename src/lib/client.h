@@ -98,6 +98,8 @@ public:
 	// Meant to be private but called from the C SDK callback function
 	size_t ReadFile(ObjectWorkItem* workItem, char* buffer,
 			size_t size, size_t count);
+	size_t WriteFile(ObjectWorkItem* workItem, char* buffer,
+			 size_t size, size_t count);
 
 };
 

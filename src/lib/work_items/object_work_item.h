@@ -45,6 +45,7 @@ public:
 
 	bool OpenFile(QIODevice::OpenMode mode);
 	size_t ReadFile(char* data, size_t size, size_t count);
+	size_t WriteFile(char* data, size_t size, size_t count);
 
 private:
 	QString m_bucketName;
