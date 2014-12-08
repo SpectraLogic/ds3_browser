@@ -45,19 +45,7 @@ BulkPutWorkItem::DeleteDirIterator()
 }
 
 bool
-BulkPutWorkItem::IsPageFinished() const
-{
-	m_workingObjListCountLock.lock();
-	bool finished = m_workingObjListCount == 0;
-	m_workingObjListCountLock.unlock();
-	return finished;
-}
-
-bool
 BulkPutWorkItem::IsFinished() const
 {
-	bool finished = IsPageFinished() &&
-			m_urlsIterator == GetUrlsConstEnd() &&
-			m_dirIterator == NULL;
-	return finished;
+	return (BulkWorkItem::IsFinished() && m_dirIterator == NULL);
 }

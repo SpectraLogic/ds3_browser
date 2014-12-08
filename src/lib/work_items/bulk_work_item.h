@@ -48,8 +48,14 @@ public:
 	uint64_t GetSize() const;
 	uint64_t GetBytesTransferred() const;
 	void UpdateBytesTransferred(size_t bytes);
+	size_t GetNumChunksProcessed() const;
+
+	bool IsPageFinished() const;
+	bool IsFinished() const;
 
 	void SetBucketName(const QString& bucketName);
+	void SetNumChunks(int chunks);
+	void IncNumChunksProcessed(int chunks = 1);
 
 	void ClearObjMap();
 	QHash<QString, QString>::const_iterator GetObjMapConstBegin() const;
@@ -65,10 +71,6 @@ public:
 
 	const Job ToJob() const;
 
-	void IncWorkingObjListCount();
-	void DecWorkingObjListCount();
-	int GetWorkingObjListCount() const;
-
 protected:
 	Job::State m_state;
 	QString m_host;
@@ -79,11 +81,9 @@ protected:
 	mutable QMutex m_bytesTransferredLock;
 	QHash<QString, QString> m_objMap;
 	ds3_bulk_response* m_response;
-
-	// The number of active object list threads.  This is used to determine
-	// if the Client is finished with this work item's bulkput page.
-	int m_workingObjListCount;
-	mutable QMutex m_workingObjListCountLock;
+	size_t m_numChunks;
+	size_t m_numChunksProcessed;
+	mutable QMutex m_numChunksLock;
 };
 
 inline const QString&
@@ -116,10 +116,35 @@ BulkWorkItem::GetUrlsConstEnd() const
 	return m_urls.constEnd();
 }
 
+inline size_t
+BulkWorkItem::GetNumChunksProcessed() const
+{
+	m_numChunksLock.lock();
+	int chunks = m_numChunksProcessed;
+	m_numChunksLock.unlock();
+	return chunks;
+}
+
 inline void
 BulkWorkItem::SetBucketName(const QString& bucketName)
 {
 	m_bucketName = bucketName;
+}
+
+inline void
+BulkWorkItem::SetNumChunks(int chunks)
+{
+	m_numChunksLock.lock();
+	m_numChunks = chunks;
+	m_numChunksLock.unlock();
+}
+
+inline void
+BulkWorkItem::IncNumChunksProcessed(int chunks)
+{
+	m_numChunksLock.lock();
+	m_numChunksProcessed += chunks;
+	m_numChunksLock.unlock();
 }
 
 inline void
@@ -180,28 +205,6 @@ inline void
 BulkWorkItem::SetState(Job::State state)
 {
 	m_state = state;
-}
-
-inline void
-BulkWorkItem::IncWorkingObjListCount()
-{
-	m_workingObjListCountLock.lock();
-	m_workingObjListCount++;
-	m_workingObjListCountLock.unlock();
-}
-
-inline void
-BulkWorkItem::DecWorkingObjListCount()
-{
-	m_workingObjListCountLock.lock();
-	m_workingObjListCount--;
-	m_workingObjListCountLock.unlock();
-}
-
-inline int
-BulkWorkItem::GetWorkingObjListCount() const
-{
-	return m_workingObjListCount;
 }
 
 #endif

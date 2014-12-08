@@ -47,7 +47,6 @@ public:
 	QDirIterator* GetDirIterator(const QString& filePath);
 	void DeleteDirIterator();
 
-	bool IsPageFinished() const;
 	bool IsFinished() const;
 
 private:

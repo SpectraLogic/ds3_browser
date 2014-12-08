@@ -27,6 +27,7 @@
 
 #include "models/job.h"
 
+class BulkWorkItem;
 class BulkGetWorkItem;
 class BulkPutWorkItem;
 class ObjectWorkItem;
@@ -80,14 +81,15 @@ private:
 
 	void PrepareBulkGets(BulkGetWorkItem* workItem);
 	void DoBulkGet(BulkGetWorkItem* workItem);
-	void GetBulkObjectList(BulkGetWorkItem* workItem,
-			       const ds3_bulk_object_list* list);
+	void ProcessGetJobChunk(BulkGetWorkItem* workItem);
+	ds3_get_available_chunks_response* GetAvailableJobChunks(BulkGetWorkItem* bulkGetWorkItem);
 
 	void PrepareBulkPuts(BulkPutWorkItem* workItem);
 	void DoBulkPut(BulkPutWorkItem* workItem);
-	void PutBulkObjectList(BulkPutWorkItem* workItem,
-			       const ds3_bulk_object_list* list);
-	void DeleteOrRequeueBulkPutWorkItem(BulkPutWorkItem* workItem);
+	void ProcessPutJobChunk(BulkPutWorkItem* workItem);
+	ds3_allocate_chunk_response* AllocateJobChunk(BulkPutWorkItem* bulkPutWorkItem);
+
+	void DeleteOrRequeueBulkWorkItem(BulkWorkItem* workItem);
 
 	QString m_host;
 	QString m_endpoint;
@@ -98,6 +100,7 @@ public:
 	// Meant to be private but called from the C SDK callback function
 	size_t ReadFile(ObjectWorkItem* workItem, char* buffer,
 			size_t size, size_t count);
+	// Meant to be private but called from the C SDK callback function
 	size_t WriteFile(ObjectWorkItem* workItem, char* buffer,
 			 size_t size, size_t count);
 

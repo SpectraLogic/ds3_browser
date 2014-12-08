@@ -25,7 +25,8 @@ BulkWorkItem::BulkWorkItem(const QString& host, const QList<QUrl> urls)
 	  m_urlsIterator(m_urls.constBegin()),
 	  m_bytesTransferred(0),
 	  m_response(NULL),
-	  m_workingObjListCount(0)
+	  m_numChunks(0),
+	  m_numChunksProcessed(0)
 {
 }
 
@@ -36,9 +37,8 @@ BulkWorkItem::~BulkWorkItem()
 uint64_t
 BulkWorkItem::GetBytesTransferred() const
 {
-	uint64_t bytesTransferred = 0;
 	m_bytesTransferredLock.lock();
-	bytesTransferred = m_bytesTransferred;
+	uint64_t bytesTransferred = m_bytesTransferred;
 	m_bytesTransferredLock.unlock();
 	return bytesTransferred;
 }
@@ -69,6 +69,21 @@ BulkWorkItem::GetSize() const
 		size = m_response->original_size_in_bytes;
 	}
 	return size;
+}
+
+bool
+BulkWorkItem::IsPageFinished() const
+{
+	m_numChunksLock.lock();
+	bool finished = m_numChunksProcessed == m_numChunks;
+	m_numChunksLock.unlock();
+	return finished;
+}
+
+bool
+BulkWorkItem::IsFinished() const
+{
+	return (IsPageFinished() && m_urlsIterator == GetUrlsConstEnd());
 }
 
 const Job

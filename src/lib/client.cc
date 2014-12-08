@@ -172,7 +172,7 @@ void
 Client::PutObject(const QString& bucket,
 		  const QString& object,
 		  const QString& fileName,
-		  BulkPutWorkItem* bulkPutWorkItem)
+		  BulkPutWorkItem* workItem)
 {
 	QFileInfo fileInfo(fileName);
 	ds3_request* request = ds3_init_put_object(bucket.toUtf8().constData(),
@@ -184,7 +184,7 @@ Client::PutObject(const QString& bucket,
 		// data associated with them
 		error = ds3_put_object(m_client, request, NULL, NULL);
 	} else {
-		ObjectWorkItem objWorkItem(bucket, object, fileName, bulkPutWorkItem);
+		ObjectWorkItem objWorkItem(bucket, object, fileName, workItem);
 		ClientAndObjectWorkItem caowi;
 		caowi.client = this;
 		caowi.objectWorkItem = &objWorkItem;
@@ -324,8 +324,10 @@ Client::DoBulkGet(BulkGetWorkItem* workItem)
 	ds3_bulk_object_list *bulkObjList = ds3_init_bulk_object_list(numObjs);
 
 	QHash<QString, QString>::const_iterator hi;
-	int i = 0;
-	for (hi = workItem->GetObjMapConstBegin(); hi != workItem->GetObjMapConstEnd(); hi++) {
+	size_t i = 0;
+	for (hi = workItem->GetObjMapConstBegin();
+	     hi != workItem->GetObjMapConstEnd();
+	     hi++) {
 		ds3_bulk_object* bulkObj = &bulkObjList->list[i];
 		QString objName = hi.key();
 		QString filePath = hi.value();
@@ -341,6 +343,9 @@ Client::DoBulkGet(BulkGetWorkItem* workItem)
 	ds3_free_request(request);
 	ds3_free_bulk_object_list(bulkObjList);
 	workItem->SetResponse(response);
+	if (response != NULL) {
+		workItem->SetNumChunks(response->list_size);
+	}
 
 	if (error) {
 		// TODO Handle the error
@@ -349,31 +354,67 @@ Client::DoBulkGet(BulkGetWorkItem* workItem)
 	}
 
 	if (response == NULL || (response != NULL && response->list_size == 0)) {
-		//DeleteOrRequeueBulkGetWorkItem(workItem);
+		DeleteOrRequeueBulkWorkItem(workItem);
 		return;
 	}
 
-	for (size_t j = 0; j < response->list_size; j++) {
-		LOG_DEBUG("Starting GetBulkOjbectList thread");
-		ds3_bulk_object_list* list = response->list[j];
-		workItem->IncWorkingObjListCount();
-		run(this, &Client::GetBulkObjectList, workItem, list);
-	}
+	ProcessGetJobChunk(workItem);
 }
 
 void
-Client::GetBulkObjectList(BulkGetWorkItem* workItem,
-			  const ds3_bulk_object_list* list)
+Client::ProcessGetJobChunk(BulkGetWorkItem* workItem)
 {
+	LOG_DEBUG("ProcessGetJobChunk");
+
+	// If the get available chunks response doesn't include any objects, it
+	// means the server isn't ready yet (e.g. it could still be transferring
+	// objects off tape and into cache).  In this situation, we have to
+	// wait and try again.
+	//
+	// TODO Handle the case where the server's not ready for any chunks yet.
+	//      See ProcessPutJobChunk.
+	ds3_get_available_chunks_response* chunksResponse;
+	chunksResponse = GetAvailableJobChunks(workItem);
+
 	QString bucketName = workItem->GetBucketName();
-	for (uint64_t k = 0; k < list->size; k++) {
-		ds3_bulk_object* bulkObj = &list->list[k];
-		QString objName = QString(bulkObj->name->value);
-		QString filePath = workItem->GetObjMapValue(objName);
-		GetObject(bucketName, objName, filePath, workItem);
+	// TODO PUT multiple objects at once.  Start the next chunk as soon
+	//      as the number of objects left to put is less than the size
+	//      of the "put objects" thread pool.
+	ds3_bulk_response* bulkResponse = chunksResponse->object_list;
+	for (size_t chunk = 0; chunk < bulkResponse->list_size; chunk++) {
+		ds3_bulk_object_list* list = bulkResponse->list[chunk];
+		for (uint64_t i = 0; i < list->size;  i++) {
+			ds3_bulk_object* bulkObj = &(list->list[i]);
+			QString objName = bulkObj->name->value;
+			QString filePath = workItem->GetObjMapValue(objName);
+			Client::GetObject(bucketName, objName, filePath, workItem);
+		}
+		workItem->IncNumChunksProcessed();
 	}
-	workItem->DecWorkingObjListCount();
-	//DeleteOrRequeueBulkPutWorkItem(workItem);
+
+	if (workItem->IsPageFinished()) {
+		DeleteOrRequeueBulkWorkItem(workItem);
+	} else {
+		run(this, &Client::ProcessGetJobChunk, workItem);
+	}
+}
+
+ds3_get_available_chunks_response*
+Client::GetAvailableJobChunks(BulkGetWorkItem* workItem)
+{
+	ds3_bulk_response *response = workItem->GetResponse();
+	ds3_request* request = ds3_init_get_available_chunks(response->job_id->value);
+	ds3_get_available_chunks_response* chunkResponse;
+	ds3_error* error = ds3_get_available_chunks(m_client, request, &chunkResponse);
+	ds3_free_request(request);
+
+	if (error) {
+		// TODO handle error properly
+		LOG_ERROR("Error allocating job chunk");
+		ds3_free_error(error);
+	}
+
+	return chunkResponse;
 }
 
 void
@@ -456,8 +497,10 @@ Client::DoBulkPut(BulkPutWorkItem* workItem)
 	ds3_bulk_object_list *bulkObjList = ds3_init_bulk_object_list(numFiles);
 
 	QHash<QString, QString>::const_iterator hi;
-	int i = 0;
-	for (hi = workItem->GetObjMapConstBegin(); hi != workItem->GetObjMapConstEnd(); hi++) {
+	size_t i = 0;
+	for (hi = workItem->GetObjMapConstBegin();
+	     hi != workItem->GetObjMapConstEnd();
+	     hi++) {
 		ds3_bulk_object* bulkObj = &bulkObjList->list[i];
 		QString objName = hi.key();
 		QString filePath = hi.value();
@@ -478,6 +521,9 @@ Client::DoBulkPut(BulkPutWorkItem* workItem)
 	ds3_error* error = ds3_bulk(m_client, request, &response);
 	ds3_free_request(request);
 	ds3_free_bulk_object_list(bulkObjList);
+	if (response != NULL) {
+		workItem->SetNumChunks(response->list_size);
+	}
 	workItem->SetResponse(response);
 
 	if (error) {
@@ -487,50 +533,98 @@ Client::DoBulkPut(BulkPutWorkItem* workItem)
 	}
 
 	if (response == NULL || (response != NULL && response->list_size == 0)) {
-		DeleteOrRequeueBulkPutWorkItem(workItem);
+		DeleteOrRequeueBulkWorkItem(workItem);
 		return;
 	}
 
-	for (size_t j = 0; j < response->list_size; j++) {
-		LOG_DEBUG("Starting PutBulkOjbectList thread");
-		ds3_bulk_object_list* list = response->list[j];
-		workItem->IncWorkingObjListCount();
-		run(this, &Client::PutBulkObjectList, workItem, list);
-	}
+	ProcessPutJobChunk(workItem);
 }
 
 void
-Client::PutBulkObjectList(BulkPutWorkItem* workItem,
-			  const ds3_bulk_object_list* list)
+Client::ProcessPutJobChunk(BulkPutWorkItem* workItem)
 {
-	QString bucketName = workItem->GetBucketName();
-	for (uint64_t k = 0; k < list->size; k++) {
-		ds3_bulk_object* bulkObj = &list->list[k];
-		QString objName = QString(bulkObj->name->value);
-		QString filePath = workItem->GetObjMapValue(objName);
-		PutObject(bucketName, objName, filePath, workItem);
+	LOG_DEBUG("ProcessPutJobChunk");
+
+	// If the allocate chunk response doesn't include any objects, it
+	// means the server isn't ready yet.  In this situation, we have to
+	// wait and try again.
+	//
+	// TODO Consider changing this to make use of timers/slots/etc instead
+	//      of just sleeping.
+	uint64_t numObjects = 0;
+	ds3_allocate_chunk_response* chunkResponse;
+	while (numObjects == 0) {
+		chunkResponse = AllocateJobChunk(workItem);
+		numObjects = chunkResponse->objects->size;
+		if (numObjects == 0) {
+			LOG_DEBUG("Allocate job chunk response didn't include any objects");
+			sleep(60);
+		}
 	}
-	workItem->DecWorkingObjListCount();
-	DeleteOrRequeueBulkPutWorkItem(workItem);
+
+	QString bucketName = workItem->GetBucketName();
+	// TODO PUT multiple objects at once.  Start the next chunk as soon
+	//      as the number of objects left to put is less than the size
+	//      of the "put objects" thread pool.
+	for (uint64_t i = 0; i < numObjects;  i++) {
+		ds3_bulk_object bulkObj = chunkResponse->objects->list[i];
+		QString objName = bulkObj.name->value;
+		QString filePath = workItem->GetObjMapValue(objName);
+		Client::PutObject(bucketName, objName, filePath, workItem);
+	}
+
+	workItem->IncNumChunksProcessed();
+
+	if (workItem->IsPageFinished()) {
+		DeleteOrRequeueBulkWorkItem(workItem);
+	} else {
+		run(this, &Client::ProcessPutJobChunk, workItem);
+	}
+}
+
+ds3_allocate_chunk_response*
+Client::AllocateJobChunk(BulkPutWorkItem* workItem)
+{
+	ds3_bulk_response *response = workItem->GetResponse();
+	ds3_request* request = ds3_init_allocate_chunk(response->job_id->value);
+	ds3_allocate_chunk_response* chunkResponse;
+	ds3_error* error = ds3_allocate_chunk(m_client, request, &chunkResponse);
+	ds3_free_request(request);
+
+	if (error) {
+		// TODO handle error properly
+		LOG_ERROR("Error allocating job chunk");
+		ds3_free_error(error);
+	}
+
+	return chunkResponse;
 }
 
 void
-Client::DeleteOrRequeueBulkPutWorkItem(BulkPutWorkItem* workItem)
+Client::DeleteOrRequeueBulkWorkItem(BulkWorkItem* workItem)
 {
 	if (workItem->IsPageFinished()) {
 		if (workItem->IsFinished()) {
-			LOG_DEBUG("Finished with bulk put work item.  Deleting it.");
+			LOG_DEBUG("Finished with bulk work item.  Deleting it.");
 			workItem->SetState(Job::FINISHED);
 			Job job = workItem->ToJob();
 			emit JobProgressUpdate(job);
 			delete workItem;
 		} else {
-			LOG_DEBUG("More bulk put pages to go.  Starting PrepareBulkPuts again.");
-			run(this, &Client::PrepareBulkPuts, workItem);
+			LOG_DEBUG("More bulk pages to go.  Starting PrepareBulk{Gets,Puts} again.");
+			if (workItem->GetType() == Job::GET) {
+				run(this,
+				    &Client::PrepareBulkGets,
+				    static_cast<BulkGetWorkItem*>(workItem));
+			} else {
+				run(this,
+				    &Client::PrepareBulkPuts,
+				    static_cast<BulkPutWorkItem*>(workItem));
+			}
 		}
 	} else {
-		LOG_DEBUG("Page not finished.  objlistcount: " +
-			  QString::number(workItem->GetWorkingObjListCount()));
+		LOG_DEBUG("Page not finished. num chunks processed: " +
+			  QString::number(workItem->GetNumChunksProcessed()));
 	}
 }
 
