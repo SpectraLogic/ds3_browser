@@ -296,12 +296,12 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 	     ui++) {
 		DS3URL url(*ui);
 		QString bucket = url.GetBucketName();
-		workItem->SetBucketName(bucket);
 		if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT ||
 		    (!prevBucket.isEmpty() && prevBucket != bucket)) {
 			run(this, &Client::DoBulkGet, workItem);
 			return;
 		}
+		workItem->SetBucketName(bucket);
 
 		QString fullObjName = url.GetObjectName();
 		QString lastPathPart = url.GetLastPathPart();
@@ -390,6 +390,7 @@ Client::DoBulkGet(BulkGetWorkItem* workItem)
 	workItem->SetResponse(response);
 	if (response != NULL) {
 		workItem->SetNumChunks(response->list_size);
+		workItem->SetNumChunksProcessed(0);
 	}
 
 	if (error) {
@@ -583,6 +584,7 @@ Client::DoBulkPut(BulkPutWorkItem* workItem)
 	ds3_free_bulk_object_list(bulkObjList);
 	if (response != NULL) {
 		workItem->SetNumChunks(response->list_size);
+		workItem->SetNumChunksProcessed(0);
 	}
 	workItem->SetResponse(response);
 

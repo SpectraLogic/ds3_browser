@@ -55,6 +55,7 @@ public:
 
 	void SetBucketName(const QString& bucketName);
 	void SetNumChunks(int chunks);
+	void SetNumChunksProcessed(int chunks);
 	void IncNumChunksProcessed(int chunks = 1);
 
 	void ClearObjMap();
@@ -136,6 +137,14 @@ BulkWorkItem::SetNumChunks(int chunks)
 {
 	m_numChunksLock.lock();
 	m_numChunks = chunks;
+	m_numChunksLock.unlock();
+}
+
+inline void
+BulkWorkItem::SetNumChunksProcessed(int chunks)
+{
+	m_numChunksLock.lock();
+	m_numChunksProcessed = chunks;
 	m_numChunksLock.unlock();
 }
 
