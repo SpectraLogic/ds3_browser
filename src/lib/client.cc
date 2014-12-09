@@ -89,6 +89,7 @@ Client::GetBucket(const QString& bucketName, const QString& prefix,
 						       &Client::DoGetBucket,
 						       bucketName,
 						       prefix,
+						       DELIMITER,
 						       marker,
 						       maxKeys);
 	return future;
@@ -141,9 +142,19 @@ Client::GetObject(const QString& bucket,
 {
 	LOG_DEBUG("GetObject " + object + " to " + fileName);
 
+	QDir dir(fileName);
 	if (object.endsWith("/")) {
-		// TODO create the "fileName" directory
-		return;
+		if (!dir.exists()) {
+			LOG_DEBUG("GetObject - creating directory " + dir.path());
+			dir.mkpath(".");
+			return;
+		}
+	} else {
+		QDir parentDir(QFileInfo(fileName).absolutePath());
+		if (!parentDir.exists()) {
+			LOG_DEBUG("GetObject - creating directory " + parentDir.path());
+			parentDir.mkpath(".");
+		}
 	}
 
 	ds3_request* request = ds3_init_get_object(bucket.toUtf8().constData(),
@@ -224,7 +235,8 @@ Client::DoGetService()
 
 ds3_get_bucket_response*
 Client::DoGetBucket(const QString& bucketName, const QString& prefix,
-		    const QString& marker, uint32_t maxKeys)
+		    const QString& delimiter, const QString& marker,
+		    uint32_t maxKeys)
 {
 	ds3_get_bucket_response *response;
 	ds3_request* request = ds3_init_get_bucket(bucketName.toUtf8().constData());
@@ -235,8 +247,10 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 		ds3_request_set_prefix(request, prefix.toUtf8().constData());
 		logQueryParams << "prefix=" + prefix;
 	}
-	ds3_request_set_delimiter(request, DELIMITER.toUtf8().constData());
-	logQueryParams << "delimiter=" + DELIMITER;
+	if (!delimiter.isEmpty()) {
+		ds3_request_set_delimiter(request, delimiter.toUtf8().constData());
+		logQueryParams << "delimiter=" + delimiter;
+	}
 	if (!marker.isEmpty()) {
 		ds3_request_set_marker(request, marker.toUtf8().constData());
 		logQueryParams << "marker=" + marker;
@@ -275,6 +289,7 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 	workItem->ClearObjMap();
 
 	QString prevBucket;
+	QString destination = workItem->GetDestination();
 
 	for (QList<QUrl>::const_iterator& ui(workItem->GetUrlsIterator());
 	     ui != workItem->GetUrlsConstEnd();
@@ -290,14 +305,41 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 
 		QString fullObjName = url.GetObjectName();
 		QString lastPathPart = url.GetLastPathPart();
-		QString filePath = QDir::cleanPath(workItem->GetDestination() +
+		QString bucketPrefix;
+		if (url.IsBucket()) {
+			// The bucket name needs to be in the file name
+			bucketPrefix = bucket;
+		}
+		QString filePath = QDir::cleanPath(destination + "/" + bucketPrefix +
 						   "/" + lastPathPart);
 		if (url.IsBucketOrFolder()) {
-		// 	get all objects underneath and add to the objmap.
-		//
-		//	if (no objects underneath) {
-		//		directly create the folder
-		//	}
+			ds3_get_bucket_response* getBucketRes;
+			QString prefix = fullObjName;
+			// TODO Handle paginated GetBucket responses
+			getBucketRes = DoGetBucket(bucket, prefix, "", "", 1000);
+			if (getBucketRes->num_objects == 0) {
+				workItem->AppendDirsToCreate(filePath);
+			}
+			for (size_t i = 0; i < getBucketRes->num_objects; i++) {
+				if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT) {
+					// TODO Update this method to be able
+					//      take over where this left off.
+					run(this, &Client::DoBulkGet, workItem);
+					return;
+				}
+				ds3_object rawObject = getBucketRes->objects[i];
+				QString subFullObjName = QString(QLatin1String(rawObject.name->value));
+				QString objNameMinusPrefix = subFullObjName;
+				objNameMinusPrefix.replace(QRegExp("^" + prefix), "");
+				QString subFilePath = QDir::cleanPath(destination + "/" +
+								      bucketPrefix + "/" + prefix +
+								      "/" + objNameMinusPrefix);
+				if (subFullObjName.endsWith("/")) {
+					workItem->AppendDirsToCreate(subFilePath);
+				} else {
+					workItem->InsertObjMap(subFullObjName, subFilePath);
+				}
+			}
 		} else {
 			workItem->InsertObjMap(fullObjName, filePath);
 		}
@@ -307,6 +349,9 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 
 	if (workItem->GetObjMapSize() > 0) {
 		run(this, &Client::DoBulkGet, workItem);
+	} else {
+		CreateBulkGetDirs(workItem);
+		DeleteOrRequeueBulkWorkItem(workItem);
 	}
 }
 
@@ -353,12 +398,27 @@ Client::DoBulkGet(BulkGetWorkItem* workItem)
 		ds3_free_error(error);
 	}
 
+	CreateBulkGetDirs(workItem);
+
 	if (response == NULL || (response != NULL && response->list_size == 0)) {
 		DeleteOrRequeueBulkWorkItem(workItem);
 		return;
 	}
 
 	ProcessGetJobChunk(workItem);
+}
+
+void
+Client::CreateBulkGetDirs(BulkGetWorkItem* workItem)
+{
+	for (int i = 0; i < workItem->GetDirsToCreateSize(); i++) {
+		QDir dir(workItem->GetDirsToCreateAt(i));
+		if (!dir.exists()) {
+			LOG_DEBUG("CreateBulkGetDirs - creating directory " + dir.path());
+			dir.mkpath(".");
+		}
+	}
+	workItem->ClearDirsToCreate();
 }
 
 void

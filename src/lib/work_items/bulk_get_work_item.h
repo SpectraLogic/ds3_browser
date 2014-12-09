@@ -35,11 +35,21 @@ public:
 	const QString GetDestination() const;
 	Job::Type GetType() const;
 
+	void AppendDirsToCreate(const QString& dir);
+	int GetDirsToCreateSize() const;
+	const QString& GetDirsToCreateAt(int i) const;
+	void ClearDirsToCreate();
+
 private:
 	void SortURLsByBucket();
 	static bool CompareQUrls(const QUrl& a, const QUrl& b);
 
 	QString m_destination;
+
+	// Explicit "folder" objects that need to be created.  This is
+	// populated during PrepareBulkGets so dir creation can be delayed
+	// until we know the actual bulk get request was successful.
+	QList<QString> m_dirsToCreate;
 };
 
 inline const QString
@@ -52,6 +62,30 @@ inline Job::Type
 BulkGetWorkItem::GetType() const
 {
 	return Job::GET;
+}
+
+inline void
+BulkGetWorkItem::AppendDirsToCreate(const QString& dir)
+{
+	m_dirsToCreate << dir;
+}
+
+inline int
+BulkGetWorkItem::GetDirsToCreateSize() const
+{
+	return m_dirsToCreate.size();
+}
+
+inline const QString&
+BulkGetWorkItem::GetDirsToCreateAt(int i) const
+{
+	return m_dirsToCreate[i];
+}
+
+inline void
+BulkGetWorkItem::ClearDirsToCreate()
+{
+	m_dirsToCreate.clear();
 }
 
 #endif

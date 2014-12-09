@@ -76,11 +76,13 @@ private:
 	ds3_get_service_response* DoGetService();
 	ds3_get_bucket_response* DoGetBucket(const QString& bucketName,
 					     const QString& prefix,
+					     const QString& delimiter,
 					     const QString& marker,
 					     uint32_t maxKeys);
 
 	void PrepareBulkGets(BulkGetWorkItem* workItem);
 	void DoBulkGet(BulkGetWorkItem* workItem);
+	void CreateBulkGetDirs(BulkGetWorkItem* workItem);
 	void ProcessGetJobChunk(BulkGetWorkItem* workItem);
 	ds3_get_available_chunks_response* GetAvailableJobChunks(BulkGetWorkItem* bulkGetWorkItem);
 
