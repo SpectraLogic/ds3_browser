@@ -73,6 +73,13 @@ DS3URL::GetLastPathPart() const
 }
 
 bool
+DS3URL::IsBucket() const
+{
+	QString objName = GetObjectName();
+	return (objName.isEmpty() || objName == "/");
+}
+
+bool
 DS3URL::IsBucketOrFolder() const
 {
 	QString objName = GetObjectName();

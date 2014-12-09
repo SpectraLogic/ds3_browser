@@ -34,6 +34,7 @@ public:
 	QString GetBucketName() const;
 	QString GetObjectName() const;
 	QString GetLastPathPart() const;
+	bool IsBucket() const;
 	bool IsBucketOrFolder() const;
 };
 

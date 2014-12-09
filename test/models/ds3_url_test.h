@@ -27,6 +27,7 @@ private slots:
 	void TestGetBucketName();
 	void TestGetObjectName();
 	void TestGetLastPathPart();
+	void TestIsBucket();
 	void TestIsBucketOrFolder();
 };
 

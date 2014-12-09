@@ -54,6 +54,15 @@ DS3URLTest::TestGetLastPathPart()
 }
 
 void
+DS3URLTest::TestIsBucket()
+{
+	QVERIFY(DS3URL("http://host/a").IsBucket());
+	QVERIFY(DS3URL("http://host/a/").IsBucket());
+	QVERIFY(!DS3URL("http://host/a/b").IsBucket());
+	QVERIFY(!DS3URL("http://host/a/b/").IsBucket());
+}
+
+void
 DS3URLTest::TestIsBucketOrFolder()
 {
 	QVERIFY(DS3URL("http://host/a").IsBucketOrFolder());
