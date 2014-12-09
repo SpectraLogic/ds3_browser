@@ -328,7 +328,7 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 					return;
 				}
 				ds3_object rawObject = getBucketRes->objects[i];
-				QString subFullObjName = QString(QLatin1String(rawObject.name->value));
+				QString subFullObjName = QString::fromUtf8(rawObject.name->value);
 				QString objNameMinusPrefix = subFullObjName;
 				objNameMinusPrefix.replace(QRegExp("^" + prefix), "");
 				QString subFilePath = QDir::cleanPath(destination + "/" +
@@ -445,7 +445,7 @@ Client::ProcessGetJobChunk(BulkGetWorkItem* workItem)
 		ds3_bulk_object_list* list = bulkResponse->list[chunk];
 		for (uint64_t i = 0; i < list->size;  i++) {
 			ds3_bulk_object* bulkObj = &(list->list[i]);
-			QString objName = bulkObj->name->value;
+			QString objName = QString::fromUtf8(bulkObj->name->value);
 			QString filePath = workItem->GetObjMapValue(objName);
 			Client::GetObject(bucketName, objName, filePath, workItem);
 		}
@@ -628,7 +628,7 @@ Client::ProcessPutJobChunk(BulkPutWorkItem* workItem)
 	//      of the "put objects" thread pool.
 	for (uint64_t i = 0; i < numObjects;  i++) {
 		ds3_bulk_object bulkObj = chunkResponse->objects->list[i];
-		QString objName = bulkObj.name->value;
+		QString objName = QString::fromUtf8(bulkObj.name->value);
 		QString filePath = workItem->GetObjMapValue(objName);
 		Client::PutObject(bucketName, objName, filePath, workItem);
 	}

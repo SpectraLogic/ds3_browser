@@ -750,7 +750,7 @@ DS3BrowserModel::HandleGetServiceResponse()
 		parentItem = m_rootItem;
 	}
 
-	QString owner = QString(QLatin1String(response->owner->name->value));
+	QString owner = QString::fromUtf8(response->owner->name->value);
 
 	size_t numBuckets = response->num_buckets;
 	int startRow = 0;
@@ -771,14 +771,14 @@ DS3BrowserModel::HandleGetServiceResponse()
 
 		ds3_bucket rawBucket = response->buckets[i];
 
-		name = QString(QLatin1String(rawBucket.name->value));
+		name = QString::fromUtf8(rawBucket.name->value);
 		bucketData << name;
 		bucketData << owner;
 		bucketData << "--";
 		bucketData << BUCKET;
 
 		rawCreated = rawBucket.creation_date->value;
-		createdDT = QDateTime::fromString(QString(QLatin1String(rawCreated)),
+		createdDT = QDateTime::fromString(QString::fromUtf8(rawCreated),
 						  REST_TIMESTAMP_FORMAT);
 		created = createdDT.toString(VIEW_TIMESTAMP_FORMAT);
 		bucketData << created;
@@ -844,7 +844,7 @@ DS3BrowserModel::HandleGetBucketResponse()
 		QList<QVariant> objectData;
 		DS3BrowserItem* object;
 
-		QString nextName = QString(QLatin1String(rawCommonPrefix->value));
+		QString nextName = QString::fromUtf8(rawCommonPrefix->value);
 		nextName.replace(QRegExp("^" + prefix), "");
 		nextName.replace(QRegExp("/$"), "");
 		if (!currentCommonPrefixNames.contains(nextName)) {
@@ -873,7 +873,7 @@ DS3BrowserModel::HandleGetBucketResponse()
 
 		ds3_object rawObject = response->objects[i];
 
-		nextName = QString(QLatin1String(rawObject.name->value));
+		nextName = QString::fromUtf8(rawObject.name->value);
 		if (nextName == prefix) {
 			continue;
 		}
@@ -889,7 +889,7 @@ DS3BrowserModel::HandleGetBucketResponse()
 
 		if (rawObject.last_modified) {
 			rawCreated = rawObject.last_modified->value;
-			createdDT = QDateTime::fromString(QString(QLatin1String(rawCreated)),
+			createdDT = QDateTime::fromString(QString::fromUtf8(rawCreated),
 							  REST_TIMESTAMP_FORMAT);
 			created = createdDT.toString(VIEW_TIMESTAMP_FORMAT);
 		}
@@ -903,7 +903,7 @@ DS3BrowserModel::HandleGetBucketResponse()
 	}
 
 	if (response->next_marker) {
-		parentItem->SetNextMarker(QString(QLatin1String(response->next_marker->value)));
+		parentItem->SetNextMarker(QString::fromUtf8(response->next_marker->value));
 	}
 	parentItem->SetMaxKeys(response->max_keys);
 
