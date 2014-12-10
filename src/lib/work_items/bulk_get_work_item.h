@@ -41,8 +41,6 @@ public:
 	void ClearDirsToCreate();
 
 private:
-	void SortURLsByBucket();
-
 	QString m_destination;
 
 	// Explicit "folder" objects that need to be created.  This is

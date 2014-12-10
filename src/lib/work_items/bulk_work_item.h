@@ -44,6 +44,7 @@ public:
 	const QList<QUrl> GetURLs() const;
 	QList<QUrl>::const_iterator& GetUrlsIterator();
 	const QList<QUrl>::const_iterator GetUrlsConstEnd() const;
+	const QUrl& GetLastProcessedUrl() const;
 	virtual const QString GetDestination() const = 0;
 	uint64_t GetSize() const;
 	uint64_t GetBytesTransferred() const;
@@ -54,6 +55,7 @@ public:
 	bool IsFinished() const;
 
 	void SetBucketName(const QString& bucketName);
+	void SetLastProcessedUrl(const QUrl& url);
 	void SetNumChunks(int chunks);
 	void SetNumChunksProcessed(int chunks);
 	void IncNumChunksProcessed(int chunks = 1);
@@ -73,10 +75,13 @@ public:
 	const Job ToJob() const;
 
 protected:
+	void SortURLsByBucket();
+
 	Job::State m_state;
 	QString m_host;
 	QString m_bucketName;
 	QList<QUrl> m_urls;
+	QUrl m_lastProcessedUrl;
 	QList<QUrl>::const_iterator m_urlsIterator;
 	uint64_t m_bytesTransferred;
 	mutable QMutex m_bytesTransferredLock;
@@ -117,6 +122,12 @@ BulkWorkItem::GetUrlsConstEnd() const
 	return m_urls.constEnd();
 }
 
+inline const QUrl&
+BulkWorkItem::GetLastProcessedUrl() const
+{
+	return m_lastProcessedUrl;
+}
+
 inline size_t
 BulkWorkItem::GetNumChunksProcessed() const
 {
@@ -130,6 +141,12 @@ inline void
 BulkWorkItem::SetBucketName(const QString& bucketName)
 {
 	m_bucketName = bucketName;
+}
+
+inline void
+BulkWorkItem::SetLastProcessedUrl(const QUrl& url)
+{
+	m_lastProcessedUrl = url;
 }
 
 inline void

@@ -14,8 +14,6 @@
  * *****************************************************************************
  */
 
-#include <QMap>
-
 #include "lib/work_items/bulk_get_work_item.h"
 
 BulkGetWorkItem::BulkGetWorkItem(const QString& host,
@@ -24,19 +22,4 @@ BulkGetWorkItem::BulkGetWorkItem(const QString& host,
 	: BulkWorkItem(host, urls),
 	  m_destination(destination)
 {
-	SortURLsByBucket();
-}
-
-// A DS3 bulk get request can only be for a single bucket, however,
-// urls could contain objects from different buckets.
-void
-BulkGetWorkItem::SortURLsByBucket()
-{
-	QMap<QString, QUrl> sortMap;
-	for (int i = 0; i < m_urls.size(); i++) {
-		QUrl url = m_urls.at(i);
-		sortMap.insert(url.toString(), url);
-	}
-	m_urls = sortMap.values();
-	m_urlsIterator = m_urls.constBegin();
 }

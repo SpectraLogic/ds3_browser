@@ -295,6 +295,18 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 	     ui != workItem->GetUrlsConstEnd();
 	     ui++) {
 		DS3URL url(*ui);
+
+		QUrl lastUrl = workItem->GetLastProcessedUrl();
+		if (!lastUrl.isEmpty() &&
+		    url.toString().startsWith(lastUrl.toString())) {
+			// This URL is either the same as or a descendant of
+			// the previously processed URL.  Since we would
+			// have already prepared to transfer all descendents of
+			// the previously processed URL, this one can be
+			// skipped.
+			continue;
+		}
+
 		QString bucket = url.GetBucketName();
 		if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT ||
 		    (!prevBucket.isEmpty() && prevBucket != bucket)) {
@@ -345,6 +357,7 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 		}
 
 		prevBucket = bucket;
+		workItem->SetLastProcessedUrl(*ui);
 	}
 
 	if (workItem->GetObjMapSize() > 0) {
@@ -497,11 +510,24 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 	for (QList<QUrl>::const_iterator& ui(workItem->GetUrlsIterator());
 	     ui != workItem->GetUrlsConstEnd();
 	     ui++) {
+		QUrl url(*ui);
+
+		QUrl lastUrl = workItem->GetLastProcessedUrl();
+		if (!lastUrl.isEmpty() &&
+		    url.toString().startsWith(lastUrl.toString())) {
+			// This URL is either the same as or a descendant of
+			// the previously processed URL.  Since we would
+			// have already prepared to transfer all descendents of
+			// the previously processed URL, this one can be
+			// skipped.
+			continue;
+		}
+
 		if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT) {
 			run(this, &Client::DoBulkPut, workItem);
 			return;
 		}
-		QString filePath = (*ui).toLocalFile();
+		QString filePath = url.toLocalFile();
 		// filePath could be either /foo or /foo/ if it's a directory.
 		// Run it through QDir to normalize it to the former.
 		filePath = QDir(filePath).path();
@@ -537,6 +563,7 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 			workItem->DeleteDirIterator();
 		}
 		workItem->InsertObjMap(objName, filePath);
+		workItem->SetLastProcessedUrl(*ui);
 	}
 
 	if (workItem->GetObjMapSize() > 0) {

@@ -14,6 +14,8 @@
  * *****************************************************************************
  */
 
+#include <QMap>
+
 #include "lib/work_items/bulk_work_item.h"
 #include "models/job.h"
 
@@ -28,6 +30,7 @@ BulkWorkItem::BulkWorkItem(const QString& host, const QList<QUrl> urls)
 	  m_numChunks(0),
 	  m_numChunksProcessed(0)
 {
+	SortURLsByBucket();
 }
 
 BulkWorkItem::~BulkWorkItem()
@@ -100,4 +103,20 @@ BulkWorkItem::ToJob() const
 	job.SetSize(GetSize());
 	job.SetBytesTransferred(GetBytesTransferred());
 	return job;
+}
+
+
+// Sort the URLs alphabetically so it's easier to determine if one URL is a
+// descendant of another.  Plus, a DS3 bulk get request can only be for a
+// single bucket, however, urls could contain objects from different buckets.
+void
+BulkWorkItem::SortURLsByBucket()
+{
+	QMap<QString, QUrl> sortMap;
+	for (int i = 0; i < m_urls.size(); i++) {
+		QUrl url = m_urls.at(i);
+		sortMap.insert(url.toString(), url);
+	}
+	m_urls = sortMap.values();
+	m_urlsIterator = m_urls.constBegin();
 }
