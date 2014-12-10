@@ -42,7 +42,6 @@ public:
 
 private:
 	void SortURLsByBucket();
-	static bool CompareQUrls(const QUrl& a, const QUrl& b);
 
 	QString m_destination;
 

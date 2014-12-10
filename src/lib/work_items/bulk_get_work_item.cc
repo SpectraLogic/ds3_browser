@@ -40,9 +40,3 @@ BulkGetWorkItem::SortURLsByBucket()
 	m_urls = sortMap.values();
 	m_urlsIterator = m_urls.constBegin();
 }
-
-bool
-BulkGetWorkItem::CompareQUrls(const QUrl& a, const QUrl& b)
-{
-	return (a.toString() < b.toString());
-}
