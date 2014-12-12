@@ -40,6 +40,7 @@ class Client : public QObject
 public:
 	static const QString DELIMITER;
 	static const uint64_t BULK_PAGE_LIMIT;
+	static const uint32_t MAX_KEYS;
 
 	Client(const Session* session);
 	~Client();
@@ -49,8 +50,7 @@ public:
 	QFuture<ds3_get_service_response*> GetService();
 	QFuture<ds3_get_bucket_response*> GetBucket(const QString& bucketName,
 						    const QString& prefix,
-						    const QString& marker,
-						    uint32_t maxKeys);
+						    const QString& marker);
 
 	void CreateBucket(const QString& name);
 
@@ -77,8 +77,7 @@ private:
 	ds3_get_bucket_response* DoGetBucket(const QString& bucketName,
 					     const QString& prefix,
 					     const QString& delimiter,
-					     const QString& marker,
-					     uint32_t maxKeys);
+					     const QString& marker);
 
 	void PrepareBulkGets(BulkGetWorkItem* workItem);
 	void DoBulkGet(BulkGetWorkItem* workItem);

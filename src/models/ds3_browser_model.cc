@@ -58,7 +58,6 @@ public:
 	int GetChildCount() const;
 	int GetColumnCount() const;
 	QVariant GetData(int column) const;
-	uint32_t GetMaxKeys() const;
 	QString GetNextMarker() const;
 	QString GetPrefix() const;
 	int GetRow() const;
@@ -71,7 +70,6 @@ public:
 
 	void SetCanFetchMore(bool canFetchMore);
 	void SetFetching(bool fetching);
-	void SetMaxKeys(uint32_t maxKeys);
 	void SetNextMarker(const QString nextMarker);
 
 protected:
@@ -88,7 +86,6 @@ protected:
 	// bucket they're in.  For bucket items, this is the same as
 	// m_data[0];
 	const QString m_bucketName;
-	uint32_t m_maxKeys;
 	QString m_nextMarker;
 	DS3BrowserItem* m_parent;
 	// All parent folder object names, not including the bucket name
@@ -105,7 +102,6 @@ DS3BrowserItem::DS3BrowserItem(const QList<QVariant>& data,
 	  m_fetching(false),
 	  m_data(data),
 	  m_bucketName(bucketName),
-	  m_maxKeys(1000),
 	  m_parent(parent),
 	  m_prefix(prefix)
 {
@@ -154,12 +150,6 @@ int
 DS3BrowserItem::GetChildCount() const
 {
 	return GetChildren().count();	
-}
-
-inline uint32_t
-DS3BrowserItem::GetMaxKeys() const
-{
-	return m_maxKeys;
 }
 
 inline QString
@@ -267,12 +257,6 @@ inline void
 DS3BrowserItem::SetFetching(bool fetching)
 {
 	m_fetching = fetching;
-}
-
-inline void
-DS3BrowserItem::SetMaxKeys(uint32_t maxKeys)
-{
-	m_maxKeys = maxKeys;
 }
 
 inline void
@@ -699,7 +683,6 @@ DS3BrowserModel::FetchMoreObjects(const QModelIndex& parent)
 		prefix += parentItem->GetData(NAME).toString() + "/";
 	}
 	QString nextMarker = parentItem->GetNextMarker();
-	uint32_t maxKeys = parentItem->GetMaxKeys();
 
 	GetBucketWatcher* watcher = new GetBucketWatcher(parent,
 							 bucketName,
@@ -707,8 +690,7 @@ DS3BrowserModel::FetchMoreObjects(const QModelIndex& parent)
 	connect(watcher, SIGNAL(finished()), this, SLOT(HandleGetBucketResponse()));
 	QFuture<ds3_get_bucket_response*> future = m_client->GetBucket(bucketName,
 								       prefix,
-								       nextMarker,
-								       maxKeys);
+								       nextMarker);
 	watcher->setFuture(future);
 }
 
@@ -905,7 +887,6 @@ DS3BrowserModel::HandleGetBucketResponse()
 	if (response->next_marker) {
 		parentItem->SetNextMarker(QString::fromUtf8(response->next_marker->value));
 	}
-	parentItem->SetMaxKeys(response->max_keys);
 
 	if (response->is_truncated) {
 		DS3BrowserItem* pageBreak = new PageBreakItem(parentItem);

@@ -36,6 +36,9 @@ const QString Client::DELIMITER = "/";
 // The S3 server imposes this limit although we might want to lower it
 const uint64_t Client::BULK_PAGE_LIMIT = 500000;
 
+// 0 = don't specify it in requests and let the S3 server determine the max
+const uint32_t Client::MAX_KEYS = 0;
+
 static size_t read_from_file(void* buffer, size_t size, size_t count, void* user_data);
 static size_t write_to_file(void* buffer, size_t size, size_t count, void* user_data);
 
@@ -83,15 +86,14 @@ Client::GetService()
 
 QFuture<ds3_get_bucket_response*>
 Client::GetBucket(const QString& bucketName, const QString& prefix,
-		  const QString& marker, uint32_t maxKeys)
+		  const QString& marker)
 {
 	QFuture<ds3_get_bucket_response*> future = run(this,
 						       &Client::DoGetBucket,
 						       bucketName,
 						       prefix,
 						       DELIMITER,
-						       marker,
-						       maxKeys);
+						       marker);
 	return future;
 }
 
@@ -235,8 +237,7 @@ Client::DoGetService()
 
 ds3_get_bucket_response*
 Client::DoGetBucket(const QString& bucketName, const QString& prefix,
-		    const QString& delimiter, const QString& marker,
-		    uint32_t maxKeys)
+		    const QString& delimiter, const QString& marker)
 {
 	LOG_DEBUG("DoGetBucket - bucket: " + bucketName +
 		  ", prefix: " + prefix + ", marker: " + marker);
@@ -258,9 +259,9 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 		ds3_request_set_marker(request, marker.toUtf8().constData());
 		logQueryParams << "marker=" + marker;
 	}
-	if (maxKeys > 0) {
-		ds3_request_set_max_keys(request, maxKeys);
-		logQueryParams << "max-keys=" + QString::number(maxKeys);
+	if (MAX_KEYS > 0) {
+		ds3_request_set_max_keys(request, MAX_KEYS);
+		logQueryParams << "max-keys=" + QString::number(MAX_KEYS);
 	}
 	if (!logQueryParams.isEmpty()) {
 		logMsg += "&" + logQueryParams.join("&");
@@ -339,8 +340,8 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 					if (getBucketRes != NULL) {
 						marker = QString::fromUtf8(getBucketRes->next_marker->value);
 					}
-					getBucketRes = DoGetBucket(bucket, prefix, "",
-								   marker, 1000);
+					getBucketRes = DoGetBucket(bucket, prefix,
+								   "", marker);
 					i = 0;
 				}
 				if (getBucketRes->num_objects == 0) {
