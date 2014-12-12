@@ -20,6 +20,8 @@ BulkGetWorkItem::BulkGetWorkItem(const QString& host,
 				 const QList<QUrl> urls,
 				 const QString& destination)
 	: BulkWorkItem(host, urls),
-	  m_destination(destination)
+	  m_destination(destination),
+	  m_getBucketResponse(NULL),
+	  m_getBucketResponseIterator(0)
 {
 }

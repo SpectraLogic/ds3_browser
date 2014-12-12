@@ -238,6 +238,9 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 		    const QString& delimiter, const QString& marker,
 		    uint32_t maxKeys)
 {
+	LOG_DEBUG("DoGetBucket - bucket: " + bucketName +
+		  ", prefix: " + prefix + ", marker: " + marker);
+
 	ds3_get_bucket_response *response;
 	ds3_request* request = ds3_init_get_bucket(bucketName.toUtf8().constData());
 	QString logMsg = "List Objects (GET " + m_endpoint + "/";
@@ -325,33 +328,47 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 		QString filePath = QDir::cleanPath(destination + "/" + bucketPrefix +
 						   "/" + lastPathPart);
 		if (url.IsBucketOrFolder()) {
-			ds3_get_bucket_response* getBucketRes;
 			QString prefix = fullObjName;
-			// TODO Handle paginated GetBucket responses
-			getBucketRes = DoGetBucket(bucket, prefix, "", "", 1000);
-			if (getBucketRes->num_objects == 0) {
-				workItem->AppendDirsToCreate(filePath);
-			}
-			for (size_t i = 0; i < getBucketRes->num_objects; i++) {
-				if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT) {
-					// TODO Update this method to be able
-					//      take over where this left off.
-					run(this, &Client::DoBulkGet, workItem);
-					return;
+			ds3_get_bucket_response* getBucketRes;
+			getBucketRes = workItem->GetGetBucketResponse();
+			size_t i = workItem->GetGetBucketResponseIterator();
+			do {
+				if (getBucketRes == NULL ||
+				    (getBucketRes != NULL && i >= getBucketRes->num_objects)) {
+					QString marker;
+					if (getBucketRes != NULL) {
+						marker = QString::fromUtf8(getBucketRes->next_marker->value);
+					}
+					getBucketRes = DoGetBucket(bucket, prefix, "",
+								   marker, 1000);
+					i = 0;
 				}
-				ds3_object rawObject = getBucketRes->objects[i];
-				QString subFullObjName = QString::fromUtf8(rawObject.name->value);
-				QString objNameMinusPrefix = subFullObjName;
-				objNameMinusPrefix.replace(QRegExp("^" + prefix), "");
-				QString subFilePath = QDir::cleanPath(destination + "/" +
-								      bucketPrefix + "/" + prefix +
-								      "/" + objNameMinusPrefix);
-				if (subFullObjName.endsWith("/")) {
-					workItem->AppendDirsToCreate(subFilePath);
-				} else {
-					workItem->InsertObjMap(subFullObjName, subFilePath);
+				if (getBucketRes->num_objects == 0) {
+					workItem->AppendDirsToCreate(filePath);
 				}
-			}
+				for (; i < getBucketRes->num_objects; i++) {
+					if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT) {
+						workItem->SetGetBucketResponse(getBucketRes);
+						workItem->SetGetBucketResponseIterator(i);
+						run(this, &Client::DoBulkGet, workItem);
+						return;
+					}
+					ds3_object rawObject = getBucketRes->objects[i];
+					QString subFullObjName = QString::fromUtf8(rawObject.name->value);
+					QString objNameMinusPrefix = subFullObjName;
+					objNameMinusPrefix.replace(QRegExp("^" + prefix), "");
+					QString subFilePath = QDir::cleanPath(destination + "/" +
+									      bucketPrefix + "/" + prefix +
+									      "/" + objNameMinusPrefix);
+					if (subFullObjName.endsWith("/")) {
+						workItem->AppendDirsToCreate(subFilePath);
+					} else {
+						workItem->InsertObjMap(subFullObjName, subFilePath);
+					}
+				}
+			} while (getBucketRes->is_truncated);
+			workItem->SetGetBucketResponseIterator(0);
+			workItem->SetGetBucketResponse(NULL);
 		} else {
 			workItem->InsertObjMap(fullObjName, filePath);
 		}

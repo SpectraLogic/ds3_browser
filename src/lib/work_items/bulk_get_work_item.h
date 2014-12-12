@@ -21,6 +21,8 @@
 #include <QString>
 #include <QUrl>
 
+#include <ds3.h>
+
 #include "lib/work_items/bulk_work_item.h"
 
 // BulkGetWorkItem, a container class that stores all data necessary to perform
@@ -35,6 +37,12 @@ public:
 	const QString GetDestination() const;
 	Job::Type GetType() const;
 
+	ds3_get_bucket_response* GetGetBucketResponse() const;
+	size_t GetGetBucketResponseIterator() const;
+
+	void SetGetBucketResponse(ds3_get_bucket_response* response);
+	void SetGetBucketResponseIterator(size_t i);
+
 	void AppendDirsToCreate(const QString& dir);
 	int GetDirsToCreateSize() const;
 	const QString& GetDirsToCreateAt(int i) const;
@@ -42,6 +50,16 @@ public:
 
 private:
 	QString m_destination;
+
+	// When a bulk get includes a bucket/folder, we must get all the
+	// descdent objects first.  This opens the possibility of having
+	// to paginate the GET bucket requests.  Thus, the last response is
+	// saved in case we need to break the multiple GET bucket requests
+	// across multiple bulk get requests.
+	ds3_get_bucket_response* m_getBucketResponse;
+
+	// The current m_getbucketResponse->objects position
+	size_t m_getBucketResponseIterator;
 
 	// Explicit "folder" objects that need to be created.  This is
 	// populated during PrepareBulkGets so dir creation can be delayed
@@ -59,6 +77,30 @@ inline Job::Type
 BulkGetWorkItem::GetType() const
 {
 	return Job::GET;
+}
+
+inline ds3_get_bucket_response*
+BulkGetWorkItem::GetGetBucketResponse() const
+{
+	return m_getBucketResponse;
+}
+
+inline size_t
+BulkGetWorkItem::GetGetBucketResponseIterator() const
+{
+	return m_getBucketResponseIterator;
+}
+
+inline void
+BulkGetWorkItem::SetGetBucketResponse(ds3_get_bucket_response* response)
+{
+	m_getBucketResponse = response;
+}
+
+inline void
+BulkGetWorkItem::SetGetBucketResponseIterator(size_t i)
+{
+	m_getBucketResponseIterator = i;
 }
 
 inline void
