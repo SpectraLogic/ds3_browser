@@ -23,6 +23,7 @@
 #include "lib/client.h"
 #include "lib/logger.h"
 #include "lib/mime_data.h"
+#include "lib/errors/ds3_error.h"
 #include "lib/watchers/get_service_watcher.h"
 #include "lib/watchers/get_bucket_watcher.h"
 #include "models/ds3_browser_model.h"
@@ -721,7 +722,6 @@ DS3BrowserModel::HandleGetServiceResponse()
 
 	GetServiceWatcher* watcher = static_cast<GetServiceWatcher*>(sender());
 	const QModelIndex& parent = watcher->GetParentModelIndex();
-	ds3_get_service_response* response = watcher->result();
 
 	DS3BrowserItem* parentItem;
 	if (parent.isValid()) {
@@ -732,44 +732,56 @@ DS3BrowserModel::HandleGetServiceResponse()
 		parentItem = m_rootItem;
 	}
 
-	QString owner = QString::fromUtf8(response->owner->name->value);
+	ds3_get_service_response* response = 0;
+	try {
+		response = watcher->result();
+	}
+	catch (DS3Error &e) {
+		LOG_ERROR("Error listing buckets - " + e.ToString());
+	}
 
-	size_t numBuckets = response->num_buckets;
+	size_t numBuckets = 0;
+	if (response) {
+		numBuckets = response->num_buckets;
+	}
 	int startRow = 0;
 	if (numBuckets > 0) {
 		startRow = rowCount(parent);
 		beginInsertRows(parent, startRow, startRow + numBuckets - 1);
 	}
 
-	for (size_t i = 0; i < response->num_buckets; i++) {
-		QString name;
-		char* rawCreated;
-		QDateTime createdDT;
-		QString created;
-		// The order in which bucketData is filled must match
-		// Column
-		QList<QVariant> bucketData;
-		DS3BrowserItem* bucket;
+	if (response) {
+		QString owner = QString::fromUtf8(response->owner->name->value);
+		for (size_t i = 0; i < response->num_buckets; i++) {
+			QString name;
+			char* rawCreated;
+			QDateTime createdDT;
+			QString created;
+			// The order in which bucketData is filled must match
+			// Column
+			QList<QVariant> bucketData;
+			DS3BrowserItem* bucket;
 
-		ds3_bucket rawBucket = response->buckets[i];
+			ds3_bucket rawBucket = response->buckets[i];
 
-		name = QString::fromUtf8(rawBucket.name->value);
-		bucketData << name;
-		bucketData << owner;
-		bucketData << "--";
-		bucketData << BUCKET;
+			name = QString::fromUtf8(rawBucket.name->value);
+			bucketData << name;
+			bucketData << owner;
+			bucketData << "--";
+			bucketData << BUCKET;
 
-		rawCreated = rawBucket.creation_date->value;
-		createdDT = QDateTime::fromString(QString::fromUtf8(rawCreated),
-						  REST_TIMESTAMP_FORMAT);
-		created = createdDT.toString(VIEW_TIMESTAMP_FORMAT);
-		bucketData << created;
+			rawCreated = rawBucket.creation_date->value;
+			createdDT = QDateTime::fromString(QString::fromUtf8(rawCreated),
+							  REST_TIMESTAMP_FORMAT);
+			created = createdDT.toString(VIEW_TIMESTAMP_FORMAT);
+			bucketData << created;
 
-		bucket = new DS3BrowserItem(bucketData,
-					    name,
-					    QString(),
-					    parentItem);
-		parentItem->AppendChild(bucket);
+			bucket = new DS3BrowserItem(bucketData,
+						    name,
+						    QString(),
+						    parentItem);
+			parentItem->AppendChild(bucket);
+		}
 	}
 
 	if (numBuckets > 0) {
@@ -782,7 +794,9 @@ DS3BrowserModel::HandleGetServiceResponse()
 		removeRow(loadingRow, parent);
 	}
 
-	ds3_free_service_response(response);
+	if (response) {
+		ds3_free_service_response(response);
+	}
 	delete watcher;
 	parentItem->SetFetching(false);
 }

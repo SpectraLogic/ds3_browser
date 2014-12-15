@@ -25,6 +25,7 @@
 
 #include <ds3.h>
 
+#include "lib/errors/ds3_error.h"
 #include "models/job.h"
 
 class BulkWorkItem;
@@ -73,7 +74,7 @@ signals:
 	void JobProgressUpdate(const Job job);
 
 private:
-	ds3_get_service_response* DoGetService();
+	ds3_get_service_response* DoGetService() throw(DS3Error);
 	ds3_get_bucket_response* DoGetBucket(const QString& bucketName,
 					     const QString& prefix,
 					     const QString& delimiter,

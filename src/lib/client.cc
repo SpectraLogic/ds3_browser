@@ -217,7 +217,7 @@ Client::PutObject(const QString& bucket,
 }
 
 ds3_get_service_response*
-Client::DoGetService()
+Client::DoGetService() throw(DS3Error)
 {
 	ds3_get_service_response *response;
 	ds3_request* request = ds3_init_get_service();
@@ -228,7 +228,7 @@ Client::DoGetService()
 	ds3_free_request(request);
 
 	if (error) {
-		// TODO Handle the error
+		throw (DS3Error(error));
 		ds3_free_error(error);
 	}
 
