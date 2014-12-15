@@ -14,7 +14,7 @@
  * *****************************************************************************
  */
 
-#include <QList>
+#include <QStringList>
 
 #include "lib/errors/ds3_error.h"
 
