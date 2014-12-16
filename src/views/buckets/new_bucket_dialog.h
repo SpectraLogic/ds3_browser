@@ -20,7 +20,7 @@
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QDialog>
-#include <QFormLayout>
+#include <QGridLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QVBoxLayout>
@@ -46,8 +46,10 @@ private:
 	void CreateBucket();
 
 	QVBoxLayout* m_layout;
-	QFormLayout* m_form;
+	QGridLayout* m_form;
 	QLabel* m_bucketLabel;
+	QLabel* m_bucketErrorLabel;
+	QLabel* m_baseErrorLabel;
 	QLineEdit* m_bucketLineEdit;
 	QDialogButtonBox* m_buttonBox;
 

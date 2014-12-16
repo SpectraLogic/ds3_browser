@@ -15,21 +15,29 @@
  */
 
 #include "lib/client.h"
+#include "lib/logger.h"
+#include "lib/errors/ds3_error.h"
 #include "views/buckets/new_bucket_dialog.h"
 
 NewBucketDialog::NewBucketDialog(Client* client, QWidget* parent)
-	: QDialog(parent)
+	: QDialog(parent),
+	  m_baseErrorLabel(NULL)
 {
 	setWindowTitle("New Bucket");
 
 	m_client = client;
 
-	m_form = new QFormLayout;
+	m_form = new QGridLayout;
 
 	m_bucketLineEdit = new QLineEdit;
 	m_bucketLineEdit->setToolTip("The name of the Bucket to create");
+	m_bucketLineEdit->setFixedWidth(150);
 	m_bucketLabel = new QLabel("Bucket Name");
-	m_form->addRow(m_bucketLabel, m_bucketLineEdit);
+	m_bucketErrorLabel = new QLabel;
+	m_bucketErrorLabel->setStyleSheet("QLabel { color: red; }");
+	m_form->addWidget(m_bucketLabel, 1, 0);
+	m_form->addWidget(m_bucketLineEdit, 1, 1);
+	m_form->addWidget(m_bucketErrorLabel, 1, 2);
 
 	m_buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok
 					   | QDialogButtonBox::Cancel);
@@ -47,12 +55,42 @@ NewBucketDialog::NewBucketDialog(Client* client, QWidget* parent)
 void
 NewBucketDialog::Accept()
 {
+	if (m_baseErrorLabel == NULL) {
+		m_baseErrorLabel = new QLabel;
+		m_baseErrorLabel->setStyleSheet("QLabel { color: red; }");
+	} else {
+		m_baseErrorLabel->setText("");
+		m_form->removeWidget(m_baseErrorLabel);
+	}
 	if (!ValidateLineEditNotEmpty(m_bucketLabel, m_bucketLineEdit)) {
 		return;
 	}
 
 	UpdateBucket();
-	CreateBucket();
+	try {
+		CreateBucket();
+	}
+	catch (DS3Error& e) {
+		QString msg;
+		switch (e.GetStatusCode()) {
+		case 400:
+			msg = "Bucket \"" + m_bucket + "\" is invalid";
+			m_bucketLabel->setStyleSheet("QLabel { color: red; }");
+			m_bucketErrorLabel->setText("is invalid");
+			break;
+		case 409:
+			msg = "Bucket \"" + m_bucket + "\" already exists";
+			m_bucketLabel->setStyleSheet("QLabel { color: red; }");
+			m_bucketErrorLabel->setText("already exists");
+			break;
+		default:
+			msg = e.ToString();
+			m_baseErrorLabel->setText(msg);
+			m_form->addWidget(m_baseErrorLabel, 0, 0, 1, 3);
+		}
+		LOG_ERROR("Error creating bucket - " + msg);
+		return;
+	}
 	accept();
 }
 

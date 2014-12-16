@@ -736,7 +736,7 @@ DS3BrowserModel::HandleGetServiceResponse()
 	try {
 		response = watcher->result();
 	}
-	catch (DS3Error &e) {
+	catch (DS3Error& e) {
 		LOG_ERROR("Error listing buckets - " + e.ToString());
 	}
 
@@ -812,7 +812,7 @@ DS3BrowserModel::HandleGetBucketResponse()
 	try {
 		response = watcher->result();
 	}
-	catch (DS3Error &e) {
+	catch (DS3Error& e) {
 		QString msg;
 		if (e.GetStatusCode() == 404) {
 			msg = "Bucket \"" + bucketName + "\" does not exist";
