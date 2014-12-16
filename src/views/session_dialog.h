@@ -22,6 +22,7 @@
 #include <QLabel>
 #include <QLineEdit>
 
+#include "models/session.h"
 #include "views/dialog.h"
 
 class Session;
@@ -34,9 +35,8 @@ class SessionDialog : public Dialog
 
 public:
 	SessionDialog(QWidget* parent = 0);
-	~SessionDialog();
 
-	Session* GetSession() const;
+	const Session& GetSession() const;
 
 public slots:
 	void Accept();
@@ -62,10 +62,10 @@ private:
 
 	QCheckBox* m_saveSessionCheckBox;
 
-	Session* m_session;
+	Session m_session;
 };
 
-inline Session*
+inline const Session&
 SessionDialog::GetSession() const
 {
 	return m_session;

@@ -17,8 +17,6 @@
 #include <Qt> // Needed for QComboBox's use Qt::MatchFlags
 #include <QSettings>
 
-#include "models/session.h"
-
 #include "views/session_dialog.h"
 
 SessionDialog::SessionDialog(QWidget* parent)
@@ -27,8 +25,7 @@ SessionDialog::SessionDialog(QWidget* parent)
 	  m_portComboBox(new QComboBox),
 	  m_proxyLineEdit(new QLineEdit),
 	  m_accessIdLineEdit(new QLineEdit),
-	  m_secretKeyLineEdit(new QLineEdit),
-	  m_session(new Session)
+	  m_secretKeyLineEdit(new QLineEdit)
 {
 	setWindowTitle("New Spectra Logic DS3 Session");
 
@@ -75,11 +72,6 @@ SessionDialog::SessionDialog(QWidget* parent)
 	LoadSession();
 }
 
-SessionDialog::~SessionDialog()
-{
-	delete m_session;
-}
-
 void
 SessionDialog::Accept()
 {
@@ -112,36 +104,36 @@ SessionDialog::LoadSession()
 		// multiple sessions, this should load the last-used
 		// session.
 		settings.setArrayIndex(0);
-		m_session->SetHost(settings.value("host").toString());
-		m_session->SetProtocol(settings.value("protocol").toInt());
-		m_session->SetPort(settings.value("port").toString());
-		m_session->SetProxy(settings.value("proxy").toString());
-		m_session->SetWithCertificateVerification(settings.value("withCertificateVerification").toBool());
-		m_session->SetAccessId(settings.value("accessID").toString());
-		m_session->SetSecretKey(settings.value("secretKey").toString());
+		m_session.SetHost(settings.value("host").toString());
+		m_session.SetProtocol(settings.value("protocol").toInt());
+		m_session.SetPort(settings.value("port").toString());
+		m_session.SetProxy(settings.value("proxy").toString());
+		m_session.SetWithCertificateVerification(settings.value("withCertificateVerification").toBool());
+		m_session.SetAccessId(settings.value("accessID").toString());
+		m_session.SetSecretKey(settings.value("secretKey").toString());
 
 		m_saveSessionCheckBox->setChecked(true);
 	}
 	settings.endArray();
 
-	m_hostLineEdit->setText(m_session->GetHost());
-	int portIndex = m_portComboBox->findText(m_session->GetPort());
+	m_hostLineEdit->setText(m_session.GetHost());
+	int portIndex = m_portComboBox->findText(m_session.GetPort());
 	if (portIndex != -1) {
 		m_portComboBox->setCurrentIndex(portIndex);
 	}
-	m_proxyLineEdit->setText(m_session->GetProxy());
-	m_accessIdLineEdit->setText(m_session->GetAccessId());
-	m_secretKeyLineEdit->setText(m_session->GetSecretKey());
+	m_proxyLineEdit->setText(m_session.GetProxy());
+	m_accessIdLineEdit->setText(m_session.GetAccessId());
+	m_secretKeyLineEdit->setText(m_session.GetSecretKey());
 }
 
 void
 SessionDialog::UpdateSession()
 {
-	m_session->SetHost(m_hostLineEdit->text().trimmed().toUtf8().constData());
-	m_session->SetPort(m_portComboBox->currentText().trimmed().toUtf8().constData());
-	m_session->SetProxy(m_proxyLineEdit->text().trimmed().toUtf8().constData());
-	m_session->SetAccessId(m_accessIdLineEdit->text().trimmed().toUtf8().constData());
-	m_session->SetSecretKey(m_secretKeyLineEdit->text().trimmed().toUtf8().constData());
+	m_session.SetHost(m_hostLineEdit->text().trimmed().toUtf8().constData());
+	m_session.SetPort(m_portComboBox->currentText().trimmed().toUtf8().constData());
+	m_session.SetProxy(m_proxyLineEdit->text().trimmed().toUtf8().constData());
+	m_session.SetAccessId(m_accessIdLineEdit->text().trimmed().toUtf8().constData());
+	m_session.SetSecretKey(m_secretKeyLineEdit->text().trimmed().toUtf8().constData());
 }
 
 void
@@ -153,13 +145,13 @@ SessionDialog::SaveSession()
 	settings.beginWriteArray("sessions");
 	if (m_saveSessionCheckBox->isChecked()) {
 		settings.setArrayIndex(0);
-		settings.setValue("host", m_session->GetHost());
-		settings.setValue("protocol", m_session->GetProtocol());
-		settings.setValue("proxy", m_session->GetProxy());
-		settings.setValue("port", m_session->GetPort());
-		settings.setValue("withCertificateVerification", m_session->GetWithCertificateVerification());
-		settings.setValue("accessID", m_session->GetAccessId());
-		settings.setValue("secretKey", m_session->GetSecretKey());
+		settings.setValue("host", m_session.GetHost());
+		settings.setValue("protocol", m_session.GetProtocol());
+		settings.setValue("proxy", m_session.GetProxy());
+		settings.setValue("port", m_session.GetPort());
+		settings.setValue("withCertificateVerification", m_session.GetWithCertificateVerification());
+		settings.setValue("accessID", m_session.GetAccessId());
+		settings.setValue("secretKey", m_session.GetSecretKey());
 	} else {
 		settings.remove("");
 	}

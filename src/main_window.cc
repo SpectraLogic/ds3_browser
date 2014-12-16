@@ -92,7 +92,7 @@ MainWindow::CreateSession()
 	if (sessionDialog.exec() == QDialog::Rejected) {
 		return 0;
 	}
-	Session* session = new Session(*sessionDialog.GetSession());
+	Session* session = new Session(sessionDialog.GetSession());
 	return session;
 }
 
