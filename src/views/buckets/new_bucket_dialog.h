@@ -41,7 +41,9 @@ public slots:
 	void Reject();
 
 private:
-	bool ValidateLineEditNotEmpty(QLabel* label, QLineEdit* lineEdit);
+	bool ValidateLineEditNotEmpty(QLabel* label,
+				      QLineEdit* lineEdit,
+				      QLabel* errorLabel);
 	void UpdateBucket();
 	void CreateBucket();
 

@@ -24,7 +24,7 @@
 SessionDialog::SessionDialog(QWidget* parent)
 	: QDialog(parent),
 	  m_layout(new QVBoxLayout),
-	  m_form(new QFormLayout),
+	  m_form(new QGridLayout),
 	  m_hostLineEdit(new QLineEdit),
 	  m_portComboBox(new QComboBox),
 	  m_proxyLineEdit(new QLineEdit),
@@ -34,29 +34,45 @@ SessionDialog::SessionDialog(QWidget* parent)
 {
 	setWindowTitle("New Spectra Logic DS3 Session");
 
+	m_hostLineEdit->setFixedWidth(150);
 	m_hostLineEdit->setToolTip("The name or IP address of the DS3 " \
 				   "system's data interface");
 	m_hostLabel = new QLabel("BlackPearl Name or IP Address");
-	m_form->addRow(m_hostLabel, m_hostLineEdit);
+	m_hostErrorLabel = new QLabel;
+	m_hostErrorLabel->setStyleSheet("QLabel { color: red; }");
+	m_form->addWidget(m_hostLabel, 1, 0);
+	m_form->addWidget(m_hostLineEdit, 1, 1);
+	m_form->addWidget(m_hostErrorLabel, 1, 2);
 
+	m_portLabel = new QLabel("BlackPearl DS3 Port");
 	m_portComboBox->addItem("80");
 	m_portComboBox->addItem("8080");
 	m_portComboBox->setToolTip("The port that the DS3 system's DS3 " \
 				   "service is running on (usually 80)");
-	m_form->addRow("BlackPearl DS3 Port", m_portComboBox);
+	m_form->addWidget(m_portLabel, 2, 0);
+	m_form->addWidget(m_portComboBox, 2, 1);
 
 	m_proxyLineEdit->setToolTip("An optional server to proxy requests");
 	m_proxyLabel = new QLabel("Proxy Server");
-	m_form->addRow(m_proxyLabel, m_proxyLineEdit);
+	m_form->addWidget(m_proxyLabel, 3, 0);
+	m_form->addWidget(m_proxyLineEdit, 3, 1);
 
 	m_accessIdLabel = new QLabel("S3 Access ID");
-	m_form->addRow(m_accessIdLabel, m_accessIdLineEdit);
+	m_accessIdErrorLabel = new QLabel;
+	m_accessIdErrorLabel->setStyleSheet("QLabel { color: red; }");
+	m_form->addWidget(m_accessIdLabel, 4, 0);
+	m_form->addWidget(m_accessIdLineEdit, 4, 1);
+	m_form->addWidget(m_accessIdErrorLabel, 4, 2);
 
 	m_secretKeyLabel = new QLabel("S3 Secret Key");
-	m_form->addRow(m_secretKeyLabel, m_secretKeyLineEdit);
+	m_secretKeyErrorLabel = new QLabel;
+	m_secretKeyErrorLabel->setStyleSheet("QLabel { color: red; }");
+	m_form->addWidget(m_secretKeyLabel, 5, 0);
+	m_form->addWidget(m_secretKeyLineEdit, 5, 1);
+	m_form->addWidget(m_secretKeyErrorLabel, 5, 2);
 
 	m_saveSessionCheckBox = new QCheckBox("Save Session");
-	m_form->addRow("", m_saveSessionCheckBox);
+	m_form->addWidget(m_saveSessionCheckBox, 6, 1);
 
 	m_buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok
 					   | QDialogButtonBox::Cancel);
@@ -80,9 +96,15 @@ SessionDialog::~SessionDialog()
 void
 SessionDialog::Accept()
 {
-	bool valid = ValidateLineEditNotEmpty(m_hostLabel, m_hostLineEdit);
- 	valid &= ValidateLineEditNotEmpty(m_accessIdLabel, m_accessIdLineEdit);
-	valid &= ValidateLineEditNotEmpty(m_secretKeyLabel, m_secretKeyLineEdit);
+	bool valid = ValidateLineEditNotEmpty(m_hostLabel,
+					      m_hostLineEdit,
+					      m_hostErrorLabel);
+ 	valid &= ValidateLineEditNotEmpty(m_accessIdLabel,
+					  m_accessIdLineEdit,
+					  m_accessIdErrorLabel);
+	valid &= ValidateLineEditNotEmpty(m_secretKeyLabel,
+					  m_secretKeyLineEdit,
+					  m_secretKeyErrorLabel);
 	if (!valid) {
 		return;
 	}
@@ -93,14 +115,18 @@ SessionDialog::Accept()
 }
 
 bool
-SessionDialog::ValidateLineEditNotEmpty(QLabel* label, QLineEdit* lineEdit)
+SessionDialog::ValidateLineEditNotEmpty(QLabel* label,
+					QLineEdit* lineEdit,
+					QLabel* errorLabel)
 {
 	bool valid = true;
 	if (lineEdit->text().trimmed().isEmpty()) {
 		label->setStyleSheet("QLabel { color: red; }");
+		errorLabel->setText("cannot be blank");
 		valid = false;
 	} else {
 		label->setStyleSheet("");
+		errorLabel->setText("");
 	}
 	return valid;
 }

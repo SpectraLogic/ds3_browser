@@ -62,7 +62,9 @@ NewBucketDialog::Accept()
 		m_baseErrorLabel->setText("");
 		m_form->removeWidget(m_baseErrorLabel);
 	}
-	if (!ValidateLineEditNotEmpty(m_bucketLabel, m_bucketLineEdit)) {
+	if (!ValidateLineEditNotEmpty(m_bucketLabel,
+				      m_bucketLineEdit,
+				      m_bucketErrorLabel)) {
 		return;
 	}
 
@@ -95,14 +97,18 @@ NewBucketDialog::Accept()
 }
 
 bool
-NewBucketDialog::ValidateLineEditNotEmpty(QLabel* label, QLineEdit* lineEdit)
+NewBucketDialog::ValidateLineEditNotEmpty(QLabel* label,
+					  QLineEdit* lineEdit,
+					  QLabel* errorLabel)
 {
 	bool valid = true;
 	if (lineEdit->text().trimmed().isEmpty()) {
 		label->setStyleSheet("QLabel { color: red; }");
+		errorLabel->setText("cannot be blank");
 		valid = false;
 	} else {
 		label->setStyleSheet("");
+		errorLabel->setText("");
 	}
 	return valid;
 }

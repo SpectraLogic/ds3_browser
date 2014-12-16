@@ -21,7 +21,7 @@
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QDialog>
-#include <QFormLayout>
+#include <QGridLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QVBoxLayout>
@@ -45,24 +45,30 @@ public slots:
 	void Reject();
 
 private:
-	bool ValidateLineEditNotEmpty(QLabel*, QLineEdit*);
+	bool ValidateLineEditNotEmpty(QLabel* label,
+				      QLineEdit* lineEdit,
+				      QLabel* errorLabel);
 	void LoadSession();
 	void UpdateSession();
 	void SaveSession();
 
 	QVBoxLayout* m_layout;
 
-	QFormLayout* m_form;
+	QGridLayout* m_form;
 
 	QLabel* m_hostLabel;
 	QLineEdit* m_hostLineEdit;
+	QLabel* m_hostErrorLabel;
+	QLabel* m_portLabel;
 	QComboBox* m_portComboBox;
 	QLabel* m_proxyLabel;
 	QLineEdit* m_proxyLineEdit;
 	QLabel* m_accessIdLabel;
 	QLineEdit* m_accessIdLineEdit;
+	QLabel* m_accessIdErrorLabel;
 	QLabel* m_secretKeyLabel;
 	QLineEdit* m_secretKeyLineEdit;
+	QLabel* m_secretKeyErrorLabel;
 
 	QCheckBox* m_saveSessionCheckBox;
 	QDialogButtonBox* m_buttonBox;
