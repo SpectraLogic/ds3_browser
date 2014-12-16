@@ -808,11 +808,18 @@ DS3BrowserModel::HandleGetBucketResponse()
 
 	GetBucketWatcher* watcher = static_cast<GetBucketWatcher*>(sender());
 	ds3_get_bucket_response* response = NULL;
+	const QString& bucketName = watcher->GetBucketName();
 	try {
 		response = watcher->result();
 	}
 	catch (DS3Error &e) {
-		LOG_ERROR("Error listing objects - " + e.ToString());
+		QString msg;
+		if (e.GetStatusCode() == 404) {
+			msg = "Bucket \"" + bucketName + "\" does not exist";
+		} else {
+			msg = e.ToString();
+		}
+		LOG_ERROR("Error listing objects - " + msg);
 	}
 
 	const QModelIndex& parent = watcher->GetParentModelIndex();
@@ -835,7 +842,6 @@ DS3BrowserModel::HandleGetBucketResponse()
 			}
 		}
 
-		const QString& bucketName = watcher->GetBucketName();
 		const QString& prefix = watcher->GetPrefix();
 		QVariant owner = parentItem->GetData(OWNER);
 

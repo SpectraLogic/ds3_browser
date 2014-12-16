@@ -32,6 +32,8 @@ public:
 	DS3Error(ds3_error* error);
 	~DS3Error() throw() {};
 
+	uint64_t GetStatusCode() const;
+
 	QString ToString() const;
 
 	// QException required overrides
@@ -46,5 +48,11 @@ private:
 	QString m_statusMessage;
 	QString m_errorBody;
 };
+
+inline uint64_t
+DS3Error::GetStatusCode() const
+{
+	return m_statusCode;
+}
 
 #endif
