@@ -807,7 +807,13 @@ DS3BrowserModel::HandleGetBucketResponse()
 	LOG_DEBUG("HandleGetBucketResponse");
 
 	GetBucketWatcher* watcher = static_cast<GetBucketWatcher*>(sender());
-	ds3_get_bucket_response* response = watcher->result();
+	ds3_get_bucket_response* response = NULL;
+	try {
+		response = watcher->result();
+	}
+	catch (DS3Error &e) {
+		LOG_ERROR("Error listing objects - " + e.ToString());
+	}
 
 	const QModelIndex& parent = watcher->GetParentModelIndex();
 	DS3BrowserItem* parentItem;
@@ -818,93 +824,94 @@ DS3BrowserModel::HandleGetBucketResponse()
 		// fetch objects at the root level.
 		parentItem = m_rootItem;
 	}
-	const QString& bucketName = watcher->GetBucketName();
-	const QString& prefix = watcher->GetPrefix();
-
-	QVariant owner = parentItem->GetData(OWNER);
-
-	QSet<QString> currentCommonPrefixNames;
-	for (int i = 0; i < parentItem->GetChildCount(); i++) {
-		DS3BrowserItem* object = parentItem->GetChild(i);
-		if (object->GetData(KIND) == FOLDER) {
-			currentCommonPrefixNames << object->GetData(NAME).toString();
-		}
-	}
 
 	QList<DS3BrowserItem*> newChildren;
+	if (response != NULL) {
+		QSet<QString> currentCommonPrefixNames;
+		for (int i = 0; i < parentItem->GetChildCount(); i++) {
+			DS3BrowserItem* object = parentItem->GetChild(i);
+			if (object->GetData(KIND) == FOLDER) {
+				currentCommonPrefixNames << object->GetData(NAME).toString();
+			}
+		}
 
-	for (size_t i = 0; i < response->num_common_prefixes; i++) {
-		ds3_str* rawCommonPrefix = response->common_prefixes[i];
-		// The order in which bucketData is filled must match
-		// Column
-		QList<QVariant> objectData;
-		DS3BrowserItem* object;
+		const QString& bucketName = watcher->GetBucketName();
+		const QString& prefix = watcher->GetPrefix();
+		QVariant owner = parentItem->GetData(OWNER);
 
-		QString nextName = QString::fromUtf8(rawCommonPrefix->value);
-		nextName.replace(QRegExp("^" + prefix), "");
-		nextName.replace(QRegExp("/$"), "");
-		if (!currentCommonPrefixNames.contains(nextName)) {
+		for (size_t i = 0; i < response->num_common_prefixes; i++) {
+			ds3_str* rawCommonPrefix = response->common_prefixes[i];
+			// The order in which bucketData is filled must match
+			// Column
+			QList<QVariant> objectData;
+			DS3BrowserItem* object;
+
+			QString nextName = QString::fromUtf8(rawCommonPrefix->value);
+			nextName.replace(QRegExp("^" + prefix), "");
+			nextName.replace(QRegExp("/$"), "");
+			if (!currentCommonPrefixNames.contains(nextName)) {
+				objectData << nextName;
+				objectData << owner;
+				objectData << "--";
+				objectData << FOLDER;
+				objectData << "--";
+				object = new DS3BrowserItem(objectData,
+							    bucketName,
+							    prefix,
+							    parentItem);
+				newChildren << object;
+			}
+		}
+
+		for (size_t i = 0; i < response->num_objects; i++) {
+			QString nextName;
+			char* rawCreated;
+			QDateTime createdDT;
+			QString created;
+			// The order in which bucketData is filled must match
+			// Column
+			QList<QVariant> objectData;
+			DS3BrowserItem* object;
+
+			ds3_object rawObject = response->objects[i];
+
+			nextName = QString::fromUtf8(rawObject.name->value);
+			if (nextName == prefix) {
+				continue;
+			}
+			nextName.replace(QRegExp("^" + prefix), "");
 			objectData << nextName;
+
 			objectData << owner;
-			objectData << "--";
-			objectData << FOLDER;
-			objectData << "--";
+
+			// TODO Humanize the size
+			objectData << rawObject.size;
+
+			objectData << OBJECT;
+
+			if (rawObject.last_modified) {
+				rawCreated = rawObject.last_modified->value;
+				createdDT = QDateTime::fromString(QString::fromUtf8(rawCreated),
+								  REST_TIMESTAMP_FORMAT);
+				created = createdDT.toString(VIEW_TIMESTAMP_FORMAT);
+			}
+			objectData << created;
+
 			object = new DS3BrowserItem(objectData,
 						    bucketName,
 						    prefix,
 						    parentItem);
 			newChildren << object;
 		}
-	}
 
-	for (size_t i = 0; i < response->num_objects; i++) {
-		QString nextName;
-		char* rawCreated;
-		QDateTime createdDT;
-		QString created;
-		// The order in which bucketData is filled must match
-		// Column
-		QList<QVariant> objectData;
-		DS3BrowserItem* object;
-
-		ds3_object rawObject = response->objects[i];
-
-		nextName = QString::fromUtf8(rawObject.name->value);
-		if (nextName == prefix) {
-			continue;
+		if (response->next_marker) {
+			parentItem->SetNextMarker(QString::fromUtf8(response->next_marker->value));
 		}
-		nextName.replace(QRegExp("^" + prefix), "");
-		objectData << nextName;
 
-		objectData << owner;
-
-		// TODO Humanize the size
-		objectData << rawObject.size;
-
-		objectData << OBJECT;
-
-		if (rawObject.last_modified) {
-			rawCreated = rawObject.last_modified->value;
-			createdDT = QDateTime::fromString(QString::fromUtf8(rawCreated),
-							  REST_TIMESTAMP_FORMAT);
-			created = createdDT.toString(VIEW_TIMESTAMP_FORMAT);
+		if (response->is_truncated) {
+			DS3BrowserItem* pageBreak = new PageBreakItem(parentItem);
+			newChildren << pageBreak;
 		}
-		objectData << created;
-
-		object = new DS3BrowserItem(objectData,
-					    bucketName,
-					    prefix,
-					    parentItem);
-		newChildren << object;
-	}
-
-	if (response->next_marker) {
-		parentItem->SetNextMarker(QString::fromUtf8(response->next_marker->value));
-	}
-
-	if (response->is_truncated) {
-		DS3BrowserItem* pageBreak = new PageBreakItem(parentItem);
-		newChildren << pageBreak;
 	}
 
 	int numNewChildren = newChildren.count();
@@ -924,7 +931,9 @@ DS3BrowserModel::HandleGetBucketResponse()
 		removeRow(loadingRow, parent);
 	}
 
-	ds3_free_bucket_response(response);
+	if (response != NULL) {
+		ds3_free_bucket_response(response);
+	}
 	delete watcher;
 	parentItem->SetFetching(false);
 }
