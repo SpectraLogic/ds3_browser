@@ -107,7 +107,7 @@ Client::CreateBucket(const QString& name)
 	ds3_free_request(request);
 
 	if (error) {
-		// TODO Handle the error
+		throw (DS3Error(error));
 		ds3_free_error(error);
 	}
 }
@@ -175,8 +175,8 @@ Client::GetObject(const QString& bucket,
 
 	ds3_free_request(request);
 
-	if (error) {
-		// TODO Handle the error
+	if (error != NULL) {
+		throw (DS3Error(error));
 		ds3_free_error(error);
 	}
 }
@@ -210,14 +210,14 @@ Client::PutObject(const QString& bucket,
 	}
 	ds3_free_request(request);
 
-	if (error) {
-		// TODO Handle the error
+	if (error != NULL) {
+		throw (DS3Error(error));
 		ds3_free_error(error);
 	}
 }
 
 ds3_get_service_response*
-Client::DoGetService() throw(DS3Error)
+Client::DoGetService()
 {
 	ds3_get_service_response *response;
 	ds3_request* request = ds3_init_get_service();
@@ -274,7 +274,7 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 	ds3_free_request(request);
 
 	if (error) {
-		// TODO Handle the error
+		throw (DS3Error(error));
 		ds3_free_error(error);
 	}
 
@@ -425,8 +425,7 @@ Client::DoBulkGet(BulkGetWorkItem* workItem)
 	}
 
 	if (error) {
-		// TODO Handle the error
-		LOG_ERROR("BulkGet Error");
+		throw (DS3Error(error));
 		ds3_free_error(error);
 	}
 
@@ -501,8 +500,7 @@ Client::GetAvailableJobChunks(BulkGetWorkItem* workItem)
 	ds3_free_request(request);
 
 	if (error) {
-		// TODO handle error properly
-		LOG_ERROR("Error allocating job chunk");
+		throw (DS3Error(error));
 		ds3_free_error(error);
 	}
 
@@ -634,8 +632,7 @@ Client::DoBulkPut(BulkPutWorkItem* workItem)
 	workItem->SetResponse(response);
 
 	if (error) {
-		// TODO Handle the error
-		LOG_ERROR("BulkPut Error");
+		throw (DS3Error(error));
 		ds3_free_error(error);
 	}
 
@@ -699,8 +696,7 @@ Client::AllocateJobChunk(BulkPutWorkItem* workItem)
 	ds3_free_request(request);
 
 	if (error) {
-		// TODO handle error properly
-		LOG_ERROR("Error allocating job chunk");
+		throw (DS3Error(error));
 		ds3_free_error(error);
 	}
 
