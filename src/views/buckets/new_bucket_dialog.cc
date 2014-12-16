@@ -20,14 +20,11 @@
 #include "views/buckets/new_bucket_dialog.h"
 
 NewBucketDialog::NewBucketDialog(Client* client, QWidget* parent)
-	: QDialog(parent),
-	  m_baseErrorLabel(NULL)
+	: Dialog(parent),
+	  m_baseErrorLabel(NULL),
+	  m_client(client)
 {
 	setWindowTitle("New Bucket");
-
-	m_client = client;
-
-	m_form = new QGridLayout;
 
 	m_bucketLineEdit = new QLineEdit;
 	m_bucketLineEdit->setToolTip("The name of the Bucket to create");
@@ -38,18 +35,6 @@ NewBucketDialog::NewBucketDialog(Client* client, QWidget* parent)
 	m_form->addWidget(m_bucketLabel, 1, 0);
 	m_form->addWidget(m_bucketLineEdit, 1, 1);
 	m_form->addWidget(m_bucketErrorLabel, 1, 2);
-
-	m_buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok
-					   | QDialogButtonBox::Cancel);
-
-	connect(m_buttonBox, SIGNAL(accepted()), this, SLOT(Accept()));
-	connect(m_buttonBox, SIGNAL(rejected()), this, SLOT(Reject()));
-
-	m_layout = new QVBoxLayout;
-	m_layout->addLayout(m_form);
-	m_layout->addWidget(m_buttonBox);
-
-	setLayout(m_layout);
 }
 
 void
@@ -94,29 +79,6 @@ NewBucketDialog::Accept()
 		return;
 	}
 	accept();
-}
-
-bool
-NewBucketDialog::ValidateLineEditNotEmpty(QLabel* label,
-					  QLineEdit* lineEdit,
-					  QLabel* errorLabel)
-{
-	bool valid = true;
-	if (lineEdit->text().trimmed().isEmpty()) {
-		label->setStyleSheet("QLabel { color: red; }");
-		errorLabel->setText("cannot be blank");
-		valid = false;
-	} else {
-		label->setStyleSheet("");
-		errorLabel->setText("");
-	}
-	return valid;
-}
-
-void
-NewBucketDialog::Reject()
-{
-	reject();
 }
 
 void

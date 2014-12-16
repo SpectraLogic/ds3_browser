@@ -14,46 +14,35 @@
  * *****************************************************************************
  */
 
-#ifndef NEW_BUCKET_DIALOG_H
-#define NEW_BUCKET_DIALOG_H
+#ifndef DIALOG_H
+#define DIALOG_H
 
-#include <QComboBox>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QGridLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QVBoxLayout>
 
-#include "views/dialog.h"
-
-class Client;
-
-class NewBucketDialog : public Dialog
+class Dialog : public QDialog
 {
 	Q_OBJECT
 
 public:
-	NewBucketDialog(Client* client, QWidget* parent = 0);
-
-	const QString& GetBucket() const;
+	Dialog(QWidget* parent = 0);
 
 public slots:
-	void Accept();
+	virtual void Accept() = 0;
+	void Reject();
 
-private:
-	void UpdateBucket();
-	void CreateBucket();
+protected:
+	bool ValidateLineEditNotEmpty(QLabel* label,
+				      QLineEdit* lineEdit,
+				      QLabel* errorLabel);
 
-	QLabel* m_bucketLabel;
-	QLabel* m_bucketErrorLabel;
-	QLabel* m_baseErrorLabel;
-	QLineEdit* m_bucketLineEdit;
-
-	Client* m_client;
-	QString m_bucket;
+	QVBoxLayout* m_layout;
+	QGridLayout* m_form;
+	QDialogButtonBox* m_buttonBox;
 };
-
-inline const QString&
-NewBucketDialog::GetBucket() const
-{
-	return m_bucket;
-}
 
 #endif

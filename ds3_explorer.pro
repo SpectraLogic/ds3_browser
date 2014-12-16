@@ -62,6 +62,7 @@ HEADERS = \
 	src/views/browser_tree_view_style.h \
 	src/views/buckets/new_bucket_dialog.h \
 	src/views/console.h \
+	src/views/dialog.h \
 	src/views/ds3_browser.h \
 	src/views/host_browser.h \
 	src/views/job_view.h \
@@ -92,6 +93,7 @@ SOURCES = \
 	src/views/browser_tree_view_style.cc \
 	src/views/buckets/new_bucket_dialog.cc \
 	src/views/console.cc \
+	src/views/dialog.cc \
 	src/views/ds3_browser.cc \
 	src/views/host_browser.cc \
 	src/views/jobs_view.cc \

@@ -19,18 +19,16 @@
 
 #include <QCheckBox>
 #include <QComboBox>
-#include <QDialogButtonBox>
-#include <QDialog>
-#include <QGridLayout>
 #include <QLabel>
 #include <QLineEdit>
-#include <QVBoxLayout>
+
+#include "views/dialog.h"
 
 class Session;
 
 // SessionDialog, a dialog to gather host/user information when creating
 // a new host<->DS3 System session.
-class SessionDialog : public QDialog
+class SessionDialog : public Dialog
 {
 	Q_OBJECT
 
@@ -42,19 +40,11 @@ public:
 
 public slots:
 	void Accept();
-	void Reject();
 
 private:
-	bool ValidateLineEditNotEmpty(QLabel* label,
-				      QLineEdit* lineEdit,
-				      QLabel* errorLabel);
 	void LoadSession();
 	void UpdateSession();
 	void SaveSession();
-
-	QVBoxLayout* m_layout;
-
-	QGridLayout* m_form;
 
 	QLabel* m_hostLabel;
 	QLineEdit* m_hostLineEdit;
@@ -71,7 +61,6 @@ private:
 	QLabel* m_secretKeyErrorLabel;
 
 	QCheckBox* m_saveSessionCheckBox;
-	QDialogButtonBox* m_buttonBox;
 
 	Session* m_session;
 };

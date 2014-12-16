@@ -22,9 +22,7 @@
 #include "views/session_dialog.h"
 
 SessionDialog::SessionDialog(QWidget* parent)
-	: QDialog(parent),
-	  m_layout(new QVBoxLayout),
-	  m_form(new QGridLayout),
+	: Dialog(parent),
 	  m_hostLineEdit(new QLineEdit),
 	  m_portComboBox(new QComboBox),
 	  m_proxyLineEdit(new QLineEdit),
@@ -74,17 +72,6 @@ SessionDialog::SessionDialog(QWidget* parent)
 	m_saveSessionCheckBox = new QCheckBox("Save Session");
 	m_form->addWidget(m_saveSessionCheckBox, 6, 1);
 
-	m_buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok
-					   | QDialogButtonBox::Cancel);
-
-	connect(m_buttonBox, SIGNAL(accepted()), this, SLOT(Accept()));
-	connect(m_buttonBox, SIGNAL(rejected()), this, SLOT(Reject()));
-
-	m_layout->addLayout(m_form);
-	m_layout->addWidget(m_buttonBox);
-
-	setLayout(m_layout);
-
 	LoadSession();
 }
 
@@ -112,29 +99,6 @@ SessionDialog::Accept()
 	UpdateSession();
 	SaveSession();
 	accept();
-}
-
-bool
-SessionDialog::ValidateLineEditNotEmpty(QLabel* label,
-					QLineEdit* lineEdit,
-					QLabel* errorLabel)
-{
-	bool valid = true;
-	if (lineEdit->text().trimmed().isEmpty()) {
-		label->setStyleSheet("QLabel { color: red; }");
-		errorLabel->setText("cannot be blank");
-		valid = false;
-	} else {
-		label->setStyleSheet("");
-		errorLabel->setText("");
-	}
-	return valid;
-}
-
-void
-SessionDialog::Reject()
-{
-	reject();
 }
 
 void
