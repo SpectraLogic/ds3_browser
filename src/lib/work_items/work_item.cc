@@ -21,3 +21,7 @@ WorkItem::WorkItem()
 	  m_start(QDateTime::currentDateTime())
 {
 }
+
+WorkItem::~WorkItem()
+{
+}

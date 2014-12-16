@@ -30,6 +30,7 @@ class Dialog : public QDialog
 
 public:
 	Dialog(QWidget* parent = 0);
+	virtual ~Dialog();
 
 public slots:
 	virtual void Accept() = 0;

@@ -31,6 +31,10 @@ Dialog::Dialog(QWidget* parent)
 	setLayout(m_layout);
 }
 
+Dialog::~Dialog()
+{
+}
+
 void
 Dialog::Reject()
 {

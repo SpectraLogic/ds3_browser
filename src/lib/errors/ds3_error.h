@@ -30,7 +30,7 @@ class DS3Error : public QException
 {
 public:
 	DS3Error(ds3_error* error);
-	~DS3Error() throw() {};
+	virtual ~DS3Error() throw() {};
 
 	uint64_t GetStatusCode() const;
 

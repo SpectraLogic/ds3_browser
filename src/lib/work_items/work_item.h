@@ -27,6 +27,7 @@ class WorkItem
 {
 public:
 	WorkItem();
+	virtual ~WorkItem();
 
 	const QUuid GetID() const;
 	const QDateTime& GetStart() const;
