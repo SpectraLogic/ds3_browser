@@ -461,18 +461,35 @@ Client::ProcessGetJobChunk(BulkGetWorkItem* workItem)
 	// means the server isn't ready yet (e.g. it could still be transferring
 	// objects off tape and into cache).  In this situation, we have to
 	// wait and try again.
-	//
-	// TODO Handle the case where the server's not ready for any chunks yet.
-	//      See ProcessPutJobChunk.
 	ds3_get_available_chunks_response* chunksResponse;
-	chunksResponse = GetAvailableJobChunks(workItem);
+	size_t numChunks = 0;
+	while (numChunks == 0) {
+		uint64_t retryAfter = 60;
+		QString errMsg;
+		try {
+			chunksResponse = GetAvailableJobChunks(workItem);
+			numChunks = chunksResponse->object_list->list_size;
+			retryAfter = chunksResponse->retry_after;
+		}
+		catch (DS3Error& e) {
+			errMsg = "Error getting available job chunks - " +
+				 e.ToString();
+			LOG_ERROR(errMsg);
+		}
+		if (numChunks == 0) {
+			if (errMsg.isEmpty()) {
+				LOG_INFO("Next bulk get job chunk not ready yet.");
+			}
+			sleep(retryAfter);
+		}
+	}
 
 	QString bucketName = workItem->GetBucketName();
 	// TODO PUT multiple objects at once.  Start the next chunk as soon
 	//      as the number of objects left to put is less than the size
 	//      of the "put objects" thread pool.
 	ds3_bulk_response* bulkResponse = chunksResponse->object_list;
-	for (size_t chunk = 0; chunk < bulkResponse->list_size; chunk++) {
+	for (size_t chunk = 0; chunk < numChunks; chunk++) {
 		ds3_bulk_object_list* list = bulkResponse->list[chunk];
 		for (uint64_t i = 0; i < list->size;  i++) {
 			ds3_bulk_object* bulkObj = &(list->list[i]);
@@ -655,21 +672,32 @@ Client::ProcessPutJobChunk(BulkPutWorkItem* workItem)
 	//
 	// TODO Consider changing this to make use of timers/slots/etc instead
 	//      of just sleeping.
-	uint64_t numObjects = 0;
-	ds3_allocate_chunk_response* chunkResponse;
+	ds3_allocate_chunk_response* chunkResponse = NULL;
 	int chunkNum = workItem->GetNumChunksProcessed();
 	ds3_bulk_response *response = workItem->GetResponse();
 	const char* chunkID = response->list[chunkNum]->chunk_id->value;
-	while (numObjects == 0) {
-		chunkResponse = AllocateJobChunk(chunkID);
-		numObjects = chunkResponse->objects->size;
-		if (numObjects == 0) {
-			LOG_DEBUG("Allocate job chunk response didn't include any objects");
+	while (chunkResponse == NULL) {
+		try {
+			chunkResponse = AllocateJobChunk(chunkID);
+		}
+		catch (DS3Error& e) {
+			if (e.GetStatusCode() == 503) {
+				// The S3 server isn't ready for the next chunk.
+				// While this is technically an error response,
+				// the user shouldn't see this as an error as
+				// it's normal for this to happen.
+				LOG_INFO("Next bulk put job chunk not ready yet.");
+			} else {
+				LOG_ERROR("Error allocating job chunk - " + e.ToString());
+			}
+			// Sleep for "retry-later" seconds that's in the
+			// response once the C SDK supports it.
 			sleep(60);
 		}
 	}
 
 	QString bucketName = workItem->GetBucketName();
+	uint64_t numObjects = chunkResponse->objects->size;
 	// TODO PUT multiple objects at once.  Start the next chunk as soon
 	//      as the number of objects left to put is less than the size
 	//      of the "put objects" thread pool.
