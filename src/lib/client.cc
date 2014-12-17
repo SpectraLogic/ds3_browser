@@ -495,7 +495,13 @@ Client::ProcessGetJobChunk(BulkGetWorkItem* workItem)
 			ds3_bulk_object* bulkObj = &(list->list[i]);
 			QString objName = QString::fromUtf8(bulkObj->name->value);
 			QString filePath = workItem->GetObjMapValue(objName);
-			Client::GetObject(bucketName, objName, filePath, workItem);
+			try {
+				Client::GetObject(bucketName, objName, filePath, workItem);
+			}
+			catch (DS3Error& e) {
+				LOG_ERROR("Error getting object \"" + objName +
+					  "\" - " + e.ToString());
+			}
 		}
 		workItem->IncNumChunksProcessed();
 	}
@@ -705,7 +711,13 @@ Client::ProcessPutJobChunk(BulkPutWorkItem* workItem)
 		ds3_bulk_object bulkObj = chunkResponse->objects->list[i];
 		QString objName = QString::fromUtf8(bulkObj.name->value);
 		QString filePath = workItem->GetObjMapValue(objName);
-		Client::PutObject(bucketName, objName, filePath, workItem);
+		try {
+			Client::PutObject(bucketName, objName, filePath, workItem);
+		}
+		catch (DS3Error& e) {
+			LOG_ERROR("Error putting object \"" + objName + "\"" +
+				  " - " + e.ToString());
+		}
 	}
 
 	workItem->IncNumChunksProcessed();
