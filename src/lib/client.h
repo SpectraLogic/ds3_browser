@@ -89,7 +89,7 @@ private:
 	void PrepareBulkPuts(BulkPutWorkItem* workItem);
 	void DoBulkPut(BulkPutWorkItem* workItem);
 	void ProcessPutJobChunk(BulkPutWorkItem* workItem);
-	ds3_allocate_chunk_response* AllocateJobChunk(BulkPutWorkItem* bulkPutWorkItem);
+	ds3_allocate_chunk_response* AllocateJobChunk(const char* chunkID);
 
 	void DeleteOrRequeueBulkWorkItem(BulkWorkItem* workItem);
 

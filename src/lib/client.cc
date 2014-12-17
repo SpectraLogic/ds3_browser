@@ -657,8 +657,11 @@ Client::ProcessPutJobChunk(BulkPutWorkItem* workItem)
 	//      of just sleeping.
 	uint64_t numObjects = 0;
 	ds3_allocate_chunk_response* chunkResponse;
+	int chunkNum = workItem->GetNumChunksProcessed();
+	ds3_bulk_response *response = workItem->GetResponse();
+	const char* chunkID = response->list[chunkNum]->chunk_id->value;
 	while (numObjects == 0) {
-		chunkResponse = AllocateJobChunk(workItem);
+		chunkResponse = AllocateJobChunk(chunkID);
 		numObjects = chunkResponse->objects->size;
 		if (numObjects == 0) {
 			LOG_DEBUG("Allocate job chunk response didn't include any objects");
@@ -687,10 +690,9 @@ Client::ProcessPutJobChunk(BulkPutWorkItem* workItem)
 }
 
 ds3_allocate_chunk_response*
-Client::AllocateJobChunk(BulkPutWorkItem* workItem)
+Client::AllocateJobChunk(const char* chunkID)
 {
-	ds3_bulk_response *response = workItem->GetResponse();
-	ds3_request* request = ds3_init_allocate_chunk(response->job_id->value);
+	ds3_request* request = ds3_init_allocate_chunk(chunkID);
 	ds3_allocate_chunk_response* chunkResponse;
 	ds3_error* error = ds3_allocate_chunk(m_client, request, &chunkResponse);
 	ds3_free_request(request);
