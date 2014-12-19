@@ -37,7 +37,11 @@ public:
 	JobsView(QWidget* parent = 0);
 
 public slots:
+	void CancelJob();
 	void UpdateJob(const Job job);
+
+signals:
+	void JobCanceled(QUuid id);
 
 private:
 	// Add some debug JobView widgets.  Useful when working on the

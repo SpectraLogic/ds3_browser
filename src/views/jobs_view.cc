@@ -26,7 +26,8 @@
 const QString JobView::s_types[] = { "GET", "PUT" };
 
 JobView::JobView(Job job, QWidget* parent)
-	: QWidget(parent)
+	: QWidget(parent),
+	  m_jobID(job.GetID())
 {
 	m_layout = new QGridLayout(this);
 	m_layout->setContentsMargins(5, 2, 5, 5);
@@ -44,6 +45,12 @@ JobView::JobView(Job job, QWidget* parent)
 	m_progressBar->setMaximum(1000);
 	m_progressSummary = new QLabel;
 
+	m_cancelButton = new QPushButton;
+	m_cancelButton->setIcon(style()->standardIcon(QStyle::SP_TitleBarCloseButton));
+	m_cancelButton->setStyleSheet("border: 0; padding: 0; margin: 0");
+	m_cancelButton->setToolTip("Cancel");
+	connect(m_cancelButton, SIGNAL(clicked()), this, SLOT(Cancel()));
+
 	Update(job);
 
 	m_layout->addWidget(m_type, 0, 0, 2, 1);
@@ -51,6 +58,7 @@ JobView::JobView(Job job, QWidget* parent)
 	m_layout->addWidget(m_start, 3, 0);
 	m_layout->addWidget(m_progressBar, 1, 1);
 	m_layout->addWidget(m_progressSummary, 2, 1);
+	m_layout->addWidget(m_cancelButton, 0, 3);
 
 	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	setFixedWidth(500);
@@ -91,6 +99,13 @@ JobView::ToProgressSummary(Job job) const
 	return summary;
 }
 
+void
+JobView::Cancel()
+{
+	LOG_DEBUG("JobView::Cancel");
+	emit Canceled();
+}
+
 // Necessary since JobView has a styles applied to it via the main QSS file.
 // See Qt Style Sheets Reference.
 void
@@ -119,6 +134,15 @@ JobsView::JobsView(QWidget* parent)
 }
 
 void
+JobsView::CancelJob()
+{
+	JobView* jobView = static_cast<JobView*>(sender());
+	QUuid id = jobView->GetJobID();
+	LOG_DEBUG("JobsView::CancelJob: " + id.toString());
+	emit JobCanceled(id);
+}
+
+void
 JobsView::UpdateJob(const Job job)
 {
 	QUuid jobID = job.GetID();
@@ -127,7 +151,7 @@ JobsView::UpdateJob(const Job job)
 
 	if (m_jobViews.contains(jobID)) {
 		JobView* jobView = m_jobViews[jobID];
-		if (job.IsFinished()) {
+		if (job.IsFinished() || job.WasCanceled()) {
 			// Remove the job if it's finished.  We could also
 			// leave it, showing it in a finished state and give
 			// the user the option of manually removing it.
@@ -140,6 +164,7 @@ JobsView::UpdateJob(const Job job)
 		jobView->Update(job);
 	} else {
 		JobView* jobView = new JobView(job, this);
+		connect(jobView, SIGNAL(Canceled()), this, SLOT(CancelJob()));
 		m_jobViews[jobID] = jobView;
 		m_layout->addWidget(jobView);
 	}
@@ -152,9 +177,9 @@ JobsView::AddDebugJobs()
 {
 	for (int i = 0; i < 10; i++) {
 		Job job;
-		QString is(QString::number(i));
-		job.SetID(is);
+		job.SetID(QUuid::createUuid());
 		job.SetType(Job::PUT);
+		QString is(QString::number(i));
 		job.SetHost("host" + is);
 		job.SetDestination("bucket" + is);
 		job.SetState(Job::INPROGRESS);
@@ -162,7 +187,6 @@ JobsView::AddDebugJobs()
 		job.SetTransferStart(QDateTime::currentDateTime());
 		job.SetSize(1000);
 		job.SetBytesTransferred(500);
-		JobView* jobView = new JobView(job, this);
-		m_layout->addWidget(jobView);
+		UpdateJob(job);
 	}
 }

@@ -15,11 +15,14 @@
  */
 
 #include <QGridLayout>
+#include <QAction>
 #include <QLabel>
 #include <QPainter>
+#include <QPushButton>
 #include <QProgressBar>
 #include <QString>
 #include <QStyleOption>
+#include <QUuid>
 #include <QWidget>
 
 #include "models/job.h"
@@ -33,21 +36,36 @@ public:
 
 	JobView(Job job, QWidget* parent = 0);
 
+	QUuid GetJobID() const;
 	void Update(Job job);
 	const QString ToProgressSummary(Job) const;
 	const QString& ToTypeString(Job) const;
+
+public slots:
+	void Cancel();
+
+signals:
+	void Canceled();
 
 protected:
 	void paintEvent(QPaintEvent* event);
 
 private:
+	QUuid m_jobID;
 	QLabel* m_host;
 	QLabel* m_type;
 	QProgressBar* m_progressBar;
 	QLabel* m_progressSummary;
 	QLabel* m_start;
+	QPushButton* m_cancelButton;
 	QGridLayout* m_layout;
 };
+
+inline QUuid
+JobView::GetJobID() const
+{
+	return m_jobID;
+}
 
 inline const QString&
 JobView::ToTypeString(Job job) const

@@ -117,6 +117,9 @@ Client::BulkGet(const QList<QUrl> urls, const QString& destination)
 {
 	BulkGetWorkItem* workItem = new BulkGetWorkItem(m_host, urls,
 							destination);
+	m_bulkWorkItemsLock.lock();
+	m_bulkWorkItems[workItem->GetID()] = workItem;
+	m_bulkWorkItemsLock.unlock();
 	workItem->SetState(Job::QUEUED);
 	Job job = workItem->ToJob();
 	emit JobProgressUpdate(job);
@@ -130,6 +133,9 @@ Client::BulkPut(const QString& bucketName,
 {
 	BulkPutWorkItem* workItem = new BulkPutWorkItem(m_host, urls,
 							bucketName, prefix);
+	m_bulkWorkItemsLock.lock();
+	m_bulkWorkItems[workItem->GetID()] = workItem;
+	m_bulkWorkItemsLock.unlock();
 	workItem->SetState(Job::QUEUED);
 	Job job = workItem->ToJob();
 	emit JobProgressUpdate(job);
@@ -210,10 +216,30 @@ Client::PutObject(const QString& bucket,
 	}
 	ds3_free_request(request);
 
-	if (error != NULL) {
+	// TODO Don't rely on WasCanceled to ignore "Request failed: Operation
+	// was aborted by an application callback" errors.  It would be nice
+	// if the C SDK returned the CURLcode response and we could use that
+	// instead.
+	if (error != NULL && !workItem->WasCanceled()) {
 		throw (DS3Error(error));
 		ds3_free_error(error);
 	}
+}
+
+void
+Client::CancelBulkJob(QUuid workItemID)
+{
+	LOG_DEBUG("Client::CancelBulkJob - " + workItemID.toString());
+	m_bulkWorkItemsLock.lock();
+	if (m_bulkWorkItems.contains(workItemID)) {
+		BulkWorkItem* workItem = m_bulkWorkItems[workItemID];
+		Job::State state = workItem->GetState();
+		if (state != Job::CANCELING && state != Job::CANCELED &&
+		    state != Job::FINISHED) {
+			workItem->SetState(Job::CANCELING);
+		}
+	}
+	m_bulkWorkItemsLock.unlock();
 }
 
 ds3_get_service_response*
@@ -298,6 +324,11 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 	for (QList<QUrl>::const_iterator& ui(workItem->GetUrlsIterator());
 	     ui != workItem->GetUrlsConstEnd();
 	     ui++) {
+		if (workItem->WasCanceled()) {
+			DeleteOrRequeueBulkWorkItem(workItem);
+			return;
+		}
+
 		DS3URL url(*ui);
 
 		QUrl lastUrl = workItem->GetLastProcessedUrl();
@@ -334,6 +365,10 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 			getBucketRes = workItem->GetGetBucketResponse();
 			size_t i = workItem->GetGetBucketResponseIterator();
 			do {
+				if (workItem->WasCanceled()) {
+					DeleteOrRequeueBulkWorkItem(workItem);
+					return;
+				}
 				if (getBucketRes == NULL ||
 				    (getBucketRes != NULL && i >= getBucketRes->num_objects)) {
 					QString marker;
@@ -348,6 +383,10 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 					workItem->AppendDirsToCreate(filePath);
 				}
 				for (; i < getBucketRes->num_objects; i++) {
+					if (workItem->WasCanceled()) {
+						DeleteOrRequeueBulkWorkItem(workItem);
+						return;
+					}
 					if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT) {
 						workItem->SetGetBucketResponse(getBucketRes);
 						workItem->SetGetBucketResponseIterator(i);
@@ -461,9 +500,13 @@ Client::ProcessGetJobChunk(BulkGetWorkItem* workItem)
 	// means the server isn't ready yet (e.g. it could still be transferring
 	// objects off tape and into cache).  In this situation, we have to
 	// wait and try again.
-	ds3_get_available_chunks_response* chunksResponse;
+	ds3_get_available_chunks_response* chunksResponse = NULL;
 	size_t numChunks = 0;
 	while (numChunks == 0) {
+		if (workItem->WasCanceled()) {
+			DeleteOrRequeueBulkWorkItem(workItem);
+			return;
+		}
 		uint64_t retryAfter = 60;
 		QString errMsg;
 		try {
@@ -492,6 +535,10 @@ Client::ProcessGetJobChunk(BulkGetWorkItem* workItem)
 	for (size_t chunk = 0; chunk < numChunks; chunk++) {
 		ds3_bulk_object_list* list = bulkResponse->list[chunk];
 		for (uint64_t i = 0; i < list->size;  i++) {
+			if (workItem->WasCanceled()) {
+				DeleteOrRequeueBulkWorkItem(workItem);
+				return;
+			}
 			ds3_bulk_object* bulkObj = &(list->list[i]);
 			QString objName = QString::fromUtf8(bulkObj->name->value);
 			QString filePath = workItem->GetObjMapValue(objName);
@@ -549,6 +596,10 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 	for (QList<QUrl>::const_iterator& ui(workItem->GetUrlsIterator());
 	     ui != workItem->GetUrlsConstEnd();
 	     ui++) {
+		if (workItem->WasCanceled()) {
+			DeleteOrRequeueBulkWorkItem(workItem);
+			return;
+		}
 		QUrl url(*ui);
 
 		QUrl lastUrl = workItem->GetLastProcessedUrl();
@@ -585,6 +636,10 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 				di = workItem->GetDirIterator(filePath);
 			}
 			while (di->hasNext()) {
+				if (workItem->WasCanceled()) {
+					DeleteOrRequeueBulkWorkItem(workItem);
+					return;
+				}
 				if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT) {
 					run(this, &Client::DoBulkPut, workItem);
 					return;
@@ -683,6 +738,10 @@ Client::ProcessPutJobChunk(BulkPutWorkItem* workItem)
 	ds3_bulk_response *response = workItem->GetResponse();
 	const char* chunkID = response->list[chunkNum]->chunk_id->value;
 	while (chunkResponse == NULL) {
+		if (workItem->WasCanceled()) {
+			DeleteOrRequeueBulkWorkItem(workItem);
+			return;
+		}
 		try {
 			chunkResponse = AllocateJobChunk(chunkID);
 		}
@@ -708,6 +767,10 @@ Client::ProcessPutJobChunk(BulkPutWorkItem* workItem)
 	//      as the number of objects left to put is less than the size
 	//      of the "put objects" thread pool.
 	for (uint64_t i = 0; i < numObjects;  i++) {
+		if (workItem->WasCanceled()) {
+			DeleteOrRequeueBulkWorkItem(workItem);
+			return;
+		}
 		ds3_bulk_object bulkObj = chunkResponse->objects->list[i];
 		QString objName = QString::fromUtf8(bulkObj.name->value);
 		QString filePath = workItem->GetObjMapValue(objName);
@@ -748,13 +811,19 @@ Client::AllocateJobChunk(const char* chunkID)
 void
 Client::DeleteOrRequeueBulkWorkItem(BulkWorkItem* workItem)
 {
-	if (workItem->IsPageFinished()) {
+	if (workItem->WasCanceled()) {
+		LOG_INFO("Bulk job canceled");
+		workItem->SetState(Job::CANCELED);
+		Job job = workItem->ToJob();
+		emit JobProgressUpdate(job);
+		DeleteBulkWorkItem(workItem);
+	} else if (workItem->IsPageFinished()) {
 		if (workItem->IsFinished()) {
 			LOG_DEBUG("Finished with bulk work item.  Deleting it.");
 			workItem->SetState(Job::FINISHED);
 			Job job = workItem->ToJob();
 			emit JobProgressUpdate(job);
-			delete workItem;
+			DeleteBulkWorkItem(workItem);
 		} else {
 			LOG_DEBUG("More bulk pages to go.  Starting PrepareBulk{Gets,Puts} again.");
 			if (workItem->GetType() == Job::GET) {
@@ -773,6 +842,15 @@ Client::DeleteOrRequeueBulkWorkItem(BulkWorkItem* workItem)
 	}
 }
 
+void
+Client::DeleteBulkWorkItem(BulkWorkItem* workItem)
+{
+	m_bulkWorkItemsLock.lock();
+	m_bulkWorkItems.remove(workItem->GetID());
+	delete workItem;
+	m_bulkWorkItemsLock.unlock();
+}
+
 static size_t
 read_from_file(void* buffer, size_t size, size_t count, void* user_data)
 {
@@ -786,8 +864,12 @@ size_t
 Client::ReadFile(ObjectWorkItem* workItem, char* buffer,
 		 size_t size, size_t count)
 {
-	size_t bytesRead = workItem->ReadFile(buffer, size, count);
 	BulkWorkItem* bulkWorkItem = workItem->GetBulkWorkItem();
+	if (bulkWorkItem != NULL && bulkWorkItem->WasCanceled()) {
+		return DS3_READFUNC_ABORT;
+	}
+
+	size_t bytesRead = workItem->ReadFile(buffer, size, count);
 	if (bulkWorkItem != NULL) {
 		Job job = bulkWorkItem->ToJob();
 		emit JobProgressUpdate(job);
@@ -808,8 +890,12 @@ size_t
 Client::WriteFile(ObjectWorkItem* workItem, char* buffer,
 		  size_t size, size_t count)
 {
-	size_t bytesWritten = workItem->WriteFile(buffer, size, count);
 	BulkWorkItem* bulkWorkItem = workItem->GetBulkWorkItem();
+	if (bulkWorkItem != NULL && bulkWorkItem->WasCanceled()) {
+		return 0;
+	}
+
+	size_t bytesWritten = workItem->WriteFile(buffer, size, count);
 	if (bulkWorkItem != NULL) {
 		Job job = bulkWorkItem->ToJob();
 		emit JobProgressUpdate(job);

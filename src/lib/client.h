@@ -18,9 +18,12 @@
 #define CLIENT_H
 
 #include <QFuture>
+#include <QHash>
 #include <QList>
+#include <QMutex>
 #include <QObject>
 #include <QString>
+#include <QUuid>
 #include <QUrl>
 
 #include <ds3.h>
@@ -70,6 +73,11 @@ public:
 		       const QString& object,
 		       const QString& fileName,
 		       BulkPutWorkItem* bulkPutWorkItem);
+
+public slots:
+	// Cancel an in-progress BulkGet or BulkPut request.
+	void CancelBulkJob(QUuid workItemID);
+
 signals:
 	void JobProgressUpdate(const Job job);
 
@@ -92,11 +100,14 @@ private:
 	ds3_allocate_chunk_response* AllocateJobChunk(const char* chunkID);
 
 	void DeleteOrRequeueBulkWorkItem(BulkWorkItem* workItem);
+	void DeleteBulkWorkItem(BulkWorkItem* workItem);
 
 	QString m_host;
 	QString m_endpoint;
 	ds3_creds* m_creds;
 	ds3_client* m_client;
+	QHash<QUuid, BulkWorkItem*> m_bulkWorkItems;
+	QMutex m_bulkWorkItemsLock;
 
 public:
 	// Meant to be private but called from the C SDK callback function

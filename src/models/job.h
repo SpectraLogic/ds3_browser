@@ -35,7 +35,13 @@ public:
 	// FINISHED currently means the job has been successfully transferred
 	// to the DS3 system's cache and not necessarily it's backing tape
 	// store.
-	enum State { INITIALIZING, QUEUED, PREPARING, INPROGRESS, FINISHED };
+	enum State { INITIALIZING,
+		     QUEUED,
+		     PREPARING,
+		     INPROGRESS,
+		     CANCELING,
+		     CANCELED,
+		     FINISHED };
 
 	enum Type { GET, PUT };
 
@@ -50,6 +56,7 @@ public:
 	uint64_t GetBytesTransferred() const;
 	int GetProgress() const;
 	bool IsFinished() const;
+	bool WasCanceled() const;
 
 	void SetID(const QUuid& id);
 	void SetType(Type type);
@@ -133,6 +140,11 @@ Job::GetBytesTransferred() const
 inline bool Job::IsFinished() const
 {
 	return m_state == FINISHED;
+}
+
+inline bool Job::WasCanceled() const
+{
+	return m_state == CANCELED;
 }
 
 inline void

@@ -26,6 +26,8 @@ SessionView::SessionView(Session* session, JobsView* jobsView, QWidget* parent)
 	  m_session(session)
 {
 	m_client = new Client(session);
+	connect(jobsView, SIGNAL(JobCanceled(QUuid)),
+		m_client, SLOT(CancelBulkJob(QUuid)));
 
 	m_hostBrowser = new HostBrowser(m_client);
 	m_ds3Browser = new DS3Browser(m_client, jobsView);

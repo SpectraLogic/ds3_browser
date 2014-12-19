@@ -51,6 +51,7 @@ public:
 	void UpdateBytesTransferred(size_t bytes);
 	size_t GetNumChunksProcessed() const;
 
+	bool WasCanceled() const;
 	bool IsPageFinished() const;
 	bool IsFinished() const;
 
@@ -78,6 +79,7 @@ protected:
 	void SortURLsByBucket();
 
 	Job::State m_state;
+	mutable QMutex m_stateLock;
 	QString m_host;
 	QString m_bucketName;
 	QList<QUrl> m_urls;
@@ -136,6 +138,14 @@ BulkWorkItem::GetNumChunksProcessed() const
 	m_numChunksLock.unlock();
 	return chunks;
 }
+
+inline bool
+BulkWorkItem::WasCanceled() const
+{
+	Job::State state = GetState();
+	return (state == Job::CANCELING || state == Job::CANCELED);
+}
+
 
 inline void
 BulkWorkItem::SetBucketName(const QString& bucketName)
@@ -212,7 +222,10 @@ BulkWorkItem::InsertObjMap(const QString& objName, const QString& filePath)
 inline Job::State
 BulkWorkItem::GetState() const
 {
-	return m_state;
+	m_stateLock.lock();
+	Job::State state = m_state;
+	m_stateLock.unlock();
+	return state;
 }
 
 inline ds3_bulk_response*
@@ -230,7 +243,9 @@ BulkWorkItem::SetResponse(ds3_bulk_response* response)
 inline void
 BulkWorkItem::SetState(Job::State state)
 {
+	m_stateLock.lock();
 	m_state = state;
+	m_stateLock.unlock();
 }
 
 #endif
