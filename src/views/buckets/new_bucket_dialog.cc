@@ -35,6 +35,8 @@ NewBucketDialog::NewBucketDialog(Client* client, QWidget* parent)
 	m_form->addWidget(m_bucketLabel, 1, 0);
 	m_form->addWidget(m_bucketLineEdit, 1, 1);
 	m_form->addWidget(m_bucketErrorLabel, 1, 2);
+
+	m_bucketLineEdit->setFocus();
 }
 
 void
