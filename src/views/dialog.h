@@ -37,8 +37,10 @@ public slots:
 	void Reject();
 
 protected:
-	void EnableOKButton();
-	void DisableOKButton();
+	// Enable all inputs/buttons.  This is not intended to control labels.
+	void EnableWidgets();
+	// Disable all inputs/buttons.  This is not intended to control labels.
+	void DisableWidgets();
 	bool ValidateLineEditNotEmpty(QLabel* label,
 				      QLineEdit* lineEdit,
 				      QLabel* errorLabel);

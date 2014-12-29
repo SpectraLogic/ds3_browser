@@ -163,7 +163,7 @@ SessionDialog::Authenticate()
 {
 	LOG_INFO("Authenticating session");
 
-	DisableOKButton();
+	DisableWidgets();
 	QApplication::setOverrideCursor(Qt::BusyCursor);
 
 	if (m_client != NULL) {
@@ -255,7 +255,7 @@ SessionDialog::CheckAuthenticationResponse()
 		SaveSession();
 	}
 	QApplication::restoreOverrideCursor();
-	EnableOKButton();
+	EnableWidgets();
 	if (authenticated) {
 		accept();
 	}

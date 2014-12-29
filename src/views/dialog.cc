@@ -14,7 +14,11 @@
  * *****************************************************************************
  */
 
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLineEdit>
 #include <QPushButton>
+
 #include "views/dialog.h"
 
 Dialog::Dialog(QWidget* parent)
@@ -44,15 +48,41 @@ Dialog::Reject()
 }
 
 void
-Dialog::EnableOKButton()
+Dialog::EnableWidgets()
 {
+	QList<QLineEdit*> inputs = findChildren<QLineEdit*>();
+	for (int i = 0; i < inputs.size(); i++) {
+		inputs[i]->setEnabled(true);
+	}
+	QList<QComboBox*> combos = findChildren<QComboBox*>();
+	for (int i = 0; i < combos.size(); i++) {
+		combos[i]->setEnabled(true);
+	}
+	QList<QCheckBox*> checks = findChildren<QCheckBox*>();
+	for (int i = 0; i < checks.size(); i++) {
+		checks[i]->setEnabled(true);
+	}
+
 	QPushButton* button = m_buttonBox->button(QDialogButtonBox::Ok);
 	button->setEnabled(true);
 }
 
 void
-Dialog::DisableOKButton()
+Dialog::DisableWidgets()
 {
+	QList<QLineEdit*> inputs = findChildren<QLineEdit*>();
+	for (int i = 0; i < inputs.size(); i++) {
+		inputs[i]->setEnabled(false);
+	}
+	QList<QComboBox*> combos = findChildren<QComboBox*>();
+	for (int i = 0; i < combos.size(); i++) {
+		combos[i]->setEnabled(false);
+	}
+	QList<QCheckBox*> checks = findChildren<QCheckBox*>();
+	for (int i = 0; i < checks.size(); i++) {
+		checks[i]->setEnabled(false);
+	}
+
 	QPushButton* button = m_buttonBox->button(QDialogButtonBox::Ok);
 	button->setEnabled(false);
 }
