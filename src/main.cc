@@ -17,6 +17,7 @@
 #include <QApplication>
 #include <QFile>
 
+#include "views/console.h"
 #include "models/job.h"
 
 #include "main_window.h"
@@ -37,6 +38,9 @@ main(int argc, char *argv[])
 
 	// Job is used as an argument in a signal/slot connection
 	qRegisterMetaType<Job>();
+
+	// Ensure the console instance is created in the main GUI thread
+	Console::Instance();
 
 	MainWindow mainWindow;
 	if (mainWindow.IsFinished())
