@@ -86,14 +86,15 @@ Client::GetService()
 
 QFuture<ds3_get_bucket_response*>
 Client::GetBucket(const QString& bucketName, const QString& prefix,
-		  const QString& marker)
+		  const QString& marker, bool silent)
 {
 	QFuture<ds3_get_bucket_response*> future = run(this,
 						       &Client::DoGetBucket,
 						       bucketName,
 						       prefix,
 						       DELIMITER,
-						       marker);
+						       marker,
+						       silent);
 	return future;
 }
 
@@ -263,7 +264,8 @@ Client::DoGetService()
 
 ds3_get_bucket_response*
 Client::DoGetBucket(const QString& bucketName, const QString& prefix,
-		    const QString& delimiter, const QString& marker)
+		    const QString& delimiter, const QString& marker,
+		    bool silent)
 {
 	LOG_DEBUG("DoGetBucket - bucket: " + bucketName +
 		  ", prefix: " + prefix + ", marker: " + marker);
@@ -293,7 +295,9 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 		logMsg += "&" + logQueryParams.join("&");
 	}
 	logMsg += ")";
-	LOG_INFO(logMsg);
+	if (!silent) {
+		LOG_INFO(logMsg);
+	}
 	ds3_error* error = ds3_get_bucket(m_client,
 					  request,
 					  &response);

@@ -161,6 +161,8 @@ SessionDialog::UpdateSession()
 void
 SessionDialog::Authenticate()
 {
+	LOG_INFO("Authenticating session");
+
 	DisableOKButton();
 	QApplication::setOverrideCursor(Qt::BusyCursor);
 
@@ -179,7 +181,8 @@ SessionDialog::Authenticate()
 	connect(m_watcher, SIGNAL(finished()),
 		this, SLOT(CheckAuthenticationResponse()));
 	QFuture<ds3_get_bucket_response*> future = m_client->GetBucket(anyBucket,
-								       "", "");
+								       "", "",
+								       true);
 	m_watcher->setFuture(future);
 }
 
@@ -222,6 +225,7 @@ SessionDialog::CheckAuthenticationResponse()
 		}
 	}
 	catch (DS3Error& e) {
+		QString logPrefix = "Failed to authenticate session - ";
 		QString msg;
 		switch (e.GetStatusCode()) {
 		case 403:
@@ -229,6 +233,7 @@ SessionDialog::CheckAuthenticationResponse()
 			m_accessIdLabel->setStyleSheet("QLabel { color: red; }");
 			m_secretKeyLabel->setStyleSheet("QLabel { color: red; }");
 			m_baseErrorLabel->setText(msg);
+			LOG_ERROR(logPrefix + msg);
 			m_form->addWidget(m_baseErrorLabel, 0, 0, 1, 3);
 			break;
 		case 404:
@@ -240,11 +245,13 @@ SessionDialog::CheckAuthenticationResponse()
 		default:
 			msg = e.ToString();
 			m_baseErrorLabel->setText(msg);
+			LOG_ERROR(logPrefix + msg);
 			m_form->addWidget(m_baseErrorLabel, 0, 0, 1, 3);
 		}
 	}
 
 	if (authenticated) {
+		LOG_INFO("Session authenticated");
 		SaveSession();
 	}
 	QApplication::restoreOverrideCursor();

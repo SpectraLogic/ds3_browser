@@ -54,7 +54,8 @@ public:
 	QFuture<ds3_get_service_response*> GetService();
 	QFuture<ds3_get_bucket_response*> GetBucket(const QString& bucketName,
 						    const QString& prefix,
-						    const QString& marker);
+						    const QString& marker,
+						    bool silent = false);
 
 	void CreateBucket(const QString& name);
 
@@ -86,7 +87,8 @@ private:
 	ds3_get_bucket_response* DoGetBucket(const QString& bucketName,
 					     const QString& prefix,
 					     const QString& delimiter,
-					     const QString& marker);
+					     const QString& marker,
+					     bool silent = false);
 
 	void PrepareBulkGets(BulkGetWorkItem* workItem);
 	void DoBulkGet(BulkGetWorkItem* workItem);
