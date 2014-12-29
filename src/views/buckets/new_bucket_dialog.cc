@@ -21,7 +21,6 @@
 
 NewBucketDialog::NewBucketDialog(Client* client, QWidget* parent)
 	: Dialog(parent),
-	  m_baseErrorLabel(NULL),
 	  m_client(client)
 {
 	setWindowTitle("New Bucket");

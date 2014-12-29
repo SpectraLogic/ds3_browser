@@ -17,6 +17,7 @@
 #include <QDateTime>
 #include <QFuture>
 #include <QIcon>
+#include <QModelIndex>
 #include <QSet>
 
 #include "helpers/number_helper.h"

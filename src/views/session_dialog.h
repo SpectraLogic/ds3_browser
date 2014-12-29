@@ -25,7 +25,8 @@
 #include "models/session.h"
 #include "views/dialog.h"
 
-class Session;
+class Client;
+class GetBucketWatcher;
 
 // SessionDialog, a dialog to gather host/user information when creating
 // a new host<->DS3 System session.
@@ -35,6 +36,7 @@ class SessionDialog : public Dialog
 
 public:
 	SessionDialog(QWidget* parent = 0);
+	~SessionDialog();
 
 	const Session& GetSession() const;
 
@@ -44,6 +46,7 @@ public slots:
 private:
 	void LoadSession();
 	void UpdateSession();
+	void Authenticate();
 	void SaveSession();
 
 	QLabel* m_hostLabel;
@@ -62,7 +65,12 @@ private:
 
 	QCheckBox* m_saveSessionCheckBox;
 
+	Client* m_client;
 	Session m_session;
+	GetBucketWatcher* m_watcher;
+
+private slots:
+	void CheckAuthenticationResponse();
 };
 
 inline const Session&

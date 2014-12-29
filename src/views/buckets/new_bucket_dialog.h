@@ -43,7 +43,6 @@ private:
 
 	QLabel* m_bucketLabel;
 	QLabel* m_bucketErrorLabel;
-	QLabel* m_baseErrorLabel;
 	QLineEdit* m_bucketLineEdit;
 
 	Client* m_client;

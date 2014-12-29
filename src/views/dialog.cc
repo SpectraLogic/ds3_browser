@@ -14,12 +14,14 @@
  * *****************************************************************************
  */
 
+#include <QPushButton>
 #include "views/dialog.h"
 
 Dialog::Dialog(QWidget* parent)
 	: QDialog(parent),
 	  m_layout(new QVBoxLayout),
-	  m_form(new QGridLayout)
+	  m_form(new QGridLayout),
+	  m_baseErrorLabel(NULL)
 {
 	m_buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok
 					   | QDialogButtonBox::Cancel);
@@ -39,6 +41,20 @@ void
 Dialog::Reject()
 {
 	reject();
+}
+
+void
+Dialog::EnableOKButton()
+{
+	QPushButton* button = m_buttonBox->button(QDialogButtonBox::Ok);
+	button->setEnabled(true);
+}
+
+void
+Dialog::DisableOKButton()
+{
+	QPushButton* button = m_buttonBox->button(QDialogButtonBox::Ok);
+	button->setEnabled(false);
 }
 
 bool

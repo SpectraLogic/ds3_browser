@@ -15,8 +15,12 @@
  */
 
 #include <Qt> // Needed for QComboBox's use Qt::MatchFlags
+#include <QApplication>
 #include <QSettings>
 
+#include "lib/client.h"
+#include "lib/logger.h"
+#include "lib/watchers/get_bucket_watcher.h"
 #include "views/session_dialog.h"
 
 SessionDialog::SessionDialog(QWidget* parent)
@@ -25,7 +29,9 @@ SessionDialog::SessionDialog(QWidget* parent)
 	  m_portComboBox(new QComboBox),
 	  m_proxyLineEdit(new QLineEdit),
 	  m_accessIdLineEdit(new QLineEdit),
-	  m_secretKeyLineEdit(new QLineEdit)
+	  m_secretKeyLineEdit(new QLineEdit),
+	  m_client(NULL),
+	  m_watcher(NULL)
 {
 	setWindowTitle("New Spectra Logic DS3 Session");
 
@@ -72,9 +78,26 @@ SessionDialog::SessionDialog(QWidget* parent)
 	LoadSession();
 }
 
+SessionDialog::~SessionDialog()
+{
+	if (m_client != NULL) {
+		delete m_client;
+	}
+	if (m_watcher != NULL) {
+		delete m_watcher;
+	}
+}
+
 void
 SessionDialog::Accept()
 {
+	if (m_baseErrorLabel == NULL) {
+		m_baseErrorLabel = new QLabel;
+		m_baseErrorLabel->setStyleSheet("QLabel { color: red; }");
+	} else {
+		m_baseErrorLabel->setText("");
+		m_form->removeWidget(m_baseErrorLabel);
+	}
 	bool valid = ValidateLineEditNotEmpty(m_hostLabel,
 					      m_hostLineEdit,
 					      m_hostErrorLabel);
@@ -89,8 +112,7 @@ SessionDialog::Accept()
 	}
 
 	UpdateSession();
-	SaveSession();
-	accept();
+	Authenticate();
 }
 
 void
@@ -137,6 +159,31 @@ SessionDialog::UpdateSession()
 }
 
 void
+SessionDialog::Authenticate()
+{
+	DisableOKButton();
+	QApplication::setOverrideCursor(Qt::BusyCursor);
+
+	if (m_client != NULL) {
+		delete m_client;
+	}
+	m_client = new Client(&m_session);
+
+	if (m_watcher != NULL) {
+		delete m_watcher;
+	}
+	QString anyBucket = "authenticate_ds3_explorer_user_by_getting_any_" \
+			    "bucket_just_to_verify_the_credentials_" \
+			    "the_bucket_does_not_have_to_exist";
+	m_watcher = new GetBucketWatcher(QModelIndex(), anyBucket, "");
+	connect(m_watcher, SIGNAL(finished()),
+		this, SLOT(CheckAuthenticationResponse()));
+	QFuture<ds3_get_bucket_response*> future = m_client->GetBucket(anyBucket,
+								       "", "");
+	m_watcher->setFuture(future);
+}
+
+void
 SessionDialog::SaveSession()
 {
 	// TODO If/when this is updated to support saving multiple sessions,
@@ -156,4 +203,53 @@ SessionDialog::SaveSession()
 		settings.remove("");
 	}
 	settings.endArray();
+}
+
+void
+SessionDialog::CheckAuthenticationResponse()
+{
+	bool authenticated = false;
+	try {
+		ds3_get_bucket_response* response = m_watcher->result();
+		if (response) {
+			// Will most likely never get here since the bucket
+			// we're GET'ing will almost certainly never really
+			// exist but it's theoretically possible that it can.
+			// Thus, it's automatically.
+			authenticated = true;
+
+			ds3_free_bucket_response(response);
+		}
+	}
+	catch (DS3Error& e) {
+		QString msg;
+		switch (e.GetStatusCode()) {
+		case 403:
+			msg = "Invalid S3 Access ID or S3 Secret Key";
+			m_accessIdLabel->setStyleSheet("QLabel { color: red; }");
+			m_secretKeyLabel->setStyleSheet("QLabel { color: red; }");
+			m_baseErrorLabel->setText(msg);
+			m_form->addWidget(m_baseErrorLabel, 0, 0, 1, 3);
+			break;
+		case 404:
+			// Bucket not found is the correct response in this
+			// case.  A 403 would have been sent back if the
+			// credentials were invalid.
+			authenticated = true;
+			break;
+		default:
+			msg = e.ToString();
+			m_baseErrorLabel->setText(msg);
+			m_form->addWidget(m_baseErrorLabel, 0, 0, 1, 3);
+		}
+	}
+
+	if (authenticated) {
+		SaveSession();
+	}
+	QApplication::restoreOverrideCursor();
+	EnableOKButton();
+	if (authenticated) {
+		accept();
+	}
 }

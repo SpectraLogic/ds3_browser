@@ -37,12 +37,15 @@ public slots:
 	void Reject();
 
 protected:
+	void EnableOKButton();
+	void DisableOKButton();
 	bool ValidateLineEditNotEmpty(QLabel* label,
 				      QLineEdit* lineEdit,
 				      QLabel* errorLabel);
 
 	QVBoxLayout* m_layout;
 	QGridLayout* m_form;
+	QLabel* m_baseErrorLabel;
 	QDialogButtonBox* m_buttonBox;
 };
 
