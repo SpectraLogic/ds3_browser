@@ -37,14 +37,14 @@ class MainWindow : public QMainWindow
 public:
 	MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
 
-	inline bool IsFinished() const;
+	int GetNumActiveJobs() const;
+	bool IsFinished() const;
 
 protected:
 	void closeEvent(QCloseEvent* event);
 
 private:
 	void ReadSettings();
-
 	Session* CreateSession();
 	void CreateMenus();
 

@@ -51,6 +51,8 @@ public:
 
 	QString GetEndpoint() const;
 
+	int GetNumActiveJobs() const;
+
 	QFuture<ds3_get_service_response*> GetService();
 	QFuture<ds3_get_bucket_response*> GetBucket(const QString& bucketName,
 						    const QString& prefix,
@@ -109,7 +111,7 @@ private:
 	ds3_creds* m_creds;
 	ds3_client* m_client;
 	QHash<QUuid, BulkWorkItem*> m_bulkWorkItems;
-	QMutex m_bulkWorkItemsLock;
+	mutable QMutex m_bulkWorkItemsLock;
 
 public:
 	// Meant to be private but called from the C SDK callback function

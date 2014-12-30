@@ -36,6 +36,8 @@ public:
 	SessionView(Session* session, JobsView* jobsView, QWidget* parent = 0);
 	~SessionView();
 
+	int GetNumActiveJobs() const;
+
 private:
 	DS3Browser* m_ds3Browser;
 	HostBrowser* m_hostBrowser;

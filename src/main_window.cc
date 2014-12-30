@@ -14,9 +14,14 @@
  * *****************************************************************************
  */
 
+#include <QApplication>
+#include <QCloseEvent>
+#include <QDialog>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QSettings>
+
+#include "lib/logger.h"
 
 #include "main_window.h"
 #include "models/session.h"
@@ -65,9 +70,37 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 	ReadSettings();
 }
 
+int
+MainWindow::GetNumActiveJobs() const
+{
+	int num = 0;
+	for (int i = 0; i < m_sessionViews.size(); i++) {
+		num += m_sessionViews[i]->GetNumActiveJobs();
+	}
+	return num;
+}
+
 void
 MainWindow::closeEvent(QCloseEvent* event)
 {
+	if (GetNumActiveJobs() > 0) {
+		QString title = "Active Jobs In Progress";
+		QString msg = "There are active jobs still in progress.  " \
+			      "Are you sure wish to cancel those jobs and " \
+			      "quit the applcation?";
+		QMessageBox::StandardButton ret;
+		ret = QMessageBox::warning(this, title, msg,
+					   QMessageBox::Ok |
+					   QMessageBox::Cancel,
+					   QMessageBox::Cancel);
+		if (ret == QMessageBox::Ok) {
+			// TODO cancel all active jobs
+		} else {
+			event->ignore();
+			return;
+		}
+	}
+
 	QSettings settings;
 	settings.setValue("mainWindow/geometry", saveGeometry());
 	settings.setValue("mainWindow/windowState", saveState());

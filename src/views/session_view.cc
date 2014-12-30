@@ -50,3 +50,9 @@ SessionView::~SessionView()
 	delete m_client;
 	delete m_session;
 }
+
+int
+SessionView::GetNumActiveJobs() const
+{
+	return m_client->GetNumActiveJobs();
+}

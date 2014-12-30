@@ -77,6 +77,15 @@ Client::~Client()
 	ds3_cleanup();
 }
 
+int
+Client::GetNumActiveJobs() const
+{
+	m_bulkWorkItemsLock.lock();
+	int size = m_bulkWorkItems.size();
+	m_bulkWorkItemsLock.unlock();
+	return size;
+}
+
 QFuture<ds3_get_service_response*>
 Client::GetService()
 {
