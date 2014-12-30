@@ -20,6 +20,7 @@
 #include <QMainWindow>
 #include <QAction>
 #include <QDockWidget>
+#include <QList>
 #include <QMenu>
 #include <QTabWidget>
 #include <QScrollArea>
@@ -53,7 +54,7 @@ private:
 	QAction* m_aboutAction;
 
 	QTabWidget* m_sessionTabs;
-	SessionView* m_sessionView;
+	QList<SessionView*> m_sessionViews;
 
 	JobsView* m_jobsView;
 	QDockWidget* m_jobsDock;

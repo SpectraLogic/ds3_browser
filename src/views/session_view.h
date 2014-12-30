@@ -33,7 +33,7 @@ class Client;
 class SessionView : public QWidget
 {
 public:
-	SessionView(Session* session, JobsView* jobsView, QWidget* parent);
+	SessionView(Session* session, JobsView* jobsView, QWidget* parent = 0);
 	~SessionView();
 
 private:

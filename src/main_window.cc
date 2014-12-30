@@ -28,12 +28,13 @@
 MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags),
 	  m_isFinished(false),
-	  m_sessionTabs(new QTabWidget(this))
+	  m_sessionTabs(new QTabWidget(this)),
+	  m_jobsView(new JobsView(this))
 {
 	setWindowTitle("Spectra Logic DS3 Explorer");
 
 	Session* session = CreateSession();
-	if (session == 0)
+	if (session == NULL)
 	{
 		// User closed/cancelled the New Session dialog which should
 		// result in the application closing.
@@ -43,9 +44,10 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
 	CreateMenus();
 
+	setCentralWidget(m_sessionTabs);
+
 	m_jobsDock = new QDockWidget("Jobs", this);
 	m_jobsDock->setObjectName("jobs dock");
-	m_jobsView = new JobsView(this);
 	m_jobsScroll = new QScrollArea;
 	m_jobsScroll->setWidget(m_jobsView);
 	m_jobsScroll->setWidgetResizable(true);
@@ -59,11 +61,6 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
 	tabifyDockWidget(m_jobsDock, m_consoleDock);
 	setTabPosition(Qt::BottomDockWidgetArea, QTabWidget::North);
-
-	m_sessionView = new SessionView(session, m_jobsView, this);
-	m_sessionTabs->addTab(m_sessionView,
-			      session->GetHost());
-	setCentralWidget(m_sessionTabs);
 
 	ReadSettings();
 }
@@ -90,9 +87,14 @@ MainWindow::CreateSession()
 {
 	SessionDialog sessionDialog;
 	if (sessionDialog.exec() == QDialog::Rejected) {
-		return 0;
+		return NULL;
 	}
+
 	Session* session = new Session(sessionDialog.GetSession());
+	SessionView* sessionView = new SessionView(session, m_jobsView);
+	m_sessionViews << sessionView;
+	m_sessionTabs->addTab(sessionView, session->GetHost());
+
 	return session;
 }
 
