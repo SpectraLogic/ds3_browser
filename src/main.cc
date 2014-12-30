@@ -17,8 +17,8 @@
 #include <QApplication>
 #include <QFile>
 
-#include "views/console.h"
 #include "models/job.h"
+#include "views/console.h"
 
 #include "main_window.h"
 
