@@ -33,6 +33,7 @@ public:
 	virtual ~DS3Error() throw() {};
 
 	uint64_t GetStatusCode() const;
+	QString GetErrorBody() const;
 
 	QString ToString() const;
 
@@ -53,6 +54,12 @@ inline uint64_t
 DS3Error::GetStatusCode() const
 {
 	return m_statusCode;
+}
+
+inline QString
+DS3Error::GetErrorBody() const
+{
+	return m_errorBody;
 }
 
 #endif

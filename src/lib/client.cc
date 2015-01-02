@@ -740,8 +740,20 @@ Client::DoBulkPut(BulkPutWorkItem* workItem)
 	workItem->SetResponse(response);
 
 	if (error) {
-		throw (DS3Error(error));
+		DS3Error ds3Error(error);
 		ds3_free_error(error);
+		QString errorMsg = "Error uploading objects to server: ";;
+		if (ds3Error.GetStatusCode() == 409) {
+			errorMsg += "one or more of the objects already " \
+				    "exist and objects cannot be replaced";
+		} else {
+			errorMsg += ds3Error.ToString();
+		}
+		errorMsg += ".  Canceling job.";
+		LOG_ERROR(errorMsg);
+		workItem->SetResponse(NULL);
+		DeleteOrRequeueBulkWorkItem(workItem);
+		return;
 	}
 
 	if (response == NULL || (response != NULL && response->list_size == 0)) {
