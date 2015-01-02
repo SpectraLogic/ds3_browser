@@ -39,6 +39,10 @@ HostBrowserModel::dropMimeData(const QMimeData* data,
 			       const QModelIndex& parentIndex)
 {
 	const MimeData* mimeData = qobject_cast<const MimeData*>(data);
+	if (!mimeData) {
+		// Could happen when you drag a file onto itself
+		return false;
+	}
 	if (!mimeData->HasDS3URLs()) {
 		return QFileSystemModel::dropMimeData(data, action, row, column, parentIndex);
 	}
