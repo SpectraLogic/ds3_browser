@@ -152,6 +152,9 @@ MainWindow::CancelActiveJobs()
 	for (int i = 0; i < m_sessionViews.size(); i++) {
 		m_sessionViews[i]->CancelActiveJobs();
 	}
+	// All jobs are currently run via QtConcurrent::run, which uses
+	// the global thread pool.  This will need to be modified if certain
+	// job tasks are ever switched to using a custom thread pool.
 	bool ret = QThreadPool::globalInstance()->waitForDone(CANCEL_JOBS_TIMEOUT_IN_MS);
 	if (!ret) {
 		LOG_ERROR("Timed out waiting for all jobs to stop");
