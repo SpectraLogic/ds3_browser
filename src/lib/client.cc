@@ -86,6 +86,23 @@ Client::GetNumActiveJobs() const
 	return size;
 }
 
+void
+Client::CancelActiveJobs()
+{
+	m_bulkWorkItemsLock.lock();
+	QHashIterator<QUuid, BulkWorkItem*> i(m_bulkWorkItems);
+	while (i.hasNext()) {
+		i.next();
+		BulkWorkItem* workItem = i.value();
+		Job::State state = workItem->GetState();
+		if (state != Job::CANCELING && state != Job::CANCELED &&
+		    state != Job::FINISHED) {
+			workItem->SetState(Job::CANCELING);
+		}
+	}
+	m_bulkWorkItemsLock.unlock();
+}
+
 QFuture<ds3_get_service_response*>
 Client::GetService()
 {

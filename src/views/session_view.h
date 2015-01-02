@@ -37,6 +37,7 @@ public:
 	~SessionView();
 
 	int GetNumActiveJobs() const;
+	void CancelActiveJobs();
 
 private:
 	DS3Browser* m_ds3Browser;

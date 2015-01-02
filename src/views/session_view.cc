@@ -56,3 +56,9 @@ SessionView::GetNumActiveJobs() const
 {
 	return m_client->GetNumActiveJobs();
 }
+
+void
+SessionView::CancelActiveJobs()
+{
+	m_client->CancelActiveJobs();
+}

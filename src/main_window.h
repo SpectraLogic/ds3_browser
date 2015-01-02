@@ -35,6 +35,8 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 
 public:
+	static const int CANCEL_JOBS_TIMEOUT_IN_MS;
+
 	MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
 
 	int GetNumActiveJobs() const;
@@ -47,6 +49,7 @@ private:
 	void ReadSettings();
 	Session* CreateSession();
 	void CreateMenus();
+	void CancelActiveJobs();
 
 	bool m_isFinished;
 

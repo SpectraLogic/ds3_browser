@@ -20,6 +20,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QSettings>
+#include <QThreadPool>
 
 #include "lib/logger.h"
 
@@ -29,6 +30,8 @@
 #include "views/jobs_view.h"
 #include "views/session_dialog.h"
 #include "views/session_view.h"
+
+const int MainWindow::CANCEL_JOBS_TIMEOUT_IN_MS = 30000;
 
 MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags),
@@ -94,7 +97,7 @@ MainWindow::closeEvent(QCloseEvent* event)
 					   QMessageBox::Cancel,
 					   QMessageBox::Cancel);
 		if (ret == QMessageBox::Ok) {
-			// TODO cancel all active jobs
+			CancelActiveJobs();
 		} else {
 			event->ignore();
 			return;
@@ -141,6 +144,18 @@ MainWindow::CreateMenus()
 	m_helpMenu->addAction(m_aboutAction);
 
 	menuBar()->addMenu(m_helpMenu);
+}
+
+void
+MainWindow::CancelActiveJobs()
+{
+	for (int i = 0; i < m_sessionViews.size(); i++) {
+		m_sessionViews[i]->CancelActiveJobs();
+	}
+	bool ret = QThreadPool::globalInstance()->waitForDone(CANCEL_JOBS_TIMEOUT_IN_MS);
+	if (!ret) {
+		LOG_ERROR("Timed out waiting for all jobs to stop");
+	}
 }
 
 void

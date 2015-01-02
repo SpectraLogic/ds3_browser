@@ -52,6 +52,7 @@ public:
 	QString GetEndpoint() const;
 
 	int GetNumActiveJobs() const;
+	void CancelActiveJobs();
 
 	QFuture<ds3_get_service_response*> GetService();
 	QFuture<ds3_get_bucket_response*> GetBucket(const QString& bucketName,
