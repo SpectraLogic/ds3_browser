@@ -37,10 +37,16 @@ SOURCES += src/main.cc
 RESOURCES = ds3_explorer.qrc
 
 macx {
+	ICON = resources/icons/ds3_explorer.icns
+
 	# Qt should normally find its default Info.plist.app file, however, a
 	# bug appears to make it unable to find it when running qmake from a
 	# build directory.  Thus, the default Info.plist.app file has been
 	# copied to this provject and is specified.  We might want to have our
 	# own custom Info.plist file anyway.
-	QMAKE_INFO_PLIST=src/mac/Info.plist.app
+	QMAKE_INFO_PLIST = src/mac/Info.plist.app
+}
+
+win32 {
+	RC_FILE = ds3_explorer.rc
 }
