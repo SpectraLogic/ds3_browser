@@ -28,7 +28,7 @@ class Console : public QWidget
 	Q_OBJECT
 
 public:
-	enum Level { DEBUG, INFO, WARNING, ERROR };
+	enum Level { DEBUG, INFO, WARNING, ERR };
 	static const QString LEVEL_COLORS[];
 	static const unsigned int MAX_LINES;
 

@@ -48,5 +48,10 @@ macx {
 }
 
 win32 {
+	# Fix a qdatetime.h: warning C4003: not enough actual parameters for
+	# macro compile error on Windows.
+	# See http://qt-project.org/forums/viewthread/22133
+	DEFINES += NOMINMAX
+
 	RC_FILE = ds3_explorer.rc
 }

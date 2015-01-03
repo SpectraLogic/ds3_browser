@@ -77,7 +77,7 @@ Console::LogPrivate(int level, const QString& msg)
 	case WARNING:
 		color = QColor(175, 175, 0);
 		break;
-	case ERROR:
+	case ERR:
 		color = QColor("Red");
 		break;
 	};

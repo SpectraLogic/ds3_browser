@@ -553,7 +553,7 @@ Client::ProcessGetJobChunk(BulkGetWorkItem* workItem)
 			if (errMsg.isEmpty()) {
 				LOG_INFO("Next bulk get job chunk not ready yet.");
 			}
-			sleep(retryAfter);
+			QThread::sleep(retryAfter);
 		}
 	}
 
@@ -799,7 +799,7 @@ Client::ProcessPutJobChunk(BulkPutWorkItem* workItem)
 			}
 			// Sleep for "retry-later" seconds that's in the
 			// response once the C SDK supports it.
-			sleep(60);
+			QThread::sleep(60);
 		}
 	}
 

@@ -30,7 +30,7 @@
 #include "models/ds3_browser_model.h"
 
 // Must match m_rootItem->m_data;
-enum Column { NAME, OWNER, SIZE, KIND, CREATED, COUNT };
+enum Column { NAME, OWNER, SIZE_COL, KIND, CREATED, COUNT };
 
 static const QString REST_TIMESTAMP_FORMAT = "yyyy-MM-ddThh:mm:ss.000Z";
 static const QString VIEW_TIMESTAMP_FORMAT = "MMMM d, yyyy h:mm AP";
@@ -186,7 +186,7 @@ QVariant
 DS3BrowserItem::GetData(int column) const
 {
 	QVariant data = m_data.value(column);
-	if (column == SIZE && data != "Size" && data != "--") {
+	if (column == SIZE_COL && data != "Size" && data != "--") {
 		qulonglong size = data.toULongLong();
 		data = QVariant(NumberHelper::ToHumanSize(size));
 	}
