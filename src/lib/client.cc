@@ -751,8 +751,16 @@ Client::DoBulkPut(BulkPutWorkItem* workItem)
 		ds3_free_error(error);
 		QString errorMsg = "Error uploading objects to server: ";;
 		if (ds3Error.GetStatusCode() == 409) {
-			errorMsg += "one or more of the objects already " \
-				    "exist and objects cannot be replaced";
+			QString body = ds3Error.GetErrorBody();
+			QRegExp rx(", ([^\\)]+)\\) already exists");
+			if (rx.indexIn(body, 0) != -1) {
+				errorMsg += rx.cap(1) + " already exists " \
+					    "and objects cannot be replaced";
+			} else {
+				errorMsg += "one or more of the objects " \
+					    "already exist and objects " \
+					    "cannot be replaced";
+			}
 		} else {
 			errorMsg += ds3Error.ToString();
 		}
