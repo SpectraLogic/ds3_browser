@@ -196,6 +196,7 @@ Client::GetObject(const QString& bucket,
 		// TODO Pop up a dialog asking them if they want to skip
 		//      or replace the file.
 		LOG_ERROR(fileName + " already exists.  Skipping");
+		return;
 	}
 
 	ds3_request* request = ds3_init_get_object(bucket.toUtf8().constData(),
