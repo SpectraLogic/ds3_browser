@@ -697,26 +697,6 @@ DS3BrowserModel::FetchMoreObjects(const QModelIndex& parent)
 }
 
 void
-DS3BrowserModel::RemoveLoadingItem(const QModelIndex& parent)
-{
-	DS3BrowserItem* parentItem;
-	if (parent.isValid()) {
-		parentItem = IndexToItem(parent);
-	} else {
-		parentItem = m_rootItem;
-	}
-
-	// The "Loading..." row should always be the last one
-	int lastRow = parentItem->GetChildCount() - 1;
-	if (lastRow >= 0) {
-		DS3BrowserItem* lastChildItem = parentItem->GetChild(lastRow);
-		if (lastChildItem->IsLoadingItem()) {
-			removeRow(lastRow, parent);
-		}
-	}
-}
-
-void
 DS3BrowserModel::HandleGetServiceResponse()
 {
 	LOG_DEBUG("HandleGetServiceResponse");
