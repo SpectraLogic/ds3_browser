@@ -640,14 +640,18 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 		QUrl url(*ui);
 
 		QUrl lastUrl = workItem->GetLastProcessedUrl();
-		if (!lastUrl.isEmpty() &&
-		    url.toString().startsWith(lastUrl.toString())) {
-			// This URL is either the same as or a descendant of
-			// the previously processed URL.  Since we would
-			// have already prepared to transfer all descendents of
-			// the previously processed URL, this one can be
-			// skipped.
-			continue;
+		if (!lastUrl.isEmpty()) {
+			QString lastUrlS = lastUrl.toString();
+			lastUrlS.replace(QRegExp("/$"), "");
+			lastUrlS += "/";
+			if (url.toString().startsWith(lastUrlS)) {
+				// This URL is either the same as or a
+				// descendant of the previously processed URL.
+				// Since we would have already prepared to
+				// transfer all descendents of the previously
+				// processed URL, this one can be skipped.
+				continue;
+			}
 		}
 
 		if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT) {
