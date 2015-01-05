@@ -192,6 +192,12 @@ Client::GetObject(const QString& bucket,
 		}
 	}
 
+	if (QFile(fileName).exists()) {
+		// TODO Pop up a dialog asking them if they want to skip
+		//      or replace the file.
+		LOG_ERROR(fileName + " already exists.  Skipping");
+	}
+
 	ds3_request* request = ds3_init_get_object(bucket.toUtf8().constData(),
 						   object.toUtf8().constData());
 	ds3_error* error = NULL;
