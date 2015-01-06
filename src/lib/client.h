@@ -94,13 +94,13 @@ private:
 					     bool silent = false);
 
 	void PrepareBulkGets(BulkGetWorkItem* workItem);
-	void DoBulkGet(BulkGetWorkItem* workItem);
+	void PrepareBulkPuts(BulkPutWorkItem* workItem);
+	void DoBulk(BulkWorkItem* workItem);
+
 	void CreateBulkGetDirs(BulkGetWorkItem* workItem);
 	void ProcessGetJobChunk(BulkGetWorkItem* workItem);
 	ds3_get_available_chunks_response* GetAvailableJobChunks(BulkGetWorkItem* bulkGetWorkItem);
 
-	void PrepareBulkPuts(BulkPutWorkItem* workItem);
-	void DoBulkPut(BulkPutWorkItem* workItem);
 	void ProcessPutJobChunk(BulkPutWorkItem* workItem);
 	ds3_allocate_chunk_response* AllocateJobChunk(const char* chunkID);
 

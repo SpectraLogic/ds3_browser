@@ -382,7 +382,7 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 		QString bucket = url.GetBucketName();
 		if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT ||
 		    (!prevBucket.isEmpty() && prevBucket != bucket)) {
-			run(this, &Client::DoBulkGet, workItem);
+			run(this, &Client::DoBulk, workItem);
 			return;
 		}
 		workItem->SetBucketName(bucket);
@@ -427,7 +427,7 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 					if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT) {
 						workItem->SetGetBucketResponse(getBucketRes);
 						workItem->SetGetBucketResponseIterator(i);
-						run(this, &Client::DoBulkGet, workItem);
+						run(this, &Client::DoBulk, workItem);
 						return;
 					}
 					ds3_object rawObject = getBucketRes->objects[i];
@@ -455,7 +455,7 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 	}
 
 	if (workItem->GetObjMapSize() > 0) {
-		run(this, &Client::DoBulkGet, workItem);
+		run(this, &Client::DoBulk, workItem);
 	} else {
 		CreateBulkGetDirs(workItem);
 		DeleteOrRequeueBulkWorkItem(workItem);
@@ -463,17 +463,111 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 }
 
 void
-Client::DoBulkGet(BulkGetWorkItem* workItem)
+Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 {
-	LOG_DEBUG("DoBulkGets");
+	LOG_DEBUG("PrepareBulkPuts");
+
+	workItem->SetState(Job::PREPARING);
+	Job job = workItem->ToJob();
+	emit JobProgressUpdate(job);
+
+	workItem->ClearObjMap();
+	QString normPrefix = workItem->GetPrefix();
+	if (!normPrefix.isEmpty()) {
+		normPrefix.replace(QRegExp("/$"), "");
+		normPrefix += "/";
+	}
+
+	for (QList<QUrl>::const_iterator& ui(workItem->GetUrlsIterator());
+	     ui != workItem->GetUrlsConstEnd();
+	     ui++) {
+		if (workItem->WasCanceled()) {
+			DeleteOrRequeueBulkWorkItem(workItem);
+			return;
+		}
+		QUrl url(*ui);
+
+		QUrl lastUrl = workItem->GetLastProcessedUrl();
+		if (!lastUrl.isEmpty()) {
+			QString lastUrlS = lastUrl.toString();
+			lastUrlS.replace(QRegExp("/$"), "");
+			lastUrlS += "/";
+			if (url.toString().startsWith(lastUrlS)) {
+				// This URL is either the same as or a
+				// descendant of the previously processed URL.
+				// Since we would have already prepared to
+				// transfer all descendents of the previously
+				// processed URL, this one can be skipped.
+				continue;
+			}
+		}
+
+		if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT) {
+			run(this, &Client::DoBulk, workItem);
+			return;
+		}
+		QString filePath = url.toLocalFile();
+		// filePath could be either /foo or /foo/ if it's a directory.
+		// Run it through QDir to normalize it to the former.
+		filePath = QDir(filePath).path();
+		QFileInfo fileInfo(filePath);
+		QString fileName = fileInfo.fileName();
+		QString objName = normPrefix + fileName;
+		if (fileInfo.isDir()) {
+			objName += "/";
+
+			// An existing DirIterator must have been caused by
+			// a previous BulkPut "page" that returned early while
+			// iterating over files under this URL.  Thus, take
+			// over where it left off.
+			QDirIterator* di = workItem->GetDirIterator();
+			if (di == NULL) {
+				di = workItem->GetDirIterator(filePath);
+			}
+			while (di->hasNext()) {
+				if (workItem->WasCanceled()) {
+					DeleteOrRequeueBulkWorkItem(workItem);
+					return;
+				}
+				if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT) {
+					run(this, &Client::DoBulk, workItem);
+					return;
+				}
+				QString subFilePath = di->next();
+				QFileInfo subFileInfo = di->fileInfo();
+				QString subFileName = subFilePath;
+				subFileName.replace(QRegExp("^" + filePath + "/"), "");
+				QString subObjName = objName + subFileName;
+				if (subFileInfo.isDir()) {
+					subObjName += "/";
+				}
+				workItem->InsertObjMap(subObjName, subFilePath);
+			}
+			workItem->DeleteDirIterator();
+		}
+		workItem->InsertObjMap(objName, filePath);
+		workItem->SetLastProcessedUrl(*ui);
+	}
+
+	if (workItem->GetObjMapSize() > 0) {
+		run(this, &Client::DoBulk, workItem);
+	}
+}
+
+void
+Client::DoBulk(BulkWorkItem* workItem)
+{
+	LOG_DEBUG("DoBulk");
 
 	workItem->SetState(Job::INPROGRESS);
 	workItem->SetTransferStartIfNull();
 	Job job = workItem->ToJob();
 	emit JobProgressUpdate(job);
 
-	uint64_t numObjs = workItem->GetObjMapSize();
-	ds3_bulk_object_list *bulkObjList = ds3_init_bulk_object_list(numObjs);
+	uint64_t numFiles = workItem->GetObjMapSize();
+	ds3_bulk_object_list *bulkObjList = ds3_init_bulk_object_list(numFiles);
+
+	bool isGet = workItem->GetType() == Job::GET;
 
 	QHash<QString, QString>::const_iterator hi;
 	size_t i = 0;
@@ -485,11 +579,24 @@ Client::DoBulkGet(BulkGetWorkItem* workItem)
 		QString filePath = hi.value();
 		QFileInfo fileInfo(filePath);
 		bulkObj->name = ds3_str_init(objName.toUtf8().constData());
+		if (!isGet) {
+			uint64_t fileSize = 0;
+			if (!fileInfo.isDir()) {
+				fileSize = fileInfo.size();
+			}
+			bulkObj->length = fileSize;
+			bulkObj->offset = 0;
+		}
 		i++;
 	}
 
 	const QString& bucketName = workItem->GetBucketName();
-	ds3_request* request = ds3_init_get_bulk(bucketName.toUtf8().constData(), bulkObjList, NONE);
+	ds3_request* request;
+	if (isGet) {
+		request = ds3_init_get_bulk(bucketName.toUtf8().constData(), bulkObjList, NONE);
+	} else {
+		request = ds3_init_put_bulk(bucketName.toUtf8().constData(), bulkObjList);
+	}
 	ds3_bulk_response *response = NULL;
 	ds3_error* error = ds3_bulk(m_client, request, &response);
 	ds3_free_request(request);
@@ -498,18 +605,48 @@ Client::DoBulkGet(BulkGetWorkItem* workItem)
 	workItem->SetNumChunksProcessed(0);
 
 	if (error) {
-		throw (DS3Error(error));
+		if (isGet) {
+			throw (DS3Error(error));
+		} else {
+			DS3Error ds3Error(error);
+			QString errorMsg = "Error uploading objects to server: ";
+			if (ds3Error.GetStatusCode() == 409) {
+				QString body = ds3Error.GetErrorBody();
+				QRegExp rx(", ([^\\)]+)\\) already exists");
+				if (rx.indexIn(body, 0) != -1) {
+					errorMsg += rx.cap(1) + " already exists " \
+						    "and objects cannot be replaced";
+				} else {
+					errorMsg += "one or more of the objects " \
+						    "already exist and objects " \
+						    "cannot be replaced";
+				}
+			} else {
+				errorMsg += ds3Error.ToString();
+			}
+			errorMsg += ".  Canceling job.";
+			LOG_ERROR(errorMsg);
+			workItem->SetResponse(NULL);
+			DeleteOrRequeueBulkWorkItem(workItem);
+			return;
+		}
 		ds3_free_error(error);
 	}
 
-	CreateBulkGetDirs(workItem);
+	if (isGet) {
+		CreateBulkGetDirs(static_cast<BulkGetWorkItem*>(workItem));
+	}
 
 	if (response == NULL || (response != NULL && response->list_size == 0)) {
 		DeleteOrRequeueBulkWorkItem(workItem);
 		return;
 	}
 
-	ProcessGetJobChunk(workItem);
+	if (isGet) {
+		ProcessGetJobChunk(static_cast<BulkGetWorkItem*>(workItem));
+	} else {
+		ProcessPutJobChunk(static_cast<BulkPutWorkItem*>(workItem));
+	}
 }
 
 void
@@ -609,172 +746,6 @@ Client::GetAvailableJobChunks(BulkGetWorkItem* workItem)
 	}
 
 	return chunkResponse;
-}
-
-void
-Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
-{
-	LOG_DEBUG("PrepareBulkPuts");
-
-	workItem->SetState(Job::PREPARING);
-	Job job = workItem->ToJob();
-	emit JobProgressUpdate(job);
-
-	workItem->ClearObjMap();
-	QString normPrefix = workItem->GetPrefix();
-	if (!normPrefix.isEmpty()) {
-		normPrefix.replace(QRegExp("/$"), "");
-		normPrefix += "/";
-	}
-
-	for (QList<QUrl>::const_iterator& ui(workItem->GetUrlsIterator());
-	     ui != workItem->GetUrlsConstEnd();
-	     ui++) {
-		if (workItem->WasCanceled()) {
-			DeleteOrRequeueBulkWorkItem(workItem);
-			return;
-		}
-		QUrl url(*ui);
-
-		QUrl lastUrl = workItem->GetLastProcessedUrl();
-		if (!lastUrl.isEmpty()) {
-			QString lastUrlS = lastUrl.toString();
-			lastUrlS.replace(QRegExp("/$"), "");
-			lastUrlS += "/";
-			if (url.toString().startsWith(lastUrlS)) {
-				// This URL is either the same as or a
-				// descendant of the previously processed URL.
-				// Since we would have already prepared to
-				// transfer all descendents of the previously
-				// processed URL, this one can be skipped.
-				continue;
-			}
-		}
-
-		if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT) {
-			run(this, &Client::DoBulkPut, workItem);
-			return;
-		}
-		QString filePath = url.toLocalFile();
-		// filePath could be either /foo or /foo/ if it's a directory.
-		// Run it through QDir to normalize it to the former.
-		filePath = QDir(filePath).path();
-		QFileInfo fileInfo(filePath);
-		QString fileName = fileInfo.fileName();
-		QString objName = normPrefix + fileName;
-		if (fileInfo.isDir()) {
-			objName += "/";
-
-			// An existing DirIterator must have been caused by
-			// a previous BulkPut "page" that returned early while
-			// iterating over files under this URL.  Thus, take
-			// over where it left off.
-			QDirIterator* di = workItem->GetDirIterator();
-			if (di == NULL) {
-				di = workItem->GetDirIterator(filePath);
-			}
-			while (di->hasNext()) {
-				if (workItem->WasCanceled()) {
-					DeleteOrRequeueBulkWorkItem(workItem);
-					return;
-				}
-				if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT) {
-					run(this, &Client::DoBulkPut, workItem);
-					return;
-				}
-				QString subFilePath = di->next();
-				QFileInfo subFileInfo = di->fileInfo();
-				QString subFileName = subFilePath;
-				subFileName.replace(QRegExp("^" + filePath + "/"), "");
-				QString subObjName = objName + subFileName;
-				if (subFileInfo.isDir()) {
-					subObjName += "/";
-				}
-				workItem->InsertObjMap(subObjName, subFilePath);
-			}
-			workItem->DeleteDirIterator();
-		}
-		workItem->InsertObjMap(objName, filePath);
-		workItem->SetLastProcessedUrl(*ui);
-	}
-
-	if (workItem->GetObjMapSize() > 0) {
-		run(this, &Client::DoBulkPut, workItem);
-	}
-}
-
-void
-Client::DoBulkPut(BulkPutWorkItem* workItem)
-{
-	LOG_DEBUG("DoBulkPuts");
-
-	workItem->SetState(Job::INPROGRESS);
-	workItem->SetTransferStartIfNull();
-	Job job = workItem->ToJob();
-	emit JobProgressUpdate(job);
-
-	uint64_t numFiles = workItem->GetObjMapSize();
-	ds3_bulk_object_list *bulkObjList = ds3_init_bulk_object_list(numFiles);
-
-	QHash<QString, QString>::const_iterator hi;
-	size_t i = 0;
-	for (hi = workItem->GetObjMapConstBegin();
-	     hi != workItem->GetObjMapConstEnd();
-	     hi++) {
-		ds3_bulk_object* bulkObj = &bulkObjList->list[i];
-		QString objName = hi.key();
-		QString filePath = hi.value();
-		QFileInfo fileInfo(filePath);
-		uint64_t fileSize = 0;
-		if (!fileInfo.isDir()) {
-			fileSize = fileInfo.size();
-		}
-		bulkObj->name = ds3_str_init(objName.toUtf8().constData());
-		bulkObj->length = fileSize;
-		bulkObj->offset = 0;
-		i++;
-	}
-
-	const QString& bucketName = workItem->GetBucketName();
-	ds3_request* request = ds3_init_put_bulk(bucketName.toUtf8().constData(), bulkObjList);
-	ds3_bulk_response *response = NULL;
-	ds3_error* error = ds3_bulk(m_client, request, &response);
-	ds3_free_request(request);
-	ds3_free_bulk_object_list(bulkObjList);
-	workItem->SetResponse(response);
-	workItem->SetNumChunksProcessed(0);
-
-	if (error) {
-		DS3Error ds3Error(error);
-		ds3_free_error(error);
-		QString errorMsg = "Error uploading objects to server: ";;
-		if (ds3Error.GetStatusCode() == 409) {
-			QString body = ds3Error.GetErrorBody();
-			QRegExp rx(", ([^\\)]+)\\) already exists");
-			if (rx.indexIn(body, 0) != -1) {
-				errorMsg += rx.cap(1) + " already exists " \
-					    "and objects cannot be replaced";
-			} else {
-				errorMsg += "one or more of the objects " \
-					    "already exist and objects " \
-					    "cannot be replaced";
-			}
-		} else {
-			errorMsg += ds3Error.ToString();
-		}
-		errorMsg += ".  Canceling job.";
-		LOG_ERROR(errorMsg);
-		workItem->SetResponse(NULL);
-		DeleteOrRequeueBulkWorkItem(workItem);
-		return;
-	}
-
-	if (response == NULL || (response != NULL && response->list_size == 0)) {
-		DeleteOrRequeueBulkWorkItem(workItem);
-		return;
-	}
-
-	ProcessPutJobChunk(workItem);
 }
 
 void
