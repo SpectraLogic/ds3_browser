@@ -27,6 +27,11 @@
 // intended to be used by the Client to report job progress updates to the GUI
 // components (e.g. DS3Browser).  This holds the minimum information necessary
 // to report progress updates to the user.
+//
+// Note that this Job class is not necessarily exactly the same as what the
+// DS3 server considers to be a "job" since a large drag/drop operation might
+// have to be split up amongst several DS3 Bulk GET/PUT jobs where as all of
+// these would be repesented in this application by a single Job object.
 class Job
 {
 public:

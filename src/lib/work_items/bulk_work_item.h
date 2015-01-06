@@ -52,7 +52,15 @@ public:
 	size_t GetNumChunksProcessed() const;
 
 	bool WasCanceled() const;
+	// A large drag/drop operation might have to be split up amonst
+	// several DS3 Bulk GET/PUT jobs.  Each one of these DS3 jobs
+	// represents a page.  IsPageFinished() signifies whether or not
+	// the current DS3 Bulk GET/PUT "page" job is finished or not.
+	// Note that each page could be split up amongst one or more
+	// DS3 job chunks.
 	bool IsPageFinished() const;
+	// Signifies whether or not the entire work item as a whole is finished.
+	// In other words, if an entire drag/drop operation is complete.
 	bool IsFinished() const;
 
 	void SetBucketName(const QString& bucketName);
