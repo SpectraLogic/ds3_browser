@@ -27,7 +27,6 @@ BulkWorkItem::BulkWorkItem(const QString& host, const QList<QUrl> urls)
 	  m_urlsIterator(m_urls.constBegin()),
 	  m_bytesTransferred(0),
 	  m_response(NULL),
-	  m_numChunks(0),
 	  m_numChunksProcessed(0)
 {
 	SortURLsByBucket();
@@ -77,9 +76,13 @@ BulkWorkItem::GetSize() const
 bool
 BulkWorkItem::IsPageFinished() const
 {
-	m_numChunksLock.lock();
-	bool finished = m_numChunksProcessed == m_numChunks;
-	m_numChunksLock.unlock();
+	bool finished = true;
+	m_responseLock.lock();
+	if (m_response != NULL) {
+		size_t numChunks = m_response->list_size;
+		finished = numChunks == m_numChunksProcessed;
+	}
+	m_responseLock.unlock();
 	return finished;
 }
 

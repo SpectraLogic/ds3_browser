@@ -495,10 +495,7 @@ Client::DoBulkGet(BulkGetWorkItem* workItem)
 	ds3_free_request(request);
 	ds3_free_bulk_object_list(bulkObjList);
 	workItem->SetResponse(response);
-	if (response != NULL) {
-		workItem->SetNumChunks(response->list_size);
-		workItem->SetNumChunksProcessed(0);
-	}
+	workItem->SetNumChunksProcessed(0);
 
 	if (error) {
 		throw (DS3Error(error));
@@ -744,11 +741,8 @@ Client::DoBulkPut(BulkPutWorkItem* workItem)
 	ds3_error* error = ds3_bulk(m_client, request, &response);
 	ds3_free_request(request);
 	ds3_free_bulk_object_list(bulkObjList);
-	if (response != NULL) {
-		workItem->SetNumChunks(response->list_size);
-		workItem->SetNumChunksProcessed(0);
-	}
 	workItem->SetResponse(response);
+	workItem->SetNumChunksProcessed(0);
 
 	if (error) {
 		DS3Error ds3Error(error);

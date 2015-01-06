@@ -65,7 +65,6 @@ public:
 
 	void SetBucketName(const QString& bucketName);
 	void SetLastProcessedUrl(const QUrl& url);
-	void SetNumChunks(int chunks);
 	void SetNumChunksProcessed(int chunks);
 	void IncNumChunksProcessed(int chunks = 1);
 
@@ -97,9 +96,8 @@ protected:
 	mutable QMutex m_bytesTransferredLock;
 	QHash<QString, QString> m_objMap;
 	ds3_bulk_response* m_response;
-	size_t m_numChunks;
+	mutable QMutex m_responseLock;
 	size_t m_numChunksProcessed;
-	mutable QMutex m_numChunksLock;
 };
 
 inline const QString&
@@ -141,9 +139,9 @@ BulkWorkItem::GetLastProcessedUrl() const
 inline size_t
 BulkWorkItem::GetNumChunksProcessed() const
 {
-	m_numChunksLock.lock();
+	m_responseLock.lock();
 	int chunks = m_numChunksProcessed;
-	m_numChunksLock.unlock();
+	m_responseLock.unlock();
 	return chunks;
 }
 
@@ -168,27 +166,19 @@ BulkWorkItem::SetLastProcessedUrl(const QUrl& url)
 }
 
 inline void
-BulkWorkItem::SetNumChunks(int chunks)
-{
-	m_numChunksLock.lock();
-	m_numChunks = chunks;
-	m_numChunksLock.unlock();
-}
-
-inline void
 BulkWorkItem::SetNumChunksProcessed(int chunks)
 {
-	m_numChunksLock.lock();
+	m_responseLock.lock();
 	m_numChunksProcessed = chunks;
-	m_numChunksLock.unlock();
+	m_responseLock.unlock();
 }
 
 inline void
 BulkWorkItem::IncNumChunksProcessed(int chunks)
 {
-	m_numChunksLock.lock();
+	m_responseLock.lock();
 	m_numChunksProcessed += chunks;
-	m_numChunksLock.unlock();
+	m_responseLock.unlock();
 }
 
 inline void
@@ -239,13 +229,18 @@ BulkWorkItem::GetState() const
 inline ds3_bulk_response*
 BulkWorkItem::GetResponse() const
 {
-	return m_response;
+	m_responseLock.lock();
+	ds3_bulk_response* response = m_response;
+	m_responseLock.unlock();
+	return response;
 }
 
 inline void
 BulkWorkItem::SetResponse(ds3_bulk_response* response)
 {
+	m_responseLock.lock();
 	m_response = response;
+	m_responseLock.unlock();
 }
 
 inline void
