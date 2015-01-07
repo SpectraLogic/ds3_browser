@@ -226,12 +226,19 @@ SessionDialog::CheckAuthenticationResponse()
 	}
 	catch (DS3Error& e) {
 		QString logPrefix = "Failed to authenticate session - ";
+		QString body;
 		QString msg;
 		switch (e.GetStatusCode()) {
 		case 403:
-			msg = "Invalid S3 Access ID or S3 Secret Key";
-			m_accessIdLabel->setStyleSheet("QLabel { color: red; }");
-			m_secretKeyLabel->setStyleSheet("QLabel { color: red; }");
+			body = e.GetErrorBody();
+			if (body.contains("clock is not synchronized")) {
+				msg = "Client clock is not synchronized " \
+				      "with server clock";
+			} else {
+				msg = "Invalid S3 Access ID or S3 Secret Key";
+				m_accessIdLabel->setStyleSheet("QLabel { color: red; }");
+				m_secretKeyLabel->setStyleSheet("QLabel { color: red; }");
+			}
 			m_baseErrorLabel->setText(msg);
 			LOG_ERROR(logPrefix + msg);
 			m_form->addWidget(m_baseErrorLabel, 0, 0, 1, 3);
