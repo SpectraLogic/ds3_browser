@@ -38,7 +38,10 @@ SessionDialog::SessionDialog(QWidget* parent)
 	m_hostLineEdit->setFixedWidth(150);
 	m_hostLineEdit->setToolTip("The name or IP address of the DS3 " \
 				   "system's data interface");
-	m_hostLabel = new QLabel("BlackPearl Name or IP Address");
+	m_hostLabel = new QLabel("BlackPearl Data Interface");
+	m_hostLabel->setToolTip("The DNS name or IP address of the " \
+				"BlackPearl's network data interface (not " \
+				"the network management interface)");
 	m_hostErrorLabel = new QLabel;
 	m_hostErrorLabel->setStyleSheet("QLabel { color: red; }");
 	m_form->addWidget(m_hostLabel, 1, 0);
