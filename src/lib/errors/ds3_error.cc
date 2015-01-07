@@ -54,6 +54,9 @@ DS3Error::ToString() const
 	QString msg;
 	switch (m_statusCode) {
 	case 403:
+		// TODO Switch to looking at the error code when the S3
+		//      server's fixed to use the correct code for clock skew
+		//      (RequestTimeTooSkewed).
 		if (body.contains("clock is not synchronized")) {
 			msg = "Client clock is not synchronized " \
 			      "with server clock";
