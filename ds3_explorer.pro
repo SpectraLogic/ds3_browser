@@ -14,7 +14,7 @@
 
 include(common.pri)
 
-TARGET = SpectraLogicDS3Explorer
+TARGET = DS3Explorer
 
 CONFIG -= release
 CONFIG += debug_and_release warn_on
