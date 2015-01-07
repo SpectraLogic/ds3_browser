@@ -50,9 +50,17 @@ DS3Error::ToString() const
 		return m_message;
 	}
 
+	QString body = GetErrorBody();
+	QString msg;
 	switch (m_statusCode) {
 	case 403:
-		return "Invalid Access ID or Secret Key";
+		if (body.contains("clock is not synchronized")) {
+			msg = "Client clock is not synchronized " \
+			      "with server clock";
+		} else {
+			msg = "Invalid S3 Access ID or S3 Secret Key";
+		}
+		return msg;
 	}
 
 	if (m_statusCode != 0) {
