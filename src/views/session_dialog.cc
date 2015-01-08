@@ -234,10 +234,8 @@ SessionDialog::CheckAuthenticationResponse()
 		switch (e.GetStatusCode()) {
 		case 403:
 			body = e.GetErrorBody();
-			if (body.contains("digest from client was incorrect")) {
-				// TODO Switch to looking for an InvalidSecurity
-				//      error code when the S3 server's fixed
-				//      to use the correct code for clock skew.
+			// TODO DS3Error should properly XML decode the body
+			if (body.contains("<Code>InvalidSecurity</Code>")) {
 				m_accessIdLabel->setStyleSheet("QLabel { color: red; }");
 				m_secretKeyLabel->setStyleSheet("QLabel { color: red; }");
 			}
