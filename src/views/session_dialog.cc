@@ -35,40 +35,52 @@ SessionDialog::SessionDialog(QWidget* parent)
 {
 	setWindowTitle("New Spectra Logic DS3 Session");
 
+	QString tip = "The DNS name or IP address of the " \
+		      "BlackPearl's network data interface (not " \
+		      "the network management interface)";
 	m_hostLineEdit->setFixedWidth(150);
-	m_hostLineEdit->setToolTip("The name or IP address of the DS3 " \
-				   "system's data interface");
+	m_hostLineEdit->setToolTip(tip);
 	m_hostLabel = new QLabel("BlackPearl Data Interface");
-	m_hostLabel->setToolTip("The DNS name or IP address of the " \
-				"BlackPearl's network data interface (not " \
-				"the network management interface)");
+	m_hostLabel->setToolTip(tip);
 	m_hostErrorLabel = new QLabel;
 	m_hostErrorLabel->setStyleSheet("QLabel { color: red; }");
 	m_form->addWidget(m_hostLabel, 1, 0);
 	m_form->addWidget(m_hostLineEdit, 1, 1);
 	m_form->addWidget(m_hostErrorLabel, 1, 2);
 
+	tip = "The HTTP port that the BlackPearl's DS3 " \
+	      "server is running on.  The default is 80";
 	m_portLabel = new QLabel("BlackPearl DS3 Port");
+	m_portLabel->setToolTip(tip);
 	m_portComboBox->addItem("80");
 	m_portComboBox->addItem("8080");
-	m_portComboBox->setToolTip("The port that the DS3 system's DS3 " \
-				   "service is running on (usually 80)");
+	m_portComboBox->setToolTip(tip);
 	m_form->addWidget(m_portLabel, 2, 0);
 	m_form->addWidget(m_portComboBox, 2, 1);
 
-	m_proxyLineEdit->setToolTip("An optional server to proxy requests");
+	tip = "An optional server to proxy requests";
 	m_proxyLabel = new QLabel("Proxy Server");
+	m_proxyLabel->setToolTip(tip);
+	m_proxyLineEdit->setToolTip(tip);
 	m_form->addWidget(m_proxyLabel, 3, 0);
 	m_form->addWidget(m_proxyLineEdit, 3, 1);
 
+	tip = "The user's S3 Access ID.  This is available via the " \
+	      "BlackPearl user interface";
 	m_accessIdLabel = new QLabel("S3 Access ID");
+	m_accessIdLabel->setToolTip(tip);
+	m_accessIdLineEdit->setToolTip(tip);
 	m_accessIdErrorLabel = new QLabel;
 	m_accessIdErrorLabel->setStyleSheet("QLabel { color: red; }");
 	m_form->addWidget(m_accessIdLabel, 4, 0);
 	m_form->addWidget(m_accessIdLineEdit, 4, 1);
 	m_form->addWidget(m_accessIdErrorLabel, 4, 2);
 
+	tip = "The user's S3 Secret Key.  This is available via the " \
+	      "BlackPearl user interface";
 	m_secretKeyLabel = new QLabel("S3 Secret Key");
+	m_secretKeyLabel->setToolTip(tip);
+	m_secretKeyLineEdit->setToolTip(tip);
 	m_secretKeyErrorLabel = new QLabel;
 	m_secretKeyErrorLabel->setStyleSheet("QLabel { color: red; }");
 	m_form->addWidget(m_secretKeyLabel, 5, 0);
