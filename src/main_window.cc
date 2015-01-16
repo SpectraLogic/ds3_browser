@@ -24,6 +24,7 @@
 
 #include "lib/logger.h"
 
+#include "global.h"
 #include "main_window.h"
 #include "models/session.h"
 #include "views/console.h"
@@ -39,7 +40,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 	  m_sessionTabs(new QTabWidget(this)),
 	  m_jobsView(new JobsView(this))
 {
-	setWindowTitle("Spectra Logic DS3 Explorer");
+	setWindowTitle(SL_APP_NAME);
 
 	Session* session = CreateSession();
 	if (session == NULL)
@@ -164,7 +165,7 @@ MainWindow::CancelActiveJobs()
 void
 MainWindow::About()
 {
-	QString text = tr("<b>DS3 Explorer</b><br/>Version %1")
-				.arg(APP_VERSION);
-	QMessageBox::about(this, tr("About DS3 Explorer"), text);
+	QString text = tr("<b>%1</b><br/>Version %2")
+				.arg(APP_NAME).arg(APP_VERSION);
+	QMessageBox::about(this, tr("About %1").arg(APP_NAME), text);
 }

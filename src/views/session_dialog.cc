@@ -18,6 +18,7 @@
 #include <QApplication>
 #include <QSettings>
 
+#include "global.h"
 #include "lib/client.h"
 #include "lib/logger.h"
 #include "lib/watchers/get_bucket_watcher.h"
@@ -33,7 +34,7 @@ SessionDialog::SessionDialog(QWidget* parent)
 	  m_client(NULL),
 	  m_watcher(NULL)
 {
-	setWindowTitle("New Spectra Logic DS3 Session");
+	setWindowTitle("New " + APP_NAME + " Session");
 
 	QString tip = "The DNS name or IP address of the " \
 		      "BlackPearl's network data interface (not " \

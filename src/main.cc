@@ -17,6 +17,7 @@
 #include <QApplication>
 #include <QFile>
 
+#include "global.h"
 #include "models/job.h"
 #include "views/console.h"
 
@@ -28,7 +29,7 @@ main(int argc, char *argv[])
 	QApplication app(argc, argv);
 	app.setOrganizationName("Spectra Logic");
 	app.setOrganizationDomain("spectralogic.com");
-	app.setApplicationName("DS3 Explorer");
+	app.setApplicationName(APP_NAME);
 
 	QFile qssf(":/resources/stylesheets/main.qss");
 	qssf.open(QFile::ReadOnly);
