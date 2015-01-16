@@ -59,12 +59,24 @@ NewBucketDialog::Accept()
 		CreateBucket();
 	}
 	catch (DS3Error& e) {
+		QString body;
 		QString msg;
 		switch (e.GetStatusCode()) {
 		case 400:
 			msg = "Bucket \"" + m_bucket + "\" is invalid";
 			m_bucketLabel->setStyleSheet("QLabel { color: red; }");
 			m_bucketErrorLabel->setText("is invalid");
+			break;
+		case 403:
+			body = e.GetErrorBody();
+			// TODO DS3Error should properly XML decode the body
+			if (body.contains("<Code>Forbidden</Code>") &&
+			    body.contains("spectra-", Qt::CaseInsensitive) &&
+			    body.contains("reserved", Qt::CaseInsensitive)) {
+				m_bucketLabel->setStyleSheet("QLabel { color: red; }");
+				msg = "Bucket names that start with \"spectra-\" are reserved";
+				m_bucketErrorLabel->setText(msg);
+			}
 			break;
 		case 409:
 			msg = "Bucket \"" + m_bucket + "\" already exists";
