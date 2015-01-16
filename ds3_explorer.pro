@@ -14,7 +14,7 @@
 
 include(common.pri)
 
-TARGET = BlackPearlDS3Browser
+TARGET = "BlackPearl DS3 Browser"
 
 CONFIG -= release
 CONFIG += debug_and_release warn_on
