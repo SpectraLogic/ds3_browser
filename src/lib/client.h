@@ -76,6 +76,8 @@ public:
 	void PutObject(const QString& bucket,
 		       const QString& object,
 		       const QString& fileName,
+		       uint64_t offset,
+		       uint64_t length,
 		       BulkPutWorkItem* bulkPutWorkItem);
 
 public slots:

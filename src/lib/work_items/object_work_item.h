@@ -44,6 +44,7 @@ public:
 	BulkWorkItem* GetBulkWorkItem() const;
 
 	bool OpenFile(QIODevice::OpenMode mode);
+	bool SeekFile(uint64_t pos);
 	size_t ReadFile(char* data, size_t size, size_t count);
 	size_t WriteFile(char* data, size_t size, size_t count);
 
@@ -82,6 +83,12 @@ inline bool
 ObjectWorkItem::OpenFile(QIODevice::OpenMode mode)
 {
 	return m_file.open(mode);
+}
+
+inline bool
+ObjectWorkItem::SeekFile(uint64_t pos)
+{
+	return m_file.seek(pos);
 }
 
 #endif

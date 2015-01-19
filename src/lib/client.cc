@@ -227,16 +227,17 @@ void
 Client::PutObject(const QString& bucket,
 		  const QString& object,
 		  const QString& fileName,
+		  uint64_t offset,
+		  uint64_t length,
 		  BulkPutWorkItem* workItem)
 {
-	QFileInfo fileInfo(fileName);
 	QString jobID = workItem->GetJobID();
 	ds3_request* request = ds3_init_put_object_for_job(bucket.toUtf8().constData(),
 							   object.toUtf8().constData(),
-							   0,
-							   fileInfo.size(),
+							   offset, length,
 							   jobID.toUtf8().constData());
 	ds3_error* error = NULL;
+	QFileInfo fileInfo(fileName);
 	if (fileInfo.isDir()) {
 		// "folder" objects don't have a size nor do they have any
 		// data associated with them
@@ -247,6 +248,7 @@ Client::PutObject(const QString& bucket,
 		caowi.client = this;
 		caowi.objectWorkItem = &objWorkItem;
 		if (objWorkItem.OpenFile(QIODevice::ReadOnly)) {
+			objWorkItem.SeekFile(offset);
 			error = ds3_put_object(m_client, request,
 					       &caowi, read_from_file);
 		} else {
@@ -809,8 +811,11 @@ Client::ProcessPutJobChunk(BulkPutWorkItem* workItem)
 		ds3_bulk_object bulkObj = chunkResponse->objects->list[i];
 		QString objName = QString::fromUtf8(bulkObj.name->value);
 		QString filePath = workItem->GetObjMapValue(objName);
+		uint64_t length = bulkObj.length;
+		uint64_t offset = bulkObj.offset;
 		try {
-			Client::PutObject(bucketName, objName, filePath, workItem);
+			Client::PutObject(bucketName, objName, filePath,
+					  offset, length, workItem);
 		}
 		catch (DS3Error& e) {
 			LOG_ERROR("Error putting object \"" + objName + "\"" +
