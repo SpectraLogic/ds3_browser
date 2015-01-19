@@ -199,8 +199,10 @@ Client::GetObject(const QString& bucket,
 		return;
 	}
 
-	ds3_request* request = ds3_init_get_object(bucket.toUtf8().constData(),
-						   object.toUtf8().constData());
+	QString jobID = bulkGetWorkItem->GetJobID();
+	ds3_request* request = ds3_init_get_object_for_job(bucket.toUtf8().constData(),
+							   object.toUtf8().constData(),
+							   jobID.toUtf8().constData());
 	ds3_error* error = NULL;
 	ObjectWorkItem objWorkItem(bucket, object, fileName, bulkGetWorkItem);
 	ClientAndObjectWorkItem caowi;
@@ -228,9 +230,12 @@ Client::PutObject(const QString& bucket,
 		  BulkPutWorkItem* workItem)
 {
 	QFileInfo fileInfo(fileName);
-	ds3_request* request = ds3_init_put_object(bucket.toUtf8().constData(),
-						   object.toUtf8().constData(),
-						   fileInfo.size());
+	QString jobID = workItem->GetJobID();
+	ds3_request* request = ds3_init_put_object_for_job(bucket.toUtf8().constData(),
+							   object.toUtf8().constData(),
+							   0,
+							   fileInfo.size(),
+							   jobID.toUtf8().constData());
 	ds3_error* error = NULL;
 	if (fileInfo.isDir()) {
 		// "folder" objects don't have a size nor do they have any
