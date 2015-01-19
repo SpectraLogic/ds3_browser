@@ -200,8 +200,10 @@ Client::GetObject(const QString& bucket,
 	}
 
 	QString jobID = bulkGetWorkItem->GetJobID();
+	// TODO Handle offset
 	ds3_request* request = ds3_init_get_object_for_job(bucket.toUtf8().constData(),
 							   object.toUtf8().constData(),
+							   0,
 							   jobID.toUtf8().constData());
 	ds3_error* error = NULL;
 	ObjectWorkItem objWorkItem(bucket, object, fileName, bulkGetWorkItem);
