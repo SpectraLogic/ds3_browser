@@ -102,6 +102,7 @@ BulkWorkItem::ToJob() const
 	job.SetTransferStart(GetTransferStart());
 	job.SetState(GetState());
 	job.SetHost(GetHost());
+	job.SetURLs(GetURLs());
 	job.SetDestination(GetDestination());
 	job.SetSize(GetSize());
 	job.SetBytesTransferred(GetBytesTransferred());

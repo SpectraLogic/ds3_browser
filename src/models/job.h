@@ -19,8 +19,10 @@
 
 #include <stdint.h>
 #include <QDateTime>
+#include <QList>
 #include <QMetaType>
 #include <QString>
+#include <QUrl>
 #include <QUuid>
 
 // Job, a container class that is a higher-level version of BulkWorkItem that's
@@ -56,6 +58,7 @@ public:
 	const QDateTime& GetTransferStart() const;
 	State GetState() const;
 	const QString& GetHost() const;
+	const QString GetURLs() const;
 	const QString& GetDestination() const;
 	uint64_t GetSize() const;
 	uint64_t GetBytesTransferred() const;
@@ -69,6 +72,7 @@ public:
 	void SetTransferStart(const QDateTime& start);
 	void SetState(State state);
 	void SetHost(const QString& host);
+	void SetURLs(const QList<QUrl> urls);
 	void SetDestination(const QString& destination);
 	void SetSize(uint64_t);
 	void SetBytesTransferred(uint64_t);
@@ -80,6 +84,7 @@ private:
 	QDateTime m_transferStart;
 	State m_state;
 	QString m_host;
+	QList<QUrl> m_urls;
 	QString m_destination;
 	uint64_t m_size;
 	uint64_t m_bytesTransferred;
@@ -186,6 +191,12 @@ inline void
 Job::SetHost(const QString& host)
 {
 	m_host = host;
+}
+
+inline void
+Job::SetURLs(const QList<QUrl> urls)
+{
+	m_urls = urls;
 }
 
 inline void

@@ -32,6 +32,10 @@ class JobView : public QWidget
 	Q_OBJECT
 
 public:
+	static const int MAX_URLS_WIDTH;
+	static const int MAX_DEST_WIDTH;
+	static const QString RIGHT_ARROW;
+
 	static const QString s_types[];
 
 	JobView(Job job, QWidget* parent = 0);
@@ -54,6 +58,7 @@ private:
 	QUuid m_jobID;
 	QLabel* m_host;
 	QLabel* m_type;
+	QLabel* m_urlsAndDestination;
 	QProgressBar* m_progressBar;
 	QLabel* m_progressSummary;
 	QLabel* m_start;

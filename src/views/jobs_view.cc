@@ -14,6 +14,9 @@
  * *****************************************************************************
  */
 
+#include <QChar>
+#include <QFontMetrics>
+
 #include "lib/logger.h"
 #include "helpers/number_helper.h"
 #include "views/job_view.h"
@@ -23,6 +26,9 @@
 // JobView
 //
 
+const int JobView::MAX_URLS_WIDTH = 250;
+const int JobView::MAX_DEST_WIDTH = 150;
+const QString JobView::RIGHT_ARROW = QChar(0x2192);
 const QString JobView::s_types[] = { "GET", "PUT" };
 
 JobView::JobView(Job job, QWidget* parent)
@@ -40,6 +46,8 @@ JobView::JobView(Job job, QWidget* parent)
 	m_host = new QLabel;
 	m_start = new QLabel;
 
+	m_urlsAndDestination = new QLabel;
+
 	m_progressBar = new QProgressBar;
 	m_progressBar->setMinimum(0);
 	m_progressBar->setMaximum(1000);
@@ -56,6 +64,7 @@ JobView::JobView(Job job, QWidget* parent)
 	m_layout->addWidget(m_type, 0, 0, 2, 1);
 	m_layout->addWidget(m_host, 2, 0);
 	m_layout->addWidget(m_start, 3, 0);
+	m_layout->addWidget(m_urlsAndDestination, 0, 1);
 	m_layout->addWidget(m_progressBar, 1, 1);
 	m_layout->addWidget(m_progressSummary, 2, 1);
 	m_layout->addWidget(m_cancelButton, 0, 3);
@@ -68,6 +77,14 @@ void
 JobView::Update(Job job)
 {
 	m_host->setText(job.GetHost());
+	QString urlsAndDest = job.GetURLs();
+	QFontMetrics fm(m_urlsAndDestination->font());
+	urlsAndDest = fm.elidedText(urlsAndDest, Qt::ElideRight, MAX_URLS_WIDTH);
+	urlsAndDest += " " + RIGHT_ARROW + " ";
+	QString dest = job.GetDestination();
+	dest = fm.elidedText(dest, Qt::ElideRight, MAX_DEST_WIDTH);
+	urlsAndDest += dest;
+	m_urlsAndDestination->setText(urlsAndDest);
 	m_progressBar->setValue(job.GetProgress());
 	m_progressSummary->setText(ToProgressSummary(job));
 	m_start->setText(job.GetStart().toLocalTime().toString("M/d/yyyy h:mm AP"));
@@ -181,6 +198,10 @@ JobsView::AddDebugJobs()
 		job.SetType(Job::PUT);
 		QString is(QString::number(i));
 		job.SetHost("host" + is);
+		QList<QUrl> urls;
+		urls << QUrl("http://foo.com/bar");
+		urls << QUrl("http://foo.com/baz");
+		job.SetURLs(urls);
 		job.SetDestination("bucket" + is);
 		job.SetState(Job::INPROGRESS);
 		job.SetStart(QDateTime::currentDateTime());

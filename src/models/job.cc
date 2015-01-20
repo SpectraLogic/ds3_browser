@@ -14,6 +14,8 @@
  * *****************************************************************************
  */
 
+#include <QStringList>
+
 #include "models/job.h"
 
 Job::Job()
@@ -21,6 +23,16 @@ Job::Job()
 	  m_size(0),
 	  m_bytesTransferred(0)
 {
+}
+
+const QString
+Job::GetURLs() const
+{
+	QStringList strings;
+	for (int i = 0; i < m_urls.size(); i++) {
+		strings << m_urls[i].path();
+	}
+	return strings.join(",");
 }
 
 int
