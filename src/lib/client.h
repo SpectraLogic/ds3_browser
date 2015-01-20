@@ -71,6 +71,7 @@ public:
 	void GetObject(const QString& bucket,
 		       const QString& object,
 		       const QString& fileName,
+		       uint64_t offset,
 		       BulkGetWorkItem* bulkGetWorkItem);
 
 	void PutObject(const QString& bucket,

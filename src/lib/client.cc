@@ -173,9 +173,10 @@ void
 Client::GetObject(const QString& bucket,
 		  const QString& object,
 		  const QString& fileName,
+		  uint64_t offset,
 		  BulkGetWorkItem* bulkGetWorkItem)
 {
-	LOG_DEBUG("GetObject " + object + " to " + fileName);
+	LOG_DEBUG("GetObject " + object + " to " + fileName + ", offset: " + offset);
 
 	QDir dir(fileName);
 	if (object.endsWith("/")) {
@@ -192,18 +193,21 @@ Client::GetObject(const QString& bucket,
 		}
 	}
 
+#if 0
+	// TODO It would be nice if we could provide a warning/error to the
+	//      user when they try to overwrite a file that already exists but
+	//      also still alows GET'ing an object that's split up across
+	//      multiple chunks.
 	if (QFile(fileName).exists()) {
-		// TODO Pop up a dialog asking them if they want to skip
-		//      or replace the file.
 		LOG_ERROR(fileName + " already exists.  Skipping");
 		return;
 	}
+#endif
 
 	QString jobID = bulkGetWorkItem->GetJobID();
-	// TODO Handle offset
 	ds3_request* request = ds3_init_get_object_for_job(bucket.toUtf8().constData(),
 							   object.toUtf8().constData(),
-							   0,
+							   offset,
 							   jobID.toUtf8().constData());
 	ds3_error* error = NULL;
 	ObjectWorkItem objWorkItem(bucket, object, fileName, bulkGetWorkItem);
@@ -211,6 +215,7 @@ Client::GetObject(const QString& bucket,
 	caowi.client = this;
 	caowi.objectWorkItem = &objWorkItem;
 	if (objWorkItem.OpenFile(QIODevice::WriteOnly)) {
+		objWorkItem.SeekFile(offset);
 		error = ds3_get_object(m_client, request,
 				       &caowi, write_to_file);
 	} else {
@@ -726,8 +731,10 @@ Client::ProcessGetJobChunk(BulkGetWorkItem* workItem)
 			ds3_bulk_object* bulkObj = &(list->list[i]);
 			QString objName = QString::fromUtf8(bulkObj->name->value);
 			QString filePath = workItem->GetObjMapValue(objName);
+			uint64_t offset = bulkObj->offset;
 			try {
-				Client::GetObject(bucketName, objName, filePath, workItem);
+				Client::GetObject(bucketName, objName, filePath,
+						  offset, workItem);
 			}
 			catch (DS3Error& e) {
 				LOG_ERROR("Error getting object \"" + objName +
