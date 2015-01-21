@@ -176,7 +176,8 @@ Client::GetObject(const QString& bucket,
 		  uint64_t offset,
 		  BulkGetWorkItem* bulkGetWorkItem)
 {
-	LOG_DEBUG("GetObject " + object + " to " + fileName + ", offset: " + offset);
+	LOG_DEBUG("GetObject " + object + " to " + fileName +
+		  ", offset: " + QString::number(offset));
 
 	QDir dir(fileName);
 	if (object.endsWith("/")) {
