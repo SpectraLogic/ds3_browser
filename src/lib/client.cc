@@ -194,17 +194,6 @@ Client::GetObject(const QString& bucket,
 		}
 	}
 
-#if 0
-	// TODO It would be nice if we could provide a warning/error to the
-	//      user when they try to overwrite a file that already exists but
-	//      also still alows GET'ing an object that's split up across
-	//      multiple chunks.
-	if (QFile(fileName).exists()) {
-		LOG_ERROR(fileName + " already exists.  Skipping");
-		return;
-	}
-#endif
-
 	QString jobID = bulkGetWorkItem->GetJobID();
 	ds3_request* request = ds3_init_get_object_for_job(bucket.toUtf8().constData(),
 							   object.toUtf8().constData(),
@@ -458,6 +447,8 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 									      "/" + objNameMinusPrefix);
 					if (subFullObjName.endsWith("/")) {
 						workItem->AppendDirsToCreate(subFilePath);
+					} else if (QFile(subFilePath).exists()) {
+						LOG_ERROR(subFilePath + " already exists.  Skipping");
 					} else {
 						workItem->InsertObjMap(subFullObjName, subFilePath);
 					}
@@ -465,6 +456,8 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 			} while (getBucketRes->is_truncated);
 			workItem->SetGetBucketResponseIterator(0);
 			workItem->SetGetBucketResponse(NULL);
+		} else if (QFile(filePath).exists()) {
+			LOG_ERROR(filePath + " already exists.  Skipping");
 		} else {
 			workItem->InsertObjMap(fullObjName, filePath);
 		}
