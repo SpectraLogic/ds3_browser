@@ -704,7 +704,10 @@ Client::ProcessGetJobChunk(BulkGetWorkItem* workItem)
 		}
 		if (numChunks == 0) {
 			if (errMsg.isEmpty()) {
-				LOG_INFO("Next bulk get job chunk not ready yet.");
+				LOG_INFO("Next bulk get job chunk not ready " \
+					 "yet.  Sleeping for " +
+					 QString::number(retryAfter) +
+					 " seconds.");
 			}
 			QThread::sleep(retryAfter);
 		}
