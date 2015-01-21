@@ -215,7 +215,7 @@ Client::GetObject(const QString& bucket,
 	ClientAndObjectWorkItem caowi;
 	caowi.client = this;
 	caowi.objectWorkItem = &objWorkItem;
-	if (objWorkItem.OpenFile(QIODevice::WriteOnly)) {
+	if (objWorkItem.OpenFile(QIODevice::ReadWrite)) {
 		objWorkItem.SeekFile(offset);
 		error = ds3_get_object(m_client, request,
 				       &caowi, write_to_file);
