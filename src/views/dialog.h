@@ -46,6 +46,7 @@ protected:
 				      QLabel* errorLabel);
 
 	QVBoxLayout* m_layout;
+	QWidget* m_formWidget;
 	QGridLayout* m_form;
 	QLabel* m_baseErrorLabel;
 	QDialogButtonBox* m_buttonBox;

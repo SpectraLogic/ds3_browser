@@ -16,6 +16,7 @@
 
 #include <Qt> // Needed for QComboBox's use Qt::MatchFlags
 #include <QApplication>
+#include <QPixmap>
 #include <QSettings>
 
 #include "global.h"
@@ -26,6 +27,8 @@
 
 SessionDialog::SessionDialog(QWidget* parent)
 	: Dialog(parent),
+	  m_headerWidget(new QWidget),
+	  m_header(new QGridLayout),
 	  m_hostLineEdit(new QLineEdit),
 	  m_portComboBox(new QComboBox),
 	  m_proxyLineEdit(new QLineEdit),
@@ -35,6 +38,29 @@ SessionDialog::SessionDialog(QWidget* parent)
 	  m_watcher(NULL)
 {
 	setWindowTitle("New " + APP_NAME + " Session");
+
+	m_headerWidget->setLayout(m_header);
+	m_layout->insertWidget(0, m_headerWidget);
+
+	m_header->setSpacing(0);
+	m_header->setMargin(0);
+	m_header->setContentsMargins(0, 0, 0, 0);
+
+	QString logoStyle = "QLabel { background-color: black; padding: 10px; }";
+
+	m_bpLogoLabel = new QLabel;
+	QPixmap bpLogoPixmap(":/resources/logos/black_pearl.png");
+	m_bpLogoLabel->setPixmap(bpLogoPixmap);
+	m_bpLogoLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+	m_bpLogoLabel->setStyleSheet(logoStyle);
+	m_header->addWidget(m_bpLogoLabel, 0, 0);
+
+	m_spectraLogoLabel = new QLabel;
+	QPixmap spectraLogoPixmap(":/resources/logos/spectra.png");
+	m_spectraLogoLabel->setPixmap(spectraLogoPixmap);
+	m_spectraLogoLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+	m_spectraLogoLabel->setStyleSheet(logoStyle);
+	m_header->addWidget(m_spectraLogoLabel, 0, 1);
 
 	QString tip = "The DNS name or IP address of the " \
 		      "BlackPearl's network data interface (not " \
@@ -90,6 +116,8 @@ SessionDialog::SessionDialog(QWidget* parent)
 
 	m_saveSessionCheckBox = new QCheckBox("Save Session");
 	m_form->addWidget(m_saveSessionCheckBox, 6, 1);
+
+	m_form->addWidget(m_buttonBox, 7, 1, 1, 2);
 
 	LoadSession();
 }
@@ -255,7 +283,7 @@ SessionDialog::CheckAuthenticationResponse()
 			msg = e.ToString();
 			m_baseErrorLabel->setText(msg);
 			LOG_ERROR(logPrefix + msg);
-			m_form->addWidget(m_baseErrorLabel, 0, 0, 1, 3);
+			m_form->addWidget(m_baseErrorLabel, 1, 0, 1, 3);
 			break;
 		case 404:
 			// Bucket not found is the correct response in this
@@ -267,7 +295,7 @@ SessionDialog::CheckAuthenticationResponse()
 			msg = e.ToString();
 			m_baseErrorLabel->setText(msg);
 			LOG_ERROR(logPrefix + msg);
-			m_form->addWidget(m_baseErrorLabel, 0, 0, 1, 3);
+			m_form->addWidget(m_baseErrorLabel, 1, 0, 1, 3);
 		}
 	}
 

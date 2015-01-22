@@ -49,6 +49,11 @@ private:
 	void Authenticate();
 	void SaveSession();
 
+	QWidget* m_headerWidget;
+	QGridLayout* m_header;
+	QLabel* m_bpLogoLabel;
+	QLabel* m_spectraLogoLabel;
+
 	QLabel* m_hostLabel;
 	QLineEdit* m_hostLineEdit;
 	QLabel* m_hostErrorLabel;

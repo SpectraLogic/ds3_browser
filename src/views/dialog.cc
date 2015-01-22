@@ -24,6 +24,7 @@
 Dialog::Dialog(QWidget* parent)
 	: QDialog(parent),
 	  m_layout(new QVBoxLayout),
+	  m_formWidget(new QWidget),
 	  m_form(new QGridLayout),
 	  m_baseErrorLabel(NULL)
 {
@@ -32,8 +33,13 @@ Dialog::Dialog(QWidget* parent)
 	connect(m_buttonBox, SIGNAL(accepted()), this, SLOT(Accept()));
 	connect(m_buttonBox, SIGNAL(rejected()), this, SLOT(Reject()));
 
-	m_layout->addLayout(m_form);
-	m_layout->addWidget(m_buttonBox);
+	m_formWidget->setLayout(m_form);
+	m_layout->addWidget(m_formWidget);
+
+	m_layout->setSpacing(0);
+	m_layout->setMargin(0);
+	m_layout->setContentsMargins(0, 0, 0, 0);
+
 	setLayout(m_layout);
 }
 

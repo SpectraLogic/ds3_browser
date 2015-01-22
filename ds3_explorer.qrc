@@ -3,6 +3,8 @@
 	<file>resources/icons/bucket.png</file>
 	<file>resources/icons/file.png</file>
 	<file>resources/icons/files.png</file>
+	<file>resources/logos/black_pearl.png</file>
+	<file>resources/logos/spectra.png</file>
 	<file>resources/stylesheets/main.qss</file>
 </qresource>
 </RCC>
