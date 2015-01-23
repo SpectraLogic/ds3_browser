@@ -52,7 +52,6 @@ protected:
 	BrowserTreeViewStyle* m_treeViewStyle;
 
 	QAction* m_parentAction;
-	QAction* m_rootAction;
 
 	Client* m_client;
 

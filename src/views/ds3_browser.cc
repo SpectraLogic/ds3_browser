@@ -45,6 +45,11 @@ DS3Browser::DS3Browser(Client* client, JobsView* jobsView,
 void
 DS3Browser::AddCustomToolBarActions()
 {
+	m_rootAction = new QAction(QIcon(":/resources/icons/root_directory.png"),
+				   "Root directory", this);
+	connect(m_rootAction, SIGNAL(triggered()), this, SLOT(GoToRoot()));
+	m_toolBar->addAction(m_rootAction);
+
 	m_refreshAction = new QAction(style()->standardIcon(QStyle::SP_BrowserReload),
 				      "Refresh", this);
 	connect(m_refreshAction, SIGNAL(triggered()), this, SLOT(Refresh()));

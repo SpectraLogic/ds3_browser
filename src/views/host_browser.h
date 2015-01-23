@@ -41,6 +41,7 @@ protected:
 	void OnModelItemDoubleClick(const QModelIndex& index);
 
 private:
+	QAction* m_rootAction;
 	QAction* m_homeAction;
 	HostBrowserModel* m_model;
 

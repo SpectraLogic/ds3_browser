@@ -41,6 +41,7 @@ protected:
 	void OnContextMenuRequested(const QPoint& pos);
 	void OnModelItemDoubleClick(const QModelIndex& index);
 
+	QAction* m_rootAction;
 	QAction* m_refreshAction;
 
 protected slots:
