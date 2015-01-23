@@ -42,7 +42,7 @@ void
 HostBrowser::AddCustomToolBarActions()
 {
 	m_rootAction = new QAction(QIcon(":/resources/icons/computer.png"),
-				   "Root directory", this);
+				   "Computer", this);
 	connect(m_rootAction, SIGNAL(triggered()), this, SLOT(GoToRoot()));
 	m_toolBar->addAction(m_rootAction);
 
