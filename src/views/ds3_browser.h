@@ -35,6 +35,9 @@ public:
 		   QWidget* parent = 0,
 		   Qt::WindowFlags flags = 0);
 
+public slots:
+	void HandleJobUpdate(const Job job);
+
 protected:
 	void AddCustomToolBarActions();
 	QString IndexToPath(const QModelIndex& index) const;

@@ -39,7 +39,19 @@ DS3Browser::DS3Browser(Client* client, JobsView* jobsView,
 		this, SLOT(OnModelItemClick(const QModelIndex&)));
 
 	connect(m_client, SIGNAL(JobProgressUpdate(const Job)),
+		this, SLOT(HandleJobUpdate(const Job)));
+
+	connect(m_client, SIGNAL(JobProgressUpdate(const Job)),
 		m_jobsView, SLOT(UpdateJob(const Job)));
+}
+
+void
+DS3Browser::HandleJobUpdate(const Job job)
+{
+	Job::State state = job.GetState();
+	if (state == Job::FINISHED) {
+		Refresh();
+	}
 }
 
 void
