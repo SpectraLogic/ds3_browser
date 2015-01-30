@@ -21,7 +21,7 @@
 #include <QLabel>
 #include <QModelIndex>
 #include <QPoint>
-#include <QToolbar>
+#include <QToolBar>
 #include <QTreeView>
 #include <QVBoxLayout>
 #include <QWidget>
