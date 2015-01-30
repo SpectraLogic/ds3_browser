@@ -871,8 +871,7 @@ DS3BrowserModel::HandleGetBucketResponse()
 
 			objectData << owner;
 
-			// TODO Humanize the size
-			objectData << rawObject.size;
+			objectData << (quint64)rawObject.size;
 
 			objectData << OBJECT;
 
