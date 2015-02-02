@@ -283,7 +283,7 @@ SessionDialog::CheckAuthenticationResponse()
 			msg = e.ToString();
 			m_baseErrorLabel->setText(msg);
 			LOG_ERROR(logPrefix + msg);
-			m_form->addWidget(m_baseErrorLabel, 1, 0, 1, 3);
+			m_form->addWidget(m_baseErrorLabel, 0, 0, 1, 3);
 			break;
 		case 404:
 			// Bucket not found is the correct response in this
@@ -295,7 +295,7 @@ SessionDialog::CheckAuthenticationResponse()
 			msg = e.ToString();
 			m_baseErrorLabel->setText(msg);
 			LOG_ERROR(logPrefix + msg);
-			m_form->addWidget(m_baseErrorLabel, 1, 0, 1, 3);
+			m_form->addWidget(m_baseErrorLabel, 0, 0, 1, 3);
 		}
 	}
 
