@@ -1,3 +1,5 @@
 #!/bin/sh
-export LD_LIBRARY_PATH=`pwd`/lib:$LD_LIBRARY_PATH
-./BlackPearlDS3BrowserApp
+pwd=`pwd`
+export LD_LIBRARY_PATH=$pwd/lib:$LD_LIBRARY_PATH
+export QT_QPA_PLATFORM_PLUGIN_PATH=$pwd/lib/plugins
+./app/BlackPearl\ DS3\ Browser
