@@ -45,12 +45,10 @@ main(int argc, char *argv[])
 	Console::Instance();
 
 	MainWindow mainWindow;
-	SessionDialog* sessionDialog = new SessionDialog;
-	sessionDialog->show();
-	QObject::connect(sessionDialog, SIGNAL(accepted()),
+	SessionDialog sessionDialog;
+	sessionDialog.show();
+	QObject::connect(&sessionDialog, SIGNAL(accepted()),
 			 &mainWindow, SLOT(CreateSession()));
-	QObject::connect(sessionDialog, SIGNAL(rejected()),
-			 &mainWindow, SLOT(DeleteSession()));
 
 	return app.exec();
 }

@@ -79,7 +79,6 @@ MainWindow::CreateSession()
 {
 	SessionDialog* sessionDialog = static_cast<SessionDialog*>(sender());
 	Session* session = new Session(sessionDialog->GetSession());
-	delete sessionDialog;
 	SessionView* sessionView = new SessionView(session, m_jobsView);
 	m_sessionViews << sessionView;
 	m_sessionTabs->addTab(sessionView, session->GetHost());
@@ -87,14 +86,6 @@ MainWindow::CreateSession()
 	// creating the initial session.
 	show();
 }
-
-void
-MainWindow::DeleteSession()
-{
-	SessionDialog* sessionDialog = static_cast<SessionDialog*>(sender());
-	delete sessionDialog;
-}
-
 
 void
 MainWindow::closeEvent(QCloseEvent* event)
