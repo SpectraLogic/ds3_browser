@@ -130,12 +130,13 @@ Client::CreateBucket(const QString& name)
 	ds3_request* request = ds3_init_put_bucket(name.toUtf8().constData());
 	LOG_INFO("Create Bucket " + name + " (PUT " + m_endpoint + "/" + \
 		 name + ")");
-	ds3_error* error = ds3_put_bucket(m_client, request);
+	ds3_error* ds3Error = ds3_put_bucket(m_client, request);
 	ds3_free_request(request);
 
-	if (error) {
-		throw (DS3Error(error));
-		ds3_free_error(error);
+	if (ds3Error != NULL) {
+		DS3Error error(ds3Error);
+		ds3_free_error(ds3Error);
+		throw (error);
 	}
 }
 
@@ -199,24 +200,25 @@ Client::GetObject(const QString& bucket,
 							   object.toUtf8().constData(),
 							   offset,
 							   jobID.toUtf8().constData());
-	ds3_error* error = NULL;
+	ds3_error* ds3Error = NULL;
 	ObjectWorkItem objWorkItem(bucket, object, fileName, bulkGetWorkItem);
 	ClientAndObjectWorkItem caowi;
 	caowi.client = this;
 	caowi.objectWorkItem = &objWorkItem;
 	if (objWorkItem.OpenFile(QIODevice::ReadWrite)) {
 		objWorkItem.SeekFile(offset);
-		error = ds3_get_object(m_client, request,
-				       &caowi, write_to_file);
+		ds3Error = ds3_get_object(m_client, request,
+					  &caowi, write_to_file);
 	} else {
 		LOG_ERROR("GET object failed: unable to open file " + fileName);
 	}
 
 	ds3_free_request(request);
 
-	if (error != NULL) {
-		throw (DS3Error(error));
-		ds3_free_error(error);
+	if (ds3Error != NULL) {
+		DS3Error error(ds3Error);
+		ds3_free_error(ds3Error);
+		throw (error);
 	}
 }
 
@@ -233,12 +235,12 @@ Client::PutObject(const QString& bucket,
 							   object.toUtf8().constData(),
 							   offset, length,
 							   jobID.toUtf8().constData());
-	ds3_error* error = NULL;
+	ds3_error* ds3Error = NULL;
 	QFileInfo fileInfo(fileName);
 	if (fileInfo.isDir()) {
 		// "folder" objects don't have a size nor do they have any
 		// data associated with them
-		error = ds3_put_object(m_client, request, NULL, NULL);
+		ds3Error = ds3_put_object(m_client, request, NULL, NULL);
 	} else {
 		ObjectWorkItem objWorkItem(bucket, object, fileName, workItem);
 		ClientAndObjectWorkItem caowi;
@@ -246,8 +248,8 @@ Client::PutObject(const QString& bucket,
 		caowi.objectWorkItem = &objWorkItem;
 		if (objWorkItem.OpenFile(QIODevice::ReadOnly)) {
 			objWorkItem.SeekFile(offset);
-			error = ds3_put_object(m_client, request,
-					       &caowi, read_from_file);
+			ds3Error = ds3_put_object(m_client, request,
+						  &caowi, read_from_file);
 		} else {
 			LOG_ERROR("PUT object failed: unable to open file " + fileName);
 		}
@@ -258,9 +260,10 @@ Client::PutObject(const QString& bucket,
 	// was aborted by an application callback" errors.  It would be nice
 	// if the C SDK returned the CURLcode response and we could use that
 	// instead.
-	if (error != NULL && !workItem->WasCanceled()) {
-		throw (DS3Error(error));
-		ds3_free_error(error);
+	if (ds3Error != NULL && !workItem->WasCanceled()) {
+		DS3Error error(ds3Error);
+		ds3_free_error(ds3Error);
+		throw (error);
 	}
 }
 
@@ -286,14 +289,15 @@ Client::DoGetService()
 	ds3_get_service_response *response;
 	ds3_request* request = ds3_init_get_service();
 	LOG_INFO("Get Buckets (GET " + m_endpoint + ")");
-	ds3_error* error = ds3_get_service(m_client,
-					   request,
-					   &response);
+	ds3_error* ds3Error = ds3_get_service(m_client,
+					       request,
+					       &response);
 	ds3_free_request(request);
 
-	if (error) {
-		throw (DS3Error(error));
-		ds3_free_error(error);
+	if (ds3Error != NULL) {
+		DS3Error error(ds3Error);
+		ds3_free_error(ds3Error);
+		throw (error);
 	}
 
 	return response;
@@ -335,14 +339,15 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 	if (!silent) {
 		LOG_INFO(logMsg);
 	}
-	ds3_error* error = ds3_get_bucket(m_client,
-					  request,
-					  &response);
+	ds3_error* ds3Error = ds3_get_bucket(m_client,
+					     request,
+					     &response);
 	ds3_free_request(request);
 
-	if (error) {
-		throw (DS3Error(error));
-		ds3_free_error(error);
+	if (ds3Error != NULL) {
+		DS3Error error(ds3Error);
+		ds3_free_error(ds3Error);
+		throw (error);
 	}
 
 	return response;
@@ -610,20 +615,21 @@ Client::DoBulk(BulkWorkItem* workItem)
 		request = ds3_init_put_bulk(bucketName.toUtf8().constData(), bulkObjList);
 	}
 	ds3_bulk_response *response = NULL;
-	ds3_error* error = ds3_bulk(m_client, request, &response);
+	ds3_error* ds3Error = ds3_bulk(m_client, request, &response);
 	ds3_free_request(request);
 	ds3_free_bulk_object_list(bulkObjList);
 	workItem->SetResponse(response);
 	workItem->SetNumChunksProcessed(0);
 
-	if (error) {
+	if (ds3Error != NULL) {
+		DS3Error error(ds3Error);
+		ds3_free_error(ds3Error);
 		if (isGet) {
-			throw (DS3Error(error));
+			throw (error);
 		} else {
-			DS3Error ds3Error(error);
 			QString errorMsg = "Error uploading objects to server: ";
-			if (ds3Error.GetStatusCode() == 409) {
-				QString body = ds3Error.GetErrorBody();
+			if (error.GetStatusCode() == 409) {
+				QString body = error.GetErrorBody();
 				QRegExp rx(", ([^\\)]+)\\) already exists");
 				if (rx.indexIn(body, 0) != -1) {
 					errorMsg += rx.cap(1) + " already exists " \
@@ -634,7 +640,7 @@ Client::DoBulk(BulkWorkItem* workItem)
 						    "cannot be replaced";
 				}
 			} else {
-				errorMsg += ds3Error.ToString();
+				errorMsg += error.ToString();
 			}
 			errorMsg += ".  Canceling job.";
 			LOG_ERROR(errorMsg);
@@ -642,7 +648,6 @@ Client::DoBulk(BulkWorkItem* workItem)
 			DeleteOrRequeueBulkWorkItem(workItem);
 			return;
 		}
-		ds3_free_error(error);
 	}
 
 	if (isGet) {
@@ -754,12 +759,13 @@ Client::GetAvailableJobChunks(BulkGetWorkItem* workItem)
 	ds3_bulk_response *response = workItem->GetResponse();
 	ds3_request* request = ds3_init_get_available_chunks(response->job_id->value);
 	ds3_get_available_chunks_response* chunkResponse;
-	ds3_error* error = ds3_get_available_chunks(m_client, request, &chunkResponse);
+	ds3_error* ds3Error = ds3_get_available_chunks(m_client, request, &chunkResponse);
 	ds3_free_request(request);
 
-	if (error) {
-		throw (DS3Error(error));
-		ds3_free_error(error);
+	if (ds3Error != NULL) {
+		DS3Error error(ds3Error);
+		ds3_free_error(ds3Error);
+		throw (error);
 	}
 
 	return chunkResponse;
@@ -843,12 +849,13 @@ Client::AllocateJobChunk(const char* chunkID)
 {
 	ds3_request* request = ds3_init_allocate_chunk(chunkID);
 	ds3_allocate_chunk_response* chunkResponse;
-	ds3_error* error = ds3_allocate_chunk(m_client, request, &chunkResponse);
+	ds3_error* ds3Error = ds3_allocate_chunk(m_client, request, &chunkResponse);
 	ds3_free_request(request);
 
-	if (error) {
-		throw (DS3Error(error));
-		ds3_free_error(error);
+	if (ds3Error != NULL) {
+		DS3Error error(ds3Error);
+		ds3_free_error(ds3Error);
+		throw (error);
 	}
 
 	return chunkResponse;
