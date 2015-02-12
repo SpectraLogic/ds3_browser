@@ -30,9 +30,6 @@ BulkPutWorkItem::BulkPutWorkItem(const QString& host,
 BulkPutWorkItem::~BulkPutWorkItem()
 {
 	DeleteDirIterator();
-	if (m_response != NULL) {
-		ds3_free_bulk_response(m_response);
-	}
 }
 
 void

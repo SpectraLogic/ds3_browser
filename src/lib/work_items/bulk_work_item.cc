@@ -34,6 +34,9 @@ BulkWorkItem::BulkWorkItem(const QString& host, const QList<QUrl> urls)
 
 BulkWorkItem::~BulkWorkItem()
 {
+	if (m_response != NULL) {
+		ds3_free_bulk_response(m_response);
+	}
 }
 
 uint64_t

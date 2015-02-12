@@ -33,6 +33,7 @@ public:
 	BulkGetWorkItem(const QString& host,
 			const QList<QUrl> urls,
 			const QString& destination);
+	~BulkGetWorkItem();
 
 	const QString GetDestination() const;
 	Job::Type GetType() const;
@@ -89,12 +90,6 @@ inline size_t
 BulkGetWorkItem::GetGetBucketResponseIterator() const
 {
 	return m_getBucketResponseIterator;
-}
-
-inline void
-BulkGetWorkItem::SetGetBucketResponse(ds3_get_bucket_response* response)
-{
-	m_getBucketResponse = response;
 }
 
 inline void

@@ -692,6 +692,7 @@ Client::ProcessGetJobChunk(BulkGetWorkItem* workItem)
 	size_t numChunks = 0;
 	while (numChunks == 0) {
 		if (workItem->WasCanceled()) {
+			ds3_free_available_chunks_response(chunksResponse);
 			DeleteOrRequeueBulkWorkItem(workItem);
 			return;
 		}
@@ -708,6 +709,7 @@ Client::ProcessGetJobChunk(BulkGetWorkItem* workItem)
 			LOG_ERROR(errMsg);
 		}
 		if (numChunks == 0) {
+			ds3_free_available_chunks_response(chunksResponse);
 			if (errMsg.isEmpty()) {
 				LOG_INFO("Next bulk get job chunk not ready " \
 					 "yet.  Sleeping for " +
@@ -745,6 +747,7 @@ Client::ProcessGetJobChunk(BulkGetWorkItem* workItem)
 		}
 		workItem->IncNumChunksProcessed();
 	}
+	ds3_free_available_chunks_response(chunksResponse);
 
 	if (workItem->IsPageFinished()) {
 		DeleteOrRequeueBulkWorkItem(workItem);
@@ -788,6 +791,7 @@ Client::ProcessPutJobChunk(BulkPutWorkItem* workItem)
 	const char* chunkID = response->list[chunkNum]->chunk_id->value;
 	while (chunkResponse == NULL) {
 		if (workItem->WasCanceled()) {
+			ds3_free_allocate_chunk_response(chunkResponse);
 			DeleteOrRequeueBulkWorkItem(workItem);
 			return;
 		}
@@ -817,6 +821,7 @@ Client::ProcessPutJobChunk(BulkPutWorkItem* workItem)
 	//      of the "put objects" thread pool.
 	for (uint64_t i = 0; i < numObjects;  i++) {
 		if (workItem->WasCanceled()) {
+			ds3_free_allocate_chunk_response(chunkResponse);
 			DeleteOrRequeueBulkWorkItem(workItem);
 			return;
 		}
@@ -834,6 +839,7 @@ Client::ProcessPutJobChunk(BulkPutWorkItem* workItem)
 				  " - " + e.ToString());
 		}
 	}
+	ds3_free_allocate_chunk_response(chunkResponse);
 
 	workItem->IncNumChunksProcessed();
 

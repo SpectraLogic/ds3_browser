@@ -25,3 +25,19 @@ BulkGetWorkItem::BulkGetWorkItem(const QString& host,
 	  m_getBucketResponseIterator(0)
 {
 }
+
+BulkGetWorkItem::~BulkGetWorkItem()
+{
+	if (m_getBucketResponse != NULL) {
+		ds3_free_bucket_response(m_getBucketResponse);
+	}
+}
+
+void
+BulkGetWorkItem::SetGetBucketResponse(ds3_get_bucket_response* response)
+{
+	if (m_getBucketResponse != response && m_getBucketResponse != NULL) {
+		ds3_free_bucket_response(m_getBucketResponse);
+	}
+	m_getBucketResponse = response;
+}
