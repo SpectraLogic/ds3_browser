@@ -88,6 +88,13 @@ MainWindow::CreateSession()
 	show();
 }
 
+void
+MainWindow::DeleteSession()
+{
+	SessionDialog* sessionDialog = static_cast<SessionDialog*>(sender());
+	delete sessionDialog;
+}
+
 
 void
 MainWindow::closeEvent(QCloseEvent* event)

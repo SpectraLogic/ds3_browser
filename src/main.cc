@@ -49,6 +49,8 @@ main(int argc, char *argv[])
 	sessionDialog->show();
 	QObject::connect(sessionDialog, SIGNAL(accepted()),
 			 &mainWindow, SLOT(CreateSession()));
+	QObject::connect(sessionDialog, SIGNAL(rejected()),
+			 &mainWindow, SLOT(DeleteSession()));
 
 	return app.exec();
 }

@@ -45,6 +45,7 @@ public slots:
 	// Create a session from the connected SessionDialog.  This should
 	// be connected to a SessionDialog's accepted signal.
 	void CreateSession();
+	void DeleteSession();
 
 protected:
 	void closeEvent(QCloseEvent* event);
