@@ -286,9 +286,9 @@ Client::CancelBulkJob(QUuid workItemID)
 ds3_get_service_response*
 Client::DoGetService()
 {
-	ds3_get_service_response *response;
 	ds3_request* request = ds3_init_get_service();
 	LOG_INFO("Get Buckets (GET " + m_endpoint + ")");
+	ds3_get_service_response *response;
 	ds3_error* ds3Error = ds3_get_service(m_client,
 					       request,
 					       &response);
@@ -311,7 +311,6 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 	LOG_DEBUG("DoGetBucket - bucket: " + bucketName +
 		  ", prefix: " + prefix + ", marker: " + marker);
 
-	ds3_get_bucket_response *response;
 	ds3_request* request = ds3_init_get_bucket(bucketName.toUtf8().constData());
 	QString logMsg = "List Objects (GET " + m_endpoint + "/";
 	logMsg += bucketName;
@@ -339,6 +338,7 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 	if (!silent) {
 		LOG_INFO(logMsg);
 	}
+	ds3_get_bucket_response* response;
 	ds3_error* ds3Error = ds3_get_bucket(m_client,
 					     request,
 					     &response);
