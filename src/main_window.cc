@@ -36,20 +36,10 @@ const int MainWindow::CANCEL_JOBS_TIMEOUT_IN_MS = 30000;
 
 MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags),
-	  m_isFinished(false),
 	  m_sessionTabs(new QTabWidget(this)),
 	  m_jobsView(new JobsView(this))
 {
 	setWindowTitle(SL_APP_NAME);
-
-	Session* session = CreateSession();
-	if (session == NULL)
-	{
-		// User closed/cancelled the New Session dialog which should
-		// result in the application closing.
-		m_isFinished = true;
-		return;
-	}
 
 	CreateMenus();
 
@@ -85,6 +75,21 @@ MainWindow::GetNumActiveJobs() const
 }
 
 void
+MainWindow::CreateSession()
+{
+	SessionDialog* sessionDialog = static_cast<SessionDialog*>(sender());
+	Session* session = new Session(sessionDialog->GetSession());
+	delete sessionDialog;
+	SessionView* sessionView = new SessionView(session, m_jobsView);
+	m_sessionViews << sessionView;
+	m_sessionTabs->addTab(sessionView, session->GetHost());
+	// The MainWindow will not have been shown for the first time when
+	// creating the initial session.
+	show();
+}
+
+
+void
 MainWindow::closeEvent(QCloseEvent* event)
 {
 	if (GetNumActiveJobs() > 0) {
@@ -117,22 +122,6 @@ MainWindow::ReadSettings()
 	QSettings settings;
 	restoreGeometry(settings.value("mainWindow/geometry").toByteArray());
 	restoreState(settings.value("mainWindow/windowState").toByteArray());
-}
-
-Session*
-MainWindow::CreateSession()
-{
-	SessionDialog sessionDialog;
-	if (sessionDialog.exec() == QDialog::Rejected) {
-		return NULL;
-	}
-
-	Session* session = new Session(sessionDialog.GetSession());
-	SessionView* sessionView = new SessionView(session, m_jobsView);
-	m_sessionViews << sessionView;
-	m_sessionTabs->addTab(sessionView, session->GetHost());
-
-	return session;
 }
 
 void

@@ -22,6 +22,7 @@
 #include "views/console.h"
 
 #include "main_window.h"
+#include "views/session_dialog.h"
 
 int
 main(int argc, char *argv[])
@@ -44,12 +45,10 @@ main(int argc, char *argv[])
 	Console::Instance();
 
 	MainWindow mainWindow;
-	if (mainWindow.IsFinished())
-	{
-		// User closed/cancelled the New Session dialog
-		return 0;
-	}
-	mainWindow.show();
+	SessionDialog* sessionDialog = new SessionDialog;
+	sessionDialog->show();
+	QObject::connect(sessionDialog, SIGNAL(accepted()),
+			 &mainWindow, SLOT(CreateSession()));
 
 	return app.exec();
 }

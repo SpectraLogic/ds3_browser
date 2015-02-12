@@ -40,18 +40,19 @@ public:
 	MainWindow(QWidget* parent = 0, Qt::WindowFlags flags = 0);
 
 	int GetNumActiveJobs() const;
-	bool IsFinished() const;
+
+public slots:
+	// Create a session from the connected SessionDialog.  This should
+	// be connected to a SessionDialog's accepted signal.
+	void CreateSession();
 
 protected:
 	void closeEvent(QCloseEvent* event);
 
 private:
 	void ReadSettings();
-	Session* CreateSession();
 	void CreateMenus();
 	void CancelActiveJobs();
-
-	bool m_isFinished;
 
 	QMenu* m_helpMenu;
 	QAction* m_aboutAction;
@@ -69,11 +70,5 @@ private:
 private slots:
 	void About();
 };
-
-inline bool
-MainWindow::IsFinished() const
-{
-	return m_isFinished;
-}
 
 #endif
