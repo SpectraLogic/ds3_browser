@@ -74,7 +74,6 @@ Client::~Client()
 {
 	ds3_free_creds(m_creds);
 	ds3_free_client(m_client);
-	ds3_cleanup();
 }
 
 int

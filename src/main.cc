@@ -16,6 +16,7 @@
 
 #include <QApplication>
 #include <QFile>
+#include <ds3.h>
 
 #include "global.h"
 #include "models/job.h"
@@ -50,5 +51,9 @@ main(int argc, char *argv[])
 	QObject::connect(&sessionDialog, SIGNAL(accepted()),
 			 &mainWindow, SLOT(CreateSession()));
 
-	return app.exec();
+	int ret = app.exec();
+
+	ds3_cleanup();
+
+	return ret;
 }
