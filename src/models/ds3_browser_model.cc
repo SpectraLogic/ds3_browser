@@ -18,6 +18,7 @@
 #include <QFuture>
 #include <QIcon>
 #include <QModelIndex>
+#include <QRegularExpression>
 #include <QSet>
 
 #include "helpers/number_helper.h"
@@ -404,7 +405,7 @@ DS3BrowserModel::dropMimeData(const QMimeData* data,
 	if (parent->GetData(KIND) != BUCKET) {
 		prefix += parent->GetData(NAME).toString();
 	}
-	prefix.replace(QRegExp("^/"), "");
+	prefix.replace(QRegularExpression("^/"), "");
 	QList<QUrl> urls = data->urls();
 	m_client->BulkPut(bucketName, prefix, urls);
 	return true;
@@ -834,8 +835,8 @@ DS3BrowserModel::HandleGetBucketResponse()
 			DS3BrowserItem* object;
 
 			QString nextName = QString::fromUtf8(rawCommonPrefix->value);
-			nextName.replace(QRegExp("^" + prefix), "");
-			nextName.replace(QRegExp("/$"), "");
+			nextName.replace(QRegularExpression("^" + prefix), "");
+			nextName.replace(QRegularExpression("/$"), "");
 			if (!currentCommonPrefixNames.contains(nextName)) {
 				objectData << nextName;
 				objectData << owner;
@@ -866,7 +867,7 @@ DS3BrowserModel::HandleGetBucketResponse()
 			if (nextName == prefix) {
 				continue;
 			}
-			nextName.replace(QRegExp("^" + prefix), "");
+			nextName.replace(QRegularExpression("^" + prefix), "");
 			objectData << nextName;
 
 			objectData << owner;

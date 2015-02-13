@@ -14,7 +14,7 @@
  * *****************************************************************************
  */
 
-#include <QRegExp>
+#include <QRegularExpression>
 
 #include "models/ds3_url.h"
 
@@ -38,11 +38,11 @@ DS3URL::DS3URL(const QString& url, ParsingMode parsingMode)
 QString
 DS3URL::GetBucketName() const
 {
-	QRegExp regex(PATH_REGEX);
+	QRegularExpression regex(PATH_REGEX);
 	QString bucketName;
-	int pos = regex.indexIn(path());
-	if (pos > -1) {
-		bucketName = regex.cap(1);
+	QRegularExpressionMatch match = regex.match(path());
+	if (match.hasMatch()) {
+		bucketName = match.captured(1);
 	}
 	return bucketName;
 }
@@ -50,11 +50,11 @@ DS3URL::GetBucketName() const
 QString
 DS3URL::GetObjectName() const
 {
-	QRegExp regex(PATH_REGEX);
+	QRegularExpression regex(PATH_REGEX);
 	QString objName;
-	int pos = regex.indexIn(path());
-	if (pos > -1) {
-		objName = regex.cap(2);
+	QRegularExpressionMatch match = regex.match(path());
+	if (match.hasMatch()) {
+		objName = match.captured(2);
 	}
 	return objName;
 }
@@ -62,12 +62,11 @@ DS3URL::GetObjectName() const
 QString
 DS3URL::GetLastPathPart() const
 {
-	QRegExp regex("([^/]+/?)$");
+	QRegularExpression regex("([^/]+/?)$");
 	QString part;
-	int pos = regex.indexIn(path());
-	if (pos > -1) {
-		QString match = regex.cap(1);
-		part = match;
+	QRegularExpressionMatch match = regex.match(path());
+	if (match.hasMatch()) {
+		part = match.captured(1);
 	}
 	return part;
 }

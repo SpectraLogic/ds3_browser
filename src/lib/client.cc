@@ -20,6 +20,7 @@
 #include <QDirIterator>
 #include <QFileInfo>
 #include <QHash>
+#include <QRegularExpression>
 
 #include "lib/work_items/bulk_get_work_item.h"
 #include "lib/work_items/bulk_put_work_item.h"
@@ -379,7 +380,7 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 		QUrl lastUrl = workItem->GetLastProcessedUrl();
 		if (!lastUrl.isEmpty()) {
 			QString lastUrlS = lastUrl.toString();
-			lastUrlS.replace(QRegExp("/$"), "");
+			lastUrlS.replace(QRegularExpression("/$"), "");
 			lastUrlS += "/";
 			if (url.toString().startsWith(lastUrlS)) {
 				// This URL is either the same as or a
@@ -445,7 +446,7 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 					ds3_object rawObject = getBucketRes->objects[i];
 					QString subFullObjName = QString::fromUtf8(rawObject.name->value);
 					QString objNameMinusPrefix = subFullObjName;
-					objNameMinusPrefix.replace(QRegExp("^" + prefix), "");
+					objNameMinusPrefix.replace(QRegularExpression("^" + prefix), "");
 					QString subFilePath = QDir::cleanPath(destination + "/" +
 									      bucketPrefix + "/" + prefix +
 									      "/" + objNameMinusPrefix);
@@ -490,7 +491,7 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 	workItem->ClearObjMap();
 	QString normPrefix = workItem->GetPrefix();
 	if (!normPrefix.isEmpty()) {
-		normPrefix.replace(QRegExp("/$"), "");
+		normPrefix.replace(QRegularExpression("/$"), "");
 		normPrefix += "/";
 	}
 
@@ -506,7 +507,7 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 		QUrl lastUrl = workItem->GetLastProcessedUrl();
 		if (!lastUrl.isEmpty()) {
 			QString lastUrlS = lastUrl.toString();
-			lastUrlS.replace(QRegExp("/$"), "");
+			lastUrlS.replace(QRegularExpression("/$"), "");
 			lastUrlS += "/";
 			if (url.toString().startsWith(lastUrlS)) {
 				// This URL is either the same as or a
@@ -552,7 +553,7 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 				QString subFilePath = di->next();
 				QFileInfo subFileInfo = di->fileInfo();
 				QString subFileName = subFilePath;
-				subFileName.replace(QRegExp("^" + filePath + "/"), "");
+				subFileName.replace(QRegularExpression("^" + filePath + "/"), "");
 				QString subObjName = objName + subFileName;
 				if (subFileInfo.isDir()) {
 					subObjName += "/";
@@ -629,9 +630,10 @@ Client::DoBulk(BulkWorkItem* workItem)
 			QString errorMsg = "Error uploading objects to server: ";
 			if (error.GetStatusCode() == 409) {
 				QString body = error.GetErrorBody();
-				QRegExp rx(", ([^\\)]+)\\) already exists");
-				if (rx.indexIn(body, 0) != -1) {
-					errorMsg += rx.cap(1) + " already exists " \
+				QRegularExpression rx(", ([^\\)]+)\\) already exists");
+				QRegularExpressionMatch match = rx.match(body);
+				if (match.hasMatch()) {
+					errorMsg += match.captured(1) + " already exists " \
 						    "and objects cannot be replaced";
 				} else {
 					errorMsg += "one or more of the objects " \
