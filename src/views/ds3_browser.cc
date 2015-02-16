@@ -81,9 +81,8 @@ DS3Browser::OnContextMenuRequested(const QPoint& /*pos*/)
 	QAction newBucketAction("New Bucket", &menu);
 
 	QModelIndex index = m_treeView->rootIndex();
-	if (!index.isValid()) {
-		// "New Bucket" is only displayed when at the root (the
-		// page that lists all buckets).
+	bool atBucketListingLevel = !index.isValid();
+	if (atBucketListingLevel) {
 		menu.addAction(&newBucketAction);
 	}
 
