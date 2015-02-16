@@ -177,20 +177,15 @@ Client::GetObject(const QString& bucket,
 		  uint64_t offset,
 		  BulkGetWorkItem* bulkGetWorkItem)
 {
-	LOG_DEBUG("GetObject " + object + " to " + fileName +
-		  ", offset: " + QString::number(offset));
-
 	QDir dir(fileName);
 	if (object.endsWith("/")) {
 		if (!dir.exists()) {
-			LOG_DEBUG("GetObject - creating directory " + dir.path());
 			dir.mkpath(".");
 			return;
 		}
 	} else {
 		QDir parentDir(QFileInfo(fileName).absolutePath());
 		if (!parentDir.exists()) {
-			LOG_DEBUG("GetObject - creating directory " + parentDir.path());
 			parentDir.mkpath(".");
 		}
 	}
@@ -673,7 +668,6 @@ Client::CreateBulkGetDirs(BulkGetWorkItem* workItem)
 	for (int i = 0; i < workItem->GetDirsToCreateSize(); i++) {
 		QDir dir(workItem->GetDirsToCreateAt(i));
 		if (!dir.exists()) {
-			LOG_DEBUG("CreateBulkGetDirs - creating directory " + dir.path());
 			dir.mkpath(".");
 		}
 	}
