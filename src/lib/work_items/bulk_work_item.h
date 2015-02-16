@@ -31,6 +31,8 @@
 class BulkWorkItem : public WorkItem
 {
 public:
+	static const uint64_t UPDATE_THRESHOLD;
+
 	BulkWorkItem(const QString& host, const QList<QUrl> urls);
 	virtual ~BulkWorkItem();
 
@@ -50,6 +52,12 @@ public:
 	uint64_t GetBytesTransferred() const;
 	void UpdateBytesTransferred(size_t bytes);
 	size_t GetNumChunksProcessed() const;
+
+	// Used to throttle the number of job updates Client emits to prevent
+	// the main GUI thread from getting flooded with job update requests.
+	// This is probably only necessary during the Client::{Read,Write}File
+	// methods.
+	bool IsJobUpdateReady();
 
 	bool WasCanceled() const;
 	// A large drag/drop operation might have to be split up amonst
@@ -94,6 +102,9 @@ protected:
 	QList<QUrl>::const_iterator m_urlsIterator;
 	uint64_t m_bytesTransferred;
 	mutable QMutex m_bytesTransferredLock;
+	// Used to throttle the number of job updates Client emits to prevent
+	// the main GUI thread from getting flooded with job update requests.
+	uint64_t m_bytesTransferredSinceLastJobUpdate;
 	QHash<QString, QString> m_objMap;
 	ds3_bulk_response* m_response;
 	mutable QMutex m_responseLock;

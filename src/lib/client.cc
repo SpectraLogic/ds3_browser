@@ -930,7 +930,7 @@ Client::ReadFile(ObjectWorkItem* workItem, char* buffer,
 	}
 
 	size_t bytesRead = workItem->ReadFile(buffer, size, count);
-	if (bulkWorkItem != NULL) {
+	if (bulkWorkItem != NULL && bulkWorkItem->IsJobUpdateReady()) {
 		Job job = bulkWorkItem->ToJob();
 		emit JobProgressUpdate(job);
 	}
@@ -956,7 +956,7 @@ Client::WriteFile(ObjectWorkItem* workItem, char* buffer,
 	}
 
 	size_t bytesWritten = workItem->WriteFile(buffer, size, count);
-	if (bulkWorkItem != NULL) {
+	if (bulkWorkItem != NULL && bulkWorkItem->IsJobUpdateReady()) {
 		Job job = bulkWorkItem->ToJob();
 		emit JobProgressUpdate(job);
 	}

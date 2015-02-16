@@ -19,6 +19,8 @@
 #include "lib/work_items/bulk_work_item.h"
 #include "models/job.h"
 
+const uint64_t BulkWorkItem::UPDATE_THRESHOLD = 100 * 1024;
+
 BulkWorkItem::BulkWorkItem(const QString& host, const QList<QUrl> urls)
 	: WorkItem(),
 	  m_state(Job::INITIALIZING),
@@ -26,6 +28,7 @@ BulkWorkItem::BulkWorkItem(const QString& host, const QList<QUrl> urls)
 	  m_urls(urls),
 	  m_urlsIterator(m_urls.constBegin()),
 	  m_bytesTransferred(0),
+	  m_bytesTransferredSinceLastJobUpdate(0),
 	  m_response(NULL),
 	  m_numChunksProcessed(0)
 {
@@ -53,6 +56,7 @@ BulkWorkItem::UpdateBytesTransferred(size_t bytes)
 {
 	m_bytesTransferredLock.lock();
 	m_bytesTransferred += bytes;
+	m_bytesTransferredSinceLastJobUpdate += bytes;
 	m_bytesTransferredLock.unlock();
 }
 
@@ -75,6 +79,20 @@ BulkWorkItem::GetSize() const
 	}
 	return size;
 }
+
+bool
+BulkWorkItem::IsJobUpdateReady()
+{
+	bool ready = false;
+	m_bytesTransferredLock.lock();
+	if (m_bytesTransferredSinceLastJobUpdate > UPDATE_THRESHOLD) {
+		ready = true;
+		m_bytesTransferredSinceLastJobUpdate = 0;
+	}
+	m_bytesTransferredLock.unlock();
+	return ready;
+}
+
 
 bool
 BulkWorkItem::IsPageFinished() const
