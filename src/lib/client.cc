@@ -141,6 +141,38 @@ Client::CreateBucket(const QString& name)
 }
 
 void
+Client::DeleteBucket(const QString& name)
+{
+	ds3_request* request = ds3_init_delete_bucket(name.toUtf8().constData());
+	LOG_INFO("Delete Bucket " + name + " (DELETE " + m_endpoint + "/" + \
+		 name + ")");
+	ds3_error* ds3Error = ds3_delete_bucket(m_client, request);
+	ds3_free_request(request);
+
+	if (ds3Error != NULL) {
+		DS3Error error(ds3Error);
+		ds3_free_error(ds3Error);
+		throw (error);
+	}
+}
+
+void
+Client::DeleteObject(const QString& bucketName, const QString& objectName)
+{
+	ds3_request* request = ds3_init_delete_object(bucketName.toUtf8().constData(),
+						      objectName.toUtf8().constData());
+	LOG_INFO("Delete Object " + bucketName + "/" + objectName);
+	ds3_error* ds3Error = ds3_delete_object(m_client, request);
+	ds3_free_request(request);
+
+	if (ds3Error != NULL) {
+		DS3Error error(ds3Error);
+		ds3_free_error(ds3Error);
+		throw (error);
+	}
+}
+
+void
 Client::BulkGet(const QList<QUrl> urls, const QString& destination)
 {
 	BulkGetWorkItem* workItem = new BulkGetWorkItem(m_host, urls,

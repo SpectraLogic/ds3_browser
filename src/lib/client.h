@@ -61,6 +61,8 @@ public:
 						    bool silent = false);
 
 	void CreateBucket(const QString& name);
+	void DeleteBucket(const QString& name);
+	void DeleteObject(const QString& bucketName, const QString& objectName);
 
 	void BulkGet(const QList<QUrl> urls, const QString& destination);
 

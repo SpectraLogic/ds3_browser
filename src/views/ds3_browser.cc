@@ -20,7 +20,10 @@
 #include "lib/logger.h"
 #include "models/ds3_browser_model.h"
 #include "models/session.h"
+#include "views/ds3_delete_dialog.h"
 #include "views/buckets/new_bucket_dialog.h"
+#include "views/buckets/delete_bucket_dialog.h"
+#include "views/objects/delete_objects_dialog.h"
 #include "views/ds3_browser.h"
 #include "views/jobs_view.h"
 
@@ -79,6 +82,7 @@ DS3Browser::OnContextMenuRequested(const QPoint& /*pos*/)
 {
 	QMenu menu;
 	QAction newBucketAction("New Bucket", &menu);
+	QAction deleteAction("Delete", &menu);
 
 	QModelIndex index = m_treeView->rootIndex();
 	bool atBucketListingLevel = !index.isValid();
@@ -86,26 +90,27 @@ DS3Browser::OnContextMenuRequested(const QPoint& /*pos*/)
 		menu.addAction(&newBucketAction);
 	}
 
+	menu.addAction(&deleteAction);
+	if (m_treeView->selectionModel()->selectedRows().count() == 0) {
+		// We could also disable the delete action for other conditions
+		// (selecting a folder object), however, we don't currently
+		// have a good way to inform the user why it's disabled.
+		// Maybe if we had a delete action to the toolbar, we can
+		// add a tooltip but we can't add a tooltip to a QAction that's
+		// in a QMenu.
+		deleteAction.setEnabled(false);
+	}
+
 	QAction* selectedAction = menu.exec(QCursor::pos());
-	if (!selectedAction)
-	{
+	if (!selectedAction) {
 		return;
 	}
 
-	if (selectedAction == &newBucketAction)
-	{
+	if (selectedAction == &newBucketAction) {
 		CreateBucket();
+	} else if (selectedAction == &deleteAction) {
+		DeleteSelected();
 	}
-}
-
-void
-DS3Browser::CreateBucket()
-{
-	NewBucketDialog newBucketDialog(m_client);
-	if (newBucketDialog.exec() == QDialog::Rejected) {
-		return;
-	}
-	Refresh();
 }
 
 void
@@ -138,4 +143,60 @@ DS3Browser::OnModelItemClick(const QModelIndex& index)
 	if (m_model->IsPageBreak(index)) {
 		m_model->fetchMore(index.parent());
 	}
+}
+
+void
+DS3Browser::CreateBucket()
+{
+	NewBucketDialog newBucketDialog(m_client);
+	if (newBucketDialog.exec() == QDialog::Rejected) {
+		return;
+	}
+	Refresh();
+}
+
+void
+DS3Browser::DeleteSelected()
+{
+	QModelIndexList selectedIndexes = m_treeView->selectionModel()->selectedRows();
+	if (selectedIndexes.count() == 0) {
+		LOG_ERROR("Nothing selected to delete");
+		return;
+	} else if (selectedIndexes.count() > 1) {
+		LOG_ERROR("Deleting more than one item at a time is not supported");
+		return;
+	}
+
+	QModelIndex selectedIndex = selectedIndexes[0];
+	if (m_model->IsFolder(selectedIndex)) {
+		LOG_ERROR("Deleting folders is not yet supported");
+		return;
+	}
+
+	QString name = m_model->GetFullName(selectedIndex);
+	DS3DeleteDialog* dialog;
+	if (m_model->IsBucket(selectedIndex)) {
+		dialog = new DeleteBucketDialog(m_client, name);
+	} else {
+		QString bucketName = m_model->GetBucketName(selectedIndex);
+		dialog = new DeleteObjectsDialog(m_client, bucketName, QStringList(name));
+	}
+	if (dialog->exec() == QDialog::Accepted) {
+		Refresh();
+	}
+	delete dialog;
+}
+
+bool
+DS3Browser::IsBucketSelectedOnly() const
+{
+	QModelIndexList selectedIndexes = m_treeView->selectionModel()->selectedRows(0);
+	bool bucketSelected = false;
+	if (selectedIndexes.count() == 1) {
+		QModelIndex selectedIndex = selectedIndexes[0];
+		if (m_model->IsBucket(selectedIndex)) {
+			bucketSelected = true;
+		}
+	}
+	return bucketSelected;
 }

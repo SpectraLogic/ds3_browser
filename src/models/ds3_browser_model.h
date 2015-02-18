@@ -19,6 +19,8 @@
 
 #include <QAbstractItemModel>
 #include <QList>
+#include <QModelIndexList>
+#include <QStringList>
 #include <QTreeView>
 #include <ds3.h>
 
@@ -61,9 +63,14 @@ public:
 
 	// Non-Qt Methods
 
+	bool IsBucket(const QModelIndex& index) const;
+	bool IsFolder(const QModelIndex& index) const;
 	bool IsBucketOrFolder(const QModelIndex& index) const;
 	bool IsPageBreak(const QModelIndex& index) const;
 	bool IsFetching(const QModelIndex& parent) const;
+	QString GetBucketName(const QModelIndex& index) const;
+	QString GetName(const QModelIndex& index) const;
+	QString GetFullName(const QModelIndex& index) const;
 	QString GetPath(const QModelIndex& index) const;
 	void Refresh(const QModelIndex& rootIndex = QModelIndex());
 	void SetView(QTreeView* view);

@@ -17,6 +17,8 @@
 #ifndef DS3_BROWSER_H
 #define DS3_BROWSER_H
 
+#include <QStringList>
+
 #include "models/job.h"
 #include "views/browser.h"
 
@@ -53,6 +55,8 @@ protected slots:
 
 private:
 	void CreateBucket();
+	void DeleteSelected();
+	bool IsBucketSelectedOnly() const;
 
 	DS3BrowserModel* m_model;
 	JobsView* m_jobsView;

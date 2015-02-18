@@ -44,13 +44,16 @@ HEADERS = \
 	$${PWD}/src/models/session.h \
 	$${PWD}/src/views/browser.h \
 	$${PWD}/src/views/browser_tree_view_style.h \
+	$${PWD}/src/views/buckets/delete_bucket_dialog.h \
 	$${PWD}/src/views/buckets/new_bucket_dialog.h \
 	$${PWD}/src/views/console.h \
 	$${PWD}/src/views/dialog.h \
 	$${PWD}/src/views/ds3_browser.h \
+	$${PWD}/src/views/ds3_delete_dialog.h \
 	$${PWD}/src/views/host_browser.h \
 	$${PWD}/src/views/job_view.h \
 	$${PWD}/src/views/jobs_view.h \
+	$${PWD}/src/views/objects/delete_objects_dialog.h \
 	$${PWD}/src/views/session_dialog.h \
 	$${PWD}/src/views/session_view.h
 
@@ -74,12 +77,15 @@ SOURCES = \
 	$${PWD}/src/models/session.cc \
 	$${PWD}/src/views/browser.cc \
 	$${PWD}/src/views/browser_tree_view_style.cc \
+	$${PWD}/src/views/buckets/delete_bucket_dialog.cc \
 	$${PWD}/src/views/buckets/new_bucket_dialog.cc \
 	$${PWD}/src/views/console.cc \
 	$${PWD}/src/views/dialog.cc \
 	$${PWD}/src/views/ds3_browser.cc \
+	$${PWD}/src/views/ds3_delete_dialog.cc \
 	$${PWD}/src/views/host_browser.cc \
 	$${PWD}/src/views/jobs_view.cc \
+	$${PWD}/src/views/objects/delete_objects_dialog.cc \
 	$${PWD}/src/views/session_dialog.cc \
 	$${PWD}/src/views/session_view.cc
 

@@ -69,6 +69,7 @@ public:
 	virtual bool IsPageBreak() const;
 	bool IsFetching() const;
 	void Reset();
+	QString GetFullName() const;
 	QString GetPath() const;
 
 	void SetCanFetchMore(bool canFetchMore);
@@ -225,6 +226,12 @@ DS3BrowserItem::Reset()
 	m_children.clear();
 	m_canFetchMore = true;
 	m_nextMarker = QString();
+}
+
+QString
+DS3BrowserItem::GetFullName() const
+{
+	return (m_prefix + GetData(NAME).toString());
 }
 
 QString
@@ -606,6 +613,22 @@ DS3BrowserModel::rowCount(const QModelIndex &parent) const
 }
 
 bool
+DS3BrowserModel::IsBucket(const QModelIndex& index) const
+{
+	DS3BrowserItem* item = IndexToItem(index);
+	QVariant kind = item->GetData(KIND);
+	return (kind == BUCKET);
+}
+
+bool
+DS3BrowserModel::IsFolder(const QModelIndex& index) const
+{
+	DS3BrowserItem* item = IndexToItem(index);
+	QVariant kind = item->GetData(KIND);
+	return (kind == FOLDER);
+}
+
+bool
 DS3BrowserModel::IsBucketOrFolder(const QModelIndex& index) const
 {
 	DS3BrowserItem* item = IndexToItem(index);
@@ -630,6 +653,39 @@ DS3BrowserModel::IsFetching(const QModelIndex& parent) const
 		parentItem = m_rootItem;
 	}
 	return parentItem->IsFetching();
+}
+
+QString
+DS3BrowserModel::GetBucketName(const QModelIndex& index) const
+{
+	QString name;
+	DS3BrowserItem* item = IndexToItem(index);
+	if (item != NULL) {
+		name = item->GetBucketName();
+	}
+	return name;
+}
+
+QString
+DS3BrowserModel::GetName(const QModelIndex& index) const
+{
+	QString name;
+	DS3BrowserItem* item = IndexToItem(index);
+	if (item != NULL) {
+		name = item->GetData(NAME).toString();
+	}
+	return name;
+}
+
+QString
+DS3BrowserModel::GetFullName(const QModelIndex& index) const
+{
+	QString name;
+	DS3BrowserItem* item = IndexToItem(index);
+	if (item != NULL) {
+		name = item->GetFullName();
+	}
+	return name;
 }
 
 QString
