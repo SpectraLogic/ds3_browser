@@ -43,6 +43,7 @@ macx {
 	# Also, the build must be done outside of the source tree in order
 	# Qt to find its template Info.plist file.
 	ICON = resources/icons/ds3_explorer.icns
+	QMAKE_INFO_PLIST = src/mac/Info.plist.app
 }
 
 win32 {
