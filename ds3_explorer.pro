@@ -37,14 +37,12 @@ SOURCES += src/main.cc
 RESOURCES = ds3_explorer.qrc
 
 macx {
+	# With Qt 5.4 at least, only release builds will generate the
+	# Info.plist file and copy the icon file to the app bundle.  Thus, our
+	# application icon will not be available for debug builds.
+	# Also, the build must be done outside of the source tree in order
+	# Qt to find its template Info.plist file.
 	ICON = resources/icons/ds3_explorer.icns
-
-	# Qt should normally find its default Info.plist.app file, however, a
-	# bug appears to make it unable to find it when running qmake from a
-	# build directory.  Thus, the default Info.plist.app file has been
-	# copied to this provject and is specified.  We might want to have our
-	# own custom Info.plist file anyway.
-	QMAKE_INFO_PLIST = src/mac/Info.plist.app
 }
 
 win32 {
