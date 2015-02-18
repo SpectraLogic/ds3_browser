@@ -15,7 +15,7 @@
 # Define settings common between the main and test applications' project
 # files
 
-VERSION = 0.0.3
+VERSION = 0.0.4
 
 QT += concurrent core gui widgets
 
