@@ -42,7 +42,7 @@ DeleteBucketDialog::Delete()
 		switch (e.GetStatusCode()) {
 		case 403:
 			body = e.GetErrorBody();
-			if (body.contains("spectra-")) {
+			if (body.contains("spectra-", Qt::CaseInsensitive)) {
 				msg = "Buckets that start with \"spectra-\" " \
 				      "are reserved and cannot be deleted";
 			}
