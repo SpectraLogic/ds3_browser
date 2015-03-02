@@ -112,6 +112,8 @@ private:
 	void DeleteOrRequeueBulkWorkItem(BulkWorkItem* workItem);
 	void DeleteBulkWorkItem(BulkWorkItem* workItem);
 
+	qint64 GetFileSize(const QString& path);
+
 	QString m_host;
 	QString m_endpoint;
 	ds3_creds* m_creds;

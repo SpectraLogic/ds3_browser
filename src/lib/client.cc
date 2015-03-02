@@ -626,7 +626,7 @@ Client::DoBulk(BulkWorkItem* workItem)
 		if (!isGet) {
 			uint64_t fileSize = 0;
 			if (!fileInfo.isDir()) {
-				fileSize = fileInfo.size();
+				fileSize = GetFileSize(filePath);
 			}
 			bulkObj->length = fileSize;
 			bulkObj->offset = 0;
@@ -935,6 +935,31 @@ Client::DeleteBulkWorkItem(BulkWorkItem* workItem)
 	m_bulkWorkItems.remove(workItem->GetID());
 	delete workItem;
 	m_bulkWorkItemsLock.unlock();
+}
+
+qint64
+Client::GetFileSize(const QString& path)
+{
+	qint64 size = 0;
+#ifdef Q_OS_WIN
+	// There's a bug with QFileInfo::size() where it will report the size
+	// of a shortcut's target instead of the actual shortcut.
+	// See https://bugreports.qt.io/browse/QTBUG-24831
+	WIN32_FILE_ATTRIBUTE_DATA data;
+	QString nativePath = QDir::toNativeSeparators(path);
+	bool ok = GetFileAttributesEx((wchar_t*)nativePath.utf16(),
+				      GetFileExInfoStandard, &data);
+	if (ok) {
+		size = data.nFileSizeHigh;
+		size <<= 32;
+		size += data.nFileSizeLow;
+	} else {
+		LOG_ERROR("Error getting size  of file: " + nativePath);
+	}
+#else
+	size = QFileInfo(path).size();
+#endif
+	return size;
 }
 
 static size_t
