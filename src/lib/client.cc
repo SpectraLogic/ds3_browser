@@ -34,8 +34,9 @@ using QtConcurrent::run;
 
 const QString Client::DELIMITER = "/";
 
-// The S3 server imposes this limit although we might want to lower it
-const uint64_t Client::BULK_PAGE_LIMIT = 500000;
+// The S3 server imposes a max limit of 500,000 which could be lower depending
+// on the amount of RAM in the server.
+const uint64_t Client::BULK_PAGE_LIMIT = 100000;
 
 // 0 = don't specify it in requests and let the S3 server determine the max
 const uint32_t Client::MAX_KEYS = 0;
