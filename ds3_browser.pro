@@ -34,7 +34,7 @@ Release:DEFINES += NO_DEBUG
 
 SOURCES += src/main.cc
 
-RESOURCES = ds3_explorer.qrc
+RESOURCES = ds3_browser.qrc
 
 macx {
 	# With Qt 5.4 at least, only release builds will generate the
@@ -42,7 +42,7 @@ macx {
 	# application icon will not be available for debug builds.
 	# Also, the build must be done outside of the source tree in order
 	# Qt to find its template Info.plist file.
-	ICON = resources/icons/ds3_explorer.icns
+	ICON = resources/icons/ds3_browser.icns
 	QMAKE_INFO_PLIST = src/mac/Info.plist.app
 }
 
@@ -52,5 +52,5 @@ win32 {
 	# See http://qt-project.org/forums/viewthread/22133
 	DEFINES += NOMINMAX
 
-	RC_FILE = ds3_explorer.rc
+	RC_FILE = ds3_browser.rc
 }

@@ -218,7 +218,7 @@ SessionDialog::Authenticate()
 	if (m_watcher != NULL) {
 		delete m_watcher;
 	}
-	QString anyBucket = "authenticate_ds3_explorer_user_by_getting_any_" \
+	QString anyBucket = "authenticate_ds3_browser_user_by_getting_any_" \
 			    "bucket_just_to_verify_the_credentials_" \
 			    "the_bucket_does_not_have_to_exist";
 	m_watcher = new GetBucketWatcher(QModelIndex(), anyBucket, "");

@@ -1,7 +1,7 @@
-DS3 Explorer
+DS3 Browser
 ============
 
-DS3 Explorer is a C++/Qt graphical desktop application for interacting with the
+DS3 Browser is a C++/Qt graphical desktop application for interacting with the
 DS3 Deep Storage REST interface.  Windows and Mac OSX are currently supported
 although it should work on any Qt compatible platform.
 
@@ -28,10 +28,10 @@ The application is currently setup to use Microsoft Visual Studio (Express).
 Build the [DS3 C SDK](https://github.com/SpectraLogic/ds3_c_sdk).
 In the Microsoft Visual Studio Developer Command Prompt:
 
-    cd <ds3_explorer directory>
+    cd <ds3_browser directory>
     mkdir build 
     cd build
-    qmake ../ds3_explorer.pro
+    qmake ../ds3_browser.pro
     copy <ds3_c_sdk directory>\src\ds3.h .\
     copy <ds3_c_sdk directory>\win32\output\lib\*.lib .\
     copy <ds3_c_sdk directory>\win32\output\bin\*.dll .\release
@@ -43,10 +43,10 @@ without any targets specified will build the debug version to build/debug.
 Microsoft Visual Studio can also be used to build/develop the application.
 To generate a Microsoft Visual Studio project file:
 
-    cd <ds3_explorer directory>
+    cd <ds3_browser directory>
     mkdir build
     cd build
-    qmake -tp vc ../ds3_explorer.pro
+    qmake -tp vc ../ds3_browser.pro
 
 Mac OSX Builds
 --------------
@@ -55,10 +55,10 @@ Install XCode if you have not already done so.  Build and install the
 [DS3 C SDK](https://github.com/SpectraLogic/ds3_c_sdk) and it's dependencies.
 Then, in Terminal:
 
-    cd <ds3_explorer directory>
+    cd <ds3_browser directory>
     mkdir build
     cd build
-    qmake ../ds3_explorer.pro
+    qmake ../ds3_browser.pro
     make release
 
 A release app bundle will be located under build/release.  Running `make`
@@ -67,10 +67,10 @@ without any targets specified will build the debug version to build/debug.
 XCode can also be used to build/develop the application.  To generate an
 XCode project file:
 
-    cd <ds3_explorer directory>
+    cd <ds3_browser directory>
     mkdir build
     cd build
-    qmake -spec macx-xcode ../ds3_explorer.pro
+    qmake -spec macx-xcode ../ds3_browser.pro
 
 Packaging and Deploying
 -----------------------
@@ -89,7 +89,7 @@ Session Persistence
 
 The application is currently setup to automatically save the session data
 if the user selects that option.  Where the data is saved depends on the
-platform.  On OSX, it is stored in ~/Library/Preferences/com.spectralogic.DS3 Explorer.plist.
+platform.  On OSX, it is stored in ~/Library/Preferences/com.spectralogic.BlackPearl DS3 Browser.plist.
 
 OSX Note - OSX Yosemite, and possibly earlier versions, cache the plist files.
 Thus, deleting the plist file is not enough to clear the setting.  You must
@@ -105,7 +105,7 @@ application is provided under the `test/` directory that will run all the
 tests.  To run the tests, build and run the test application like any
 other Qt application.
 
-    cd <ds3_explorer directory>/test
+    cd <ds3_browser directory>/test
     mkdir build
     cd build
     qmake ../test.pro
