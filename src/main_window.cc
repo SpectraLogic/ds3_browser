@@ -41,8 +41,6 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 {
 	setWindowTitle(SL_APP_NAME);
 
-	CreateMenus();
-
 	setCentralWidget(m_sessionTabs);
 
 	m_jobsDock = new QDockWidget("Jobs", this);
@@ -60,6 +58,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
 	tabifyDockWidget(m_jobsDock, m_consoleDock);
 	setTabPosition(Qt::BottomDockWidgetArea, QTabWidget::North);
+
+	CreateMenus();
 
 	ReadSettings();
 }
@@ -132,6 +132,12 @@ MainWindow::CreateMenus()
 	m_helpMenu->addAction(m_aboutAction);
 
 	menuBar()->addMenu(m_helpMenu);
+
+	m_viewMenu = new QMenu(tr("&View"), this);
+	m_viewMenu->addAction(m_consoleDock->toggleViewAction());
+	m_viewMenu->addAction(m_jobsDock->toggleViewAction());
+
+	menuBar()->addMenu(m_viewMenu);
 }
 
 void

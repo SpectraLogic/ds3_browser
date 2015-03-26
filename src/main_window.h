@@ -57,6 +57,8 @@ private:
 	QMenu* m_helpMenu;
 	QAction* m_aboutAction;
 
+	QMenu* m_viewMenu;
+
 	QTabWidget* m_sessionTabs;
 	QList<SessionView*> m_sessionViews;
 
