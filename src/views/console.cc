@@ -14,6 +14,7 @@
  * *****************************************************************************
  */
 
+#include <QPalette>
 #include "lib/logger.h"
 #include "views/console.h"
 
@@ -71,9 +72,11 @@ Console::LogPrivate(int level, const QString& msg)
 	case DEBUG:
 		color = QColor("Blue");
 		break;
-	case INFO:
-		color = QColor("Black");
+	case INFO: {
+		QPalette palette;
+		color = palette.color(QPalette::Text);
 		break;
+	}
 	case WARNING:
 		color = QColor(175, 175, 0);
 		break;
