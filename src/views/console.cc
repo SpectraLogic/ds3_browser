@@ -14,7 +14,13 @@
  * *****************************************************************************
  */
 
+#include <QAction>
+#include <QFile>
+#include <QFileDialog>
+#include <QMenu>
 #include <QPalette>
+#include <QTextStream>
+
 #include "lib/logger.h"
 #include "views/console.h"
 
@@ -44,6 +50,9 @@ Console::Console(QWidget* parent)
 {
 	m_text = new QTextEdit();
 	m_text->setReadOnly(true);
+	m_text->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(m_text, SIGNAL(customContextMenuRequested(const QPoint&)),
+		this, SLOT(ShowContextMenu(const QPoint&)));
 	m_layout = new QVBoxLayout(this);
 	m_layout->addWidget(m_text);
 	setLayout(m_layout);
@@ -103,4 +112,36 @@ Console::LogPrivate(int level, const QString& msg)
 	m_numLines++;
 	m_text->ensureCursorVisible();
 	m_lock.unlock();
+}
+
+void
+Console::ShowContextMenu(const QPoint& /*pos*/)
+{
+	QMenu* menu = m_text->createStandardContextMenu();
+	menu->addSeparator();
+	QAction save("Save As...", menu);
+	menu->addAction(&save);
+	QAction* selectedAction = menu->exec(QCursor::pos());
+
+	if (selectedAction == &save) {
+		SaveToFile();
+	}
+}
+
+void
+Console::SaveToFile()
+{
+	QString fileName = QFileDialog::getSaveFileName(this,
+							"Save Log",
+							QDir::homePath());
+	QFile file(fileName);
+	if (file.open(QIODevice::ReadWrite)) {
+		QTextStream stream(&file);
+		stream << m_text->toPlainText() << endl;
+		file.flush();
+		file.close();
+		LOG_INFO("Saved log to " + fileName);
+	} else {
+		LOG_ERROR("Unable to save log to " + fileName);
+	}
 }

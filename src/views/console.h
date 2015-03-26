@@ -41,6 +41,7 @@ signals:
 
 private:
 	Console(QWidget* parent = 0);
+	void SaveToFile();
 
 	static Console* s_instance;
 
@@ -52,6 +53,7 @@ private:
 
 private slots:
 	void LogPrivate(int level, const QString& msg);
+	void ShowContextMenu(const QPoint& pos);
 };
 
 #endif
