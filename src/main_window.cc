@@ -125,8 +125,7 @@ MainWindow::ReadSettings()
 void
 MainWindow::CreateMenus()
 {
-	QString aboutTitle = "&About " + APP_NAME;
-	m_aboutAction = new QAction(tr(aboutTitle.toUtf8().constData()), this);
+	m_aboutAction = new QAction(tr("&About %1").arg(APP_NAME), this);
 	connect(m_aboutAction, SIGNAL(triggered()), this, SLOT(About()));
 
 	m_viewMenu = new QMenu(tr("&View"), this);
