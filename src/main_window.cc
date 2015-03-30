@@ -125,19 +125,20 @@ MainWindow::ReadSettings()
 void
 MainWindow::CreateMenus()
 {
-	m_aboutAction = new QAction(tr("&About"), this);
+	QString aboutTitle = "&About " + APP_NAME;
+	m_aboutAction = new QAction(tr(aboutTitle.toUtf8().constData()), this);
 	connect(m_aboutAction, SIGNAL(triggered()), this, SLOT(About()));
-
-	m_helpMenu = new QMenu(tr("&Help"), this);
-	m_helpMenu->addAction(m_aboutAction);
-
-	menuBar()->addMenu(m_helpMenu);
 
 	m_viewMenu = new QMenu(tr("&View"), this);
 	m_viewMenu->addAction(m_consoleDock->toggleViewAction());
 	m_viewMenu->addAction(m_jobsDock->toggleViewAction());
 
 	menuBar()->addMenu(m_viewMenu);
+
+	m_helpMenu = new QMenu(tr("&Help"), this);
+	m_helpMenu->addAction(m_aboutAction);
+
+	menuBar()->addMenu(m_helpMenu);
 }
 
 void
