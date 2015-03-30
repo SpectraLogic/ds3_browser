@@ -131,9 +131,9 @@ Console::SaveToFile()
 							"Save Log",
 							QDir::homePath());
 	QFile file(fileName);
-	if (file.open(QIODevice::ReadWrite)) {
+	if (file.open(QIODevice::ReadWrite | QIODevice::Text)) {
 		QTextStream stream(&file);
-		stream << m_text->toPlainText() << endl;
+		stream << m_text->toPlainText();
 		file.flush();
 		file.close();
 		LOG_INFO("Saved log to " + fileName);
