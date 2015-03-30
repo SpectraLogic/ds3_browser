@@ -1,9 +1,15 @@
 DS3 Browser
-============
+===========
 
 DS3 Browser is a C++/Qt graphical desktop application for interacting with the
 DS3 Deep Storage REST interface.  Windows and Mac OSX are currently supported
 although it should work on any Qt compatible platform.
+
+BlackPearl Compatibility
+------------------------
+
+This version of the DS3 Browser is only compatible with BlackPearl version
+1.1.
 
 Build Requirements
 ------------------
