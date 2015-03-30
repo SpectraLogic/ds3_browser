@@ -29,7 +29,6 @@
 #define DEFAULT_LOG_LEVEL DEBUG
 #endif
 
-const QString Console::LEVEL_COLORS[] = { "Blue", "Black", "darkYellow", "Red" };
 const unsigned int Console::MAX_LINES = 1000;
 Console* Console::s_instance = 0;
 
