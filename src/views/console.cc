@@ -18,7 +18,6 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QMenu>
-#include <QPalette>
 #include <QTextStream>
 
 #include "lib/logger.h"
@@ -81,11 +80,9 @@ Console::LogPrivate(int level, const QString& msg)
 	case DEBUG:
 		color = QColor("Blue");
 		break;
-	case INFO: {
-		QPalette palette;
-		color = palette.color(QPalette::Text);
+	case INFO:
+		color = QColor("Black");
 		break;
-	}
 	case WARNING:
 		color = QColor(175, 175, 0);
 		break;
