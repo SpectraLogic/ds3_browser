@@ -73,21 +73,16 @@ Console::Log(Level level, const QString& msg)
 void
 Console::LogPrivate(int level, const QString& msg)
 {
-	QString fullMsg(msg);
-
-	QColor color;
+	QString color;
 	switch (level) {
 	case DEBUG:
-		color = QColor("Blue");
-		break;
-	case INFO:
-		color = QColor("Black");
+		color = "blue";
 		break;
 	case WARNING:
-		color = QColor(175, 175, 0);
+		color = QColor(175, 175, 0).name();
 		break;
 	case ERR:
-		color = QColor("Red");
+		color = "red";
 		break;
 	};
 
@@ -104,8 +99,12 @@ Console::LogPrivate(int level, const QString& msg)
 	}
 	m_text->moveCursor(QTextCursor::End,
 			   QTextCursor::MoveAnchor);
-	m_text->setTextColor(color);
-	m_text->append(fullMsg);
+	QString html = "<font";
+	if (!color.isEmpty()) {
+		html += " color=\"" + color + "\"";
+	}
+	html += ">" + msg + "</font><br>";
+	m_text->insertHtml(html);
 	m_numLines++;
 	m_text->ensureCursorVisible();
 	m_lock.unlock();
