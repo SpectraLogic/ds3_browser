@@ -29,6 +29,7 @@
 #include "lib/watchers/get_service_watcher.h"
 #include "lib/watchers/get_bucket_watcher.h"
 #include "models/ds3_browser_model.h"
+#include "models/ds3_url.h"
 
 // Must match m_rootItem->m_data;
 enum Column { NAME, OWNER, SIZE_COL, KIND, CREATED, COUNT };
@@ -536,8 +537,8 @@ DS3BrowserModel::mimeData(const QModelIndexList& indexes) const
 			if (kind == FOLDER && !path.endsWith("/")) {
 				path += "/";
 			}
-			QUrl url(endpoint + path);
-			urls << url;
+			DS3URL url(endpoint, path);
+			urls << QUrl(url);
 		}
 	}
 	MimeData* mimeData = new MimeData;

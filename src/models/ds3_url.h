@@ -29,7 +29,7 @@ public:
 
 	DS3URL();
 	DS3URL(const QUrl& other);
-	DS3URL(const QString& url, ParsingMode parsingMode = TolerantMode);
+	DS3URL(const QString& endpoint, const QString& decodedPath);
 
 	QString GetBucketName() const;
 	QString GetObjectName() const;

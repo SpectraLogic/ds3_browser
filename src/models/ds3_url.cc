@@ -30,9 +30,10 @@ DS3URL::DS3URL(const QUrl& other)
 {
 }
 
-DS3URL::DS3URL(const QString& url, ParsingMode parsingMode)
-	: QUrl(url, parsingMode)
+DS3URL::DS3URL(const QString& endpoint, const QString& decodedPath)
+	: QUrl(endpoint)
 {
+	setPath(decodedPath);
 }
 
 QString
