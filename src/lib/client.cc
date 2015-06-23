@@ -113,13 +113,13 @@ Client::GetService()
 
 QFuture<ds3_get_bucket_response*>
 Client::GetBucket(const QString& bucketName, const QString& prefix,
-		  const QString& marker, bool silent)
+		  const QString& marker, bool silent, const QString& delimiter)
 {
 	QFuture<ds3_get_bucket_response*> future = run(this,
 						       &Client::DoGetBucket,
 						       bucketName,
 						       prefix,
-						       DELIMITER,
+						       delimiter,
 						       marker,
 						       silent);
 	return future;

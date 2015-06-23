@@ -24,6 +24,8 @@
 #include <QTreeView>
 #include <ds3.h>
 
+#include "lib/watchers/get_service_watcher.h"
+
 class Client;
 class DS3BrowserItem;
 
@@ -79,14 +81,41 @@ public slots:
 	void HandleGetServiceResponse();
 	void HandleGetBucketResponse();
 
+protected:
+	Client* m_client;
+	DS3BrowserItem* m_rootItem;
+	DS3BrowserItem* IndexToItem(const QModelIndex& index) const;
+
 private:
 	void FetchMoreBuckets(const QModelIndex& parent);
 	void FetchMoreObjects(const QModelIndex& parent);
-	DS3BrowserItem* IndexToItem(const QModelIndex& index) const;
 
-	Client* m_client;
-	DS3BrowserItem* m_rootItem;
 	QTreeView* m_view;
+};
+
+class DS3SearchModel : public DS3BrowserModel
+{
+
+	Q_OBJECT
+
+public:
+	DS3SearchModel(Client* client, QObject* parent);
+	void fetchMore(const QModelIndex& parent);
+	void HandleGetServiceResponse(QString search, QTreeView* tree, DS3BrowserModel* model, GetServiceWatcher* watcher);
+
+public slots:
+	void HandleGetBucketResponse();
+
+signals:
+	void DoneSearching(bool found);
+
+private:
+	size_t activeSearchesCount;
+	size_t searchFoundCount;
+	DS3BrowserModel* m_searchedModel;
+	QTreeView* m_searchedTree;
+	void AppendItem(ds3_object obj, QString bucketName);
+	void Search(const QModelIndex& index, QString bucket, QString prefix, QString search);
 };
 
 inline void
@@ -94,7 +123,6 @@ DS3BrowserModel::SetView(QTreeView* view)
 {
 	m_view = view;
 }
-
 
 inline DS3BrowserItem*
 DS3BrowserModel::IndexToItem(const QModelIndex& index) const

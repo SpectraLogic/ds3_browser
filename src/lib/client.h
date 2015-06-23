@@ -58,7 +58,8 @@ public:
 	QFuture<ds3_get_bucket_response*> GetBucket(const QString& bucketName,
 						    const QString& prefix,
 						    const QString& marker,
-						    bool silent = false);
+						    bool silent = false,
+						    const QString& delimiter = "/");
 
 	void CreateBucket(const QString& name);
 	void DeleteBucket(const QString& name);
