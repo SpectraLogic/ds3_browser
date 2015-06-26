@@ -19,6 +19,7 @@
 #include <QFileDialog>
 #include <QMenu>
 #include <QTextStream>
+#include <QSettings>
 
 #include "lib/logger.h"
 #include "views/console.h"
@@ -106,6 +107,22 @@ Console::LogPrivate(int level, const QString& msg)
 	m_text->insertHtml(html);
 	m_numLines++;
 	m_text->ensureCursorVisible();
+
+	QSettings settings;
+	bool loggingEnabled = settings.value("mainWindow/loggingEnabled", true).toBool();
+	QString path = settings.value("mainWindow/logFilePath").toString();
+	QString fileName = settings.value("mainWindow/logFileName").toString();
+
+	if(loggingEnabled) {
+		QFile* file = new QFile(path+fileName);
+		if(file->open(QIODevice::Append | QIODevice::Text)) {
+			QTextStream stream(file);
+			stream << msg << endl;
+		}
+		// Destructor closes file
+		delete file;
+	}
+
 	m_lock.unlock();
 }
 

@@ -81,6 +81,7 @@ private slots:
 	void ChooseLogFile();
 	void ClosePreferences();
 	void ApplyChanges();
+	void ToggleLogging(int state);
 };
 
 #endif

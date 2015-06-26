@@ -184,7 +184,7 @@ MainWindow::LogFile()
 	QSettings settings;
 	bool loggingEnabled = settings.value("mainWindow/loggingEnabled", true).toBool();
 	QString path = settings.value("mainWindow/logFilePath", QDir::homePath()).toString();
-	QString file = settings.value("mainWindow/logFileName", "ds3_browser_log.txt").toString();
+	QString file = settings.value("mainWindow/logFileName", "/ds3_browser_log.txt").toString();
 
 	m_preferences = new QWidget;
 	QBoxLayout* layout = new QVBoxLayout(m_preferences);
@@ -197,6 +197,7 @@ MainWindow::LogFile()
 	if(loggingEnabled)
 		enableLoggingBox->setCheckState(Qt::Checked);
 	enableLoggingBox->setText("Enable Logging to Log File");
+	connect(enableLoggingBox, SIGNAL(stateChanged(int)), this, SLOT(ToggleLogging(int)));
 
 	fileInputDialog->insert(path+file);
 
@@ -207,9 +208,9 @@ MainWindow::LogFile()
 	buttons->addButton("Cancel", QDialogButtonBox::RejectRole);
 	connect(buttons, SIGNAL(rejected()), this, SLOT(ClosePreferences()));
 	buttons->addButton(apply, QDialogButtonBox::ApplyRole);
-	connect(apply, SIGNAL(clicked()), this, SLOT(ApplyChanges()));
-	buttons->addButton("Browse", QDialogButtonBox::ActionRole);
-	connect(browse, SIGNAL(clicked()), this, SLOT(ChooseLogFile()));
+	connect(apply, SIGNAL(clicked(bool)), this, SLOT(ApplyChanges()));
+	buttons->addButton(browse, QDialogButtonBox::ActionRole);
+	connect(browse, SIGNAL(clicked(bool)), this, SLOT(ChooseLogFile()));
 
 	layout->setContentsMargins (5, 5, 5, 5);
 	layout->setSpacing(5);
@@ -224,24 +225,34 @@ void
 MainWindow::ChooseLogFile()
 {
 	QSettings settings;
-	QString path = settings.value("mainWindow/logFilePath", QDir::homePath()).toString();
-	QString file = settings.value("mainWindow/logFileName", "ds3_browser_log.txt").toString();
+	QString path = settings.value("mainWindow/logFilePath").toString();
+	QString file = settings.value("mainWindow/logFileName").toString();
 
+	LOG_INFO("Path = "+path);
+	LOG_INFO("File Name = "+file);
 	m_logFileBrowser = new QWidget;
 	QBoxLayout* layout = new QVBoxLayout(m_logFileBrowser);
 	QFileDialog* fileDialog = new QFileDialog;
 
 	QString defaultFilter("Text files (*.txt)");
 
+	fileDialog->setAcceptMode(QFileDialog::AcceptSave);
 	fileDialog->setWindowTitle("Log File Location");
-	fileDialog->setDirectory(path);
 	fileDialog->selectNameFilter(defaultFilter);
-	fileDialog->selectFile(file);
-	fileDialog->exec();
+	fileDialog->selectFile(path+file);
+	if(fileDialog->exec()) {
+		QString newLogFileName = fileDialog->selectedFiles()[0];
+		path = fileDialog->directory().absolutePath();
+		file = newLogFileName.mid(path.length());
+		settings.setValue("mainWindow/logFileName", file);
+		settings.setValue("mainWindow/logFilePath", path);
+
+		delete m_preferences;
+		LogFile();
+	}
 
 	layout->addWidget(fileDialog);
 	m_logFileBrowser->setLayout(layout);
-	m_logFileBrowser->show();
 }
 
 void
@@ -254,4 +265,11 @@ void
 MainWindow::ApplyChanges()
 {
 
+}
+
+void
+MainWindow::ToggleLogging(int state)
+{
+	QSettings settings;
+	settings.setValue("mainWindow/loggingEnabled", state);
 }
