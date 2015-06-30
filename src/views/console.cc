@@ -75,9 +75,11 @@ Console::Log(Level level, const QString& msg)
 void
 Console::LogPrivate(int level, const QString& msg)
 {
+	bool fileLogging = true;
 	QString color;
 	switch (level) {
 	case DEBUG:
+		fileLogging = false;
 		color = "blue";
 		break;
 	case WARNING:
@@ -109,6 +111,9 @@ Console::LogPrivate(int level, const QString& msg)
 	m_text->insertHtml(html);
 	m_numLines++;
 	m_text->ensureCursorVisible();
+
+	if(fileLogging)
+		LogToFile(msg);
 
 	m_lock.unlock();
 }

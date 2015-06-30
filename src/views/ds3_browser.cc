@@ -160,19 +160,16 @@ DS3Browser::DeleteSelected()
 {
 	QModelIndexList selectedIndexes = m_treeView->selectionModel()->selectedRows();
 	if (selectedIndexes.count() == 0) {
-		LOG_ERROR("Nothing selected to delete");
-		LOG_FILE("ERROR:       DELETE OBJECT failed, nothing selected to delete");
+		LOG_ERROR("ERROR:       DELETE OBJECT failed, nothing selected to delete");
 		return;
 	} else if (selectedIndexes.count() > 1) {
-		LOG_ERROR("Deleting more than one item at a time is not supported");
-		LOG_FILE("ERROR:       DELETE OBJECTS failed, deleting more than one item at a time is not supported");
+		LOG_ERROR("ERROR:       DELETE OBJECTS failed, deleting more than one item at a time is not supported");
 		return;
 	}
 
 	QModelIndex selectedIndex = selectedIndexes[0];
 	if (m_model->IsFolder(selectedIndex)) {
-		LOG_ERROR("Deleting folders is not yet supported");
-		LOG_FILE("ERROR:       DELETE OBJECT failed, deleting folders is not yet supported");
+		LOG_ERROR("ERROR:       DELETE OBJECT failed, deleting folders is not yet supported");
 		return;
 	}
 

@@ -59,8 +59,7 @@ DeleteBucketDialog::Delete()
 		}
 		m_baseErrorLabel->setText(msg);
 		m_form->addWidget(m_baseErrorLabel, 0, 0, 1, 3);
-		LOG_ERROR("Error deleting bucket - " + msg);
-		LOG_FILE("ERROR:       DELETE BUCKET failed, "+msg);
+		LOG_ERROR("ERROR:       DELETE BUCKET failed, "+msg);
 		return false;
 	}
 

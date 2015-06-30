@@ -63,8 +63,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 	CreateMenus();
 
 	ReadSettings();
-	LOG_INFO("Starting DS3 Browser Session");
-	LOG_FILE("STARTING     DS3       Browser Session");
+	LOG_INFO("STARTING     DS3       Browser Session");
 }
 
 int
@@ -110,8 +109,7 @@ MainWindow::closeEvent(QCloseEvent* event)
 			return;
 		}
 	}
-	LOG_INFO("Closing DS3 Browser Session");
-	LOG_FILE("CLOSING      DS3       Browser Session");
+	LOG_INFO("CLOSING      DS3       Browser Session");
 
 	QSettings settings;
 	settings.setValue("mainWindow/geometry", saveGeometry());
@@ -164,8 +162,7 @@ MainWindow::CancelActiveJobs()
 	// job tasks are ever switched to using a custom thread pool.
 	bool ret = QThreadPool::globalInstance()->waitForDone(CANCEL_JOBS_TIMEOUT_IN_MS);
 	if (!ret) {
-		LOG_ERROR("Timed out waiting for all jobs to stop");
-		LOG_FILE("ERROR:       TIMED OUT waiting for all jobs to stop");
+		LOG_ERROR("ERROR:       TIMED OUT waiting for all jobs to stop");
 	}
 }
 
