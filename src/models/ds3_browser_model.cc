@@ -777,6 +777,7 @@ DS3BrowserModel::HandleGetServiceResponse()
 	}
 	catch (DS3Error& e) {
 		LOG_ERROR("Error listing buckets - " + e.ToString());
+		LOG_FILE("ERROR:       LIST BUCKETS failed, "+e.ToString());
 	}
 
 	size_t numBuckets = 0;
@@ -859,6 +860,7 @@ DS3BrowserModel::HandleGetBucketResponse()
 			msg = e.ToString();
 		}
 		LOG_ERROR("Error listing objects - " + msg);
+		LOG_FILE("ERROR:       LIST OBJECTS failed, "+msg);
 	}
 
 	const QModelIndex& parent = watcher->GetParentModelIndex();

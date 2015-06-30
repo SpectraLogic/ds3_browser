@@ -34,6 +34,7 @@ public:
 	static Console* Instance();
 
 	void Log(Level level, const QString& msg);
+	void LogToFile(QString msg);
 
 signals:
 	void MessageReadyToLog(int level, const QString& msg);

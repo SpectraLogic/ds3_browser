@@ -25,6 +25,12 @@
 #include <QTabWidget>
 #include <QScrollArea>
 
+#include <QCheckBox>
+#include <QDialogButtonBox>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QPushButton>
+
 class Console;
 class JobsView;
 class Session;
@@ -73,7 +79,10 @@ private:
 	QDockWidget* m_consoleDock;
 
 	QWidget* m_preferences;
+	QCheckBox* m_enableLoggingBox;
+	QLineEdit* m_fileInputDialog;
 	QWidget* m_logFileBrowser;
+	QString  m_logFile;
 
 private slots:
 	void About();
@@ -81,7 +90,6 @@ private slots:
 	void ChooseLogFile();
 	void ClosePreferences();
 	void ApplyChanges();
-	void ToggleLogging(int state);
 };
 
 #endif

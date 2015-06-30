@@ -17,12 +17,8 @@
 #include <QApplication>
 #include <QCloseEvent>
 #include <QDialog>
-#include <QDialogButtonBox>
-#include <QFileDialog>
-#include <QInputDialog>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QPushButton>
 #include <QSettings>
 #include <QThreadPool>
 #include <QWindow>
@@ -68,6 +64,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
 
 	ReadSettings();
 	LOG_INFO("Starting DS3 Browser Session");
+	LOG_FILE("STARTING     DS3       Browser Session");
 }
 
 int
@@ -114,6 +111,7 @@ MainWindow::closeEvent(QCloseEvent* event)
 		}
 	}
 	LOG_INFO("Closing DS3 Browser Session");
+	LOG_FILE("CLOSING      DS3       Browser Session");
 
 	QSettings settings;
 	settings.setValue("mainWindow/geometry", saveGeometry());
@@ -144,7 +142,7 @@ MainWindow::CreateMenus()
 
 	menuBar()->addMenu(m_viewMenu);
 
-	m_helpMenu = new QMenu(tr("&Preferences"), this);
+	m_helpMenu = new QMenu(tr("&Settings"), this);
 	m_helpMenu->addAction(m_logFileAction);
 
 	menuBar()->addMenu(m_helpMenu);
@@ -167,6 +165,7 @@ MainWindow::CancelActiveJobs()
 	bool ret = QThreadPool::globalInstance()->waitForDone(CANCEL_JOBS_TIMEOUT_IN_MS);
 	if (!ret) {
 		LOG_ERROR("Timed out waiting for all jobs to stop");
+		LOG_FILE("ERROR:       TIMED OUT waiting for all jobs to stop");
 	}
 }
 
@@ -183,41 +182,45 @@ MainWindow::LogFile()
 {
 	QSettings settings;
 	bool loggingEnabled = settings.value("mainWindow/loggingEnabled", true).toBool();
-	QString path = settings.value("mainWindow/logFilePath", QDir::homePath()).toString();
-	QString file = settings.value("mainWindow/logFileName", "/ds3_browser_log.txt").toString();
+	m_logFile = settings.value("mainWindow/logFileName", QDir::homePath()+"/ds3_browser_log.txt").toString();
 
 	m_preferences = new QWidget;
-	QBoxLayout* layout = new QVBoxLayout(m_preferences);
-	layout->setDirection(QBoxLayout::TopToBottom);
-	QCheckBox* enableLoggingBox = new QCheckBox;
-	QLineEdit* fileInputDialog = new QLineEdit;
+	QGridLayout* layout = new QGridLayout(m_preferences);
+	m_enableLoggingBox = new QCheckBox;
+	m_fileInputDialog = new QLineEdit;
 	QDialogButtonBox* buttons = new QDialogButtonBox;
 
-	enableLoggingBox->setCheckState(Qt::Unchecked);
+	m_enableLoggingBox->setCheckState(Qt::Unchecked);
 	if(loggingEnabled)
-		enableLoggingBox->setCheckState(Qt::Checked);
-	enableLoggingBox->setText("Enable Logging to Log File");
-	connect(enableLoggingBox, SIGNAL(stateChanged(int)), this, SLOT(ToggleLogging(int)));
+		m_enableLoggingBox->setCheckState(Qt::Checked);
+	m_enableLoggingBox->setText("Enable Logging to Log File");
 
-	fileInputDialog->insert(path+file);
+	m_fileInputDialog->setText(m_logFile);
+	QSizePolicy sp = m_fileInputDialog->sizePolicy();
+	sp.setHorizontalStretch(1);
+	m_fileInputDialog->setSizePolicy(sp);
 
-	QPushButton* apply = new QPushButton;
-	apply->setText("Apply");
+	QPushButton* ok = new QPushButton;
+	ok->setText("OK");
 	QPushButton* browse = new QPushButton;
 	browse->setText("Browse");
 	buttons->addButton("Cancel", QDialogButtonBox::RejectRole);
-	connect(buttons, SIGNAL(rejected()), this, SLOT(ClosePreferences()));
-	buttons->addButton(apply, QDialogButtonBox::ApplyRole);
-	connect(apply, SIGNAL(clicked(bool)), this, SLOT(ApplyChanges()));
-	buttons->addButton(browse, QDialogButtonBox::ActionRole);
+	buttons->addButton(ok, QDialogButtonBox::ApplyRole);
 	connect(browse, SIGNAL(clicked(bool)), this, SLOT(ChooseLogFile()));
+	connect(buttons, SIGNAL(rejected()), this, SLOT(ClosePreferences()));
+	connect(ok, SIGNAL(clicked(bool)), this, SLOT(ApplyChanges()));
 
-	layout->setContentsMargins (5, 5, 5, 5);
-	layout->setSpacing(5);
-	layout->addWidget(enableLoggingBox);
-	layout->addWidget(fileInputDialog);
-	layout->addWidget(buttons, 1, Qt::AlignRight);
+	layout->setContentsMargins (6, 6, 6, 6);
+	layout->setHorizontalSpacing(6);
+	layout->setVerticalSpacing(6);
+	layout->addWidget(m_enableLoggingBox, 1, 1, 1, 3, Qt::AlignLeft);
+	layout->addWidget(m_fileInputDialog, 2, 1, 1, 2);
+	layout->addWidget(browse, 2, 3, 1, 1, Qt::AlignRight);
+	layout->addWidget(buttons, 3, 1, 1, 3, Qt::AlignRight);
 	m_preferences->setLayout(layout);
+	m_preferences->setFixedHeight(m_preferences->sizeHint().height());
+	m_preferences->setWindowModality(Qt::WindowModal);
+	m_preferences->move(0,0);
 	m_preferences->show();
 }
 
@@ -225,11 +228,7 @@ void
 MainWindow::ChooseLogFile()
 {
 	QSettings settings;
-	QString path = settings.value("mainWindow/logFilePath").toString();
-	QString file = settings.value("mainWindow/logFileName").toString();
 
-	LOG_INFO("Path = "+path);
-	LOG_INFO("File Name = "+file);
 	m_logFileBrowser = new QWidget;
 	QBoxLayout* layout = new QVBoxLayout(m_logFileBrowser);
 	QFileDialog* fileDialog = new QFileDialog;
@@ -239,20 +238,16 @@ MainWindow::ChooseLogFile()
 	fileDialog->setAcceptMode(QFileDialog::AcceptSave);
 	fileDialog->setWindowTitle("Log File Location");
 	fileDialog->selectNameFilter(defaultFilter);
-	fileDialog->selectFile(path+file);
+	fileDialog->selectFile(m_logFile);
 	if(fileDialog->exec()) {
-		QString newLogFileName = fileDialog->selectedFiles()[0];
-		path = fileDialog->directory().absolutePath();
-		file = newLogFileName.mid(path.length());
-		settings.setValue("mainWindow/logFileName", file);
-		settings.setValue("mainWindow/logFilePath", path);
-
-		delete m_preferences;
-		LogFile();
+		layout->addWidget(fileDialog);
+		m_logFileBrowser->setLayout(layout);
+		m_logFile = fileDialog->selectedFiles()[0];
+		m_fileInputDialog->setText(m_logFile);
+		delete layout;
+		delete fileDialog;
+		delete m_logFileBrowser;
 	}
-
-	layout->addWidget(fileDialog);
-	m_logFileBrowser->setLayout(layout);
 }
 
 void
@@ -264,12 +259,9 @@ MainWindow::ClosePreferences()
 void
 MainWindow::ApplyChanges()
 {
-
-}
-
-void
-MainWindow::ToggleLogging(int state)
-{
 	QSettings settings;
-	settings.setValue("mainWindow/loggingEnabled", state);
+	settings.setValue("mainWindow/loggingEnabled", m_enableLoggingBox->checkState());
+	m_logFile = m_fileInputDialog->text();
+	settings.setValue("mainWindow/logFileName", m_logFile);
+	ClosePreferences();
 }
