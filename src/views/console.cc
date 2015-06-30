@@ -15,10 +15,12 @@
  */
 
 #include <QAction>
+#include <QDateTime>
 #include <QFile>
 #include <QFileDialog>
 #include <QMenu>
 #include <QTextStream>
+#include <QSettings>
 
 #include "lib/logger.h"
 #include "views/console.h"
@@ -29,6 +31,7 @@
 #define DEFAULT_LOG_LEVEL DEBUG
 #endif
 
+static const QString LOG_TIMESTAMP_FORMAT = "MMMM d h:mm:ss";
 const unsigned int Console::MAX_LINES = 1000;
 Console* Console::s_instance = 0;
 
@@ -106,7 +109,30 @@ Console::LogPrivate(int level, const QString& msg)
 	m_text->insertHtml(html);
 	m_numLines++;
 	m_text->ensureCursorVisible();
+
 	m_lock.unlock();
+}
+
+void
+Console::LogToFile(QString message)
+{
+	QSettings settings;
+	bool loggingEnabled = settings.value("mainWindow/loggingEnabled", true).toBool();
+	if(!loggingEnabled)
+		return;
+
+	QString currentTimeStamp = QDateTime::currentDateTime().toString(LOG_TIMESTAMP_FORMAT);
+	message = currentTimeStamp+": "+message;
+
+	QString fileName = settings.value("mainWindow/logFileName").toString();
+	QFile* file = new QFile(fileName);
+
+	if(file->open(QIODevice::Append | QIODevice::Text)) {
+		QTextStream stream(file);
+		stream << message << endl;
+	}
+	// Destructor closes file
+	delete file;
 }
 
 void

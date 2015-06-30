@@ -206,6 +206,7 @@ void
 SessionDialog::Authenticate()
 {
 	LOG_INFO("Authenticating session");
+	LOG_FILE("                       Authenticating session");
 
 	DisableWidgets();
 	QApplication::setOverrideCursor(Qt::BusyCursor);
@@ -283,6 +284,7 @@ SessionDialog::CheckAuthenticationResponse()
 			msg = e.ToString();
 			m_baseErrorLabel->setText(msg);
 			LOG_ERROR(logPrefix + msg);
+			LOG_FILE("ERROR:       "+msg);
 			m_form->addWidget(m_baseErrorLabel, 0, 0, 1, 3);
 			break;
 		case 404:
@@ -295,12 +297,14 @@ SessionDialog::CheckAuthenticationResponse()
 			msg = e.ToString();
 			m_baseErrorLabel->setText(msg);
 			LOG_ERROR(logPrefix + msg);
+			LOG_FILE("ERROR:       "+msg);
 			m_form->addWidget(m_baseErrorLabel, 0, 0, 1, 3);
 		}
 	}
 
 	if (authenticated) {
 		LOG_INFO("Session authenticated");
+		LOG_FILE("                       Session Authenticated");
 		SaveSession();
 	}
 	QApplication::restoreOverrideCursor();

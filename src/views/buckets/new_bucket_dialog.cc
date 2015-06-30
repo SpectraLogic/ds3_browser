@@ -91,6 +91,7 @@ NewBucketDialog::Accept()
 			m_form->addWidget(m_baseErrorLabel, 0, 0, 1, 3);
 		}
 		LOG_ERROR("Error creating bucket - " + msg);
+		LOG_FILE("ERROR:       CREATE BUCKET failed, "+msg);
 		return;
 	}
 	accept();

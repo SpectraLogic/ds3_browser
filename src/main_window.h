@@ -25,6 +25,12 @@
 #include <QTabWidget>
 #include <QScrollArea>
 
+#include <QCheckBox>
+#include <QDialogButtonBox>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QPushButton>
+
 class Console;
 class JobsView;
 class Session;
@@ -59,6 +65,9 @@ private:
 
 	QMenu* m_viewMenu;
 
+	QMenu* m_preferencesMenu;
+	QAction* m_logFileAction;
+
 	QTabWidget* m_sessionTabs;
 	QList<SessionView*> m_sessionViews;
 
@@ -69,8 +78,18 @@ private:
 	Console* m_console;
 	QDockWidget* m_consoleDock;
 
+	QWidget* m_preferences;
+	QCheckBox* m_enableLoggingBox;
+	QLineEdit* m_fileInputDialog;
+	QWidget* m_logFileBrowser;
+	QString  m_logFile;
+
 private slots:
 	void About();
+	void LogFile();
+	void ChooseLogFile();
+	void ClosePreferences();
+	void ApplyChanges();
 };
 
 #endif

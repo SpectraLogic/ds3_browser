@@ -72,6 +72,7 @@ DeleteObjectsDialog::Delete()
 		m_baseErrorLabel->setText(msg);
 		m_form->addWidget(m_baseErrorLabel, 0, 0, 1, 3);
 		LOG_ERROR("Error deleting objects - " + msg);
+		LOG_FILE("ERROR:       DELETE OBJECTS failed, "+msg);
 		return false;
 	}
 

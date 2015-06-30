@@ -24,5 +24,6 @@
 #define LOG_WARNING(msg) LOG(Console::WARNING, msg)
 #define LOG_ERROR(msg)   LOG(Console::ERR,   msg)
 #define LOG(level, msg)  Console::Instance()->Log(level, msg)
+#define LOG_FILE(msg)    Console::Instance()->LogToFile(msg)
 
 #endif
