@@ -23,6 +23,10 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+#include "src/quazip-0.7.1/quazip/quazip.h"
+#include "src/quazip-0.7.1/quazip/quazipfile.h"
+#include "src/quazip-0.7.1/quazip/quazipfileinfo.h"
+
 class Console : public QWidget
 {
 	Q_OBJECT
@@ -42,6 +46,8 @@ signals:
 private:
 	Console(QWidget* parent = 0);
 	void SaveToFile();
+	void ArchiveLog(QString filename);
+	void IncrementLog(QString filename, QString filetype, qint64 number);
 
 	static Console* s_instance;
 

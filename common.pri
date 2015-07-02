@@ -55,7 +55,23 @@ HEADERS = \
 	$${PWD}/src/views/jobs_view.h \
 	$${PWD}/src/views/objects/delete_objects_dialog.h \
 	$${PWD}/src/views/session_dialog.h \
-	$${PWD}/src/views/session_view.h
+	$${PWD}/src/views/session_view.h \
+	src/quazip-0.7.1/quazip/crypt.h \
+	src/quazip-0.7.1/quazip/ioapi.h \
+	src/quazip-0.7.1/quazip/JlCompress.h \
+	src/quazip-0.7.1/quazip/quaadler32.h \
+	src/quazip-0.7.1/quazip/quachecksum32.h \
+	src/quazip-0.7.1/quazip/quacrc32.h \
+	src/quazip-0.7.1/quazip/quagzipfile.h \
+	src/quazip-0.7.1/quazip/quaziodevice.h \
+	src/quazip-0.7.1/quazip/quazipdir.h \
+	src/quazip-0.7.1/quazip/quazipfile.h \
+	src/quazip-0.7.1/quazip/quazipfileinfo.h \
+	src/quazip-0.7.1/quazip/quazipnewinfo.h \
+	src/quazip-0.7.1/quazip/quazip_global.h \
+	src/quazip-0.7.1/quazip/quazip.h \
+	src/quazip-0.7.1/quazip/unzip.h \
+	src/quazip-0.7.1/quazip/zip.h
 
 SOURCES = \
 	$${PWD}/src/main_window.cc \
@@ -87,7 +103,20 @@ SOURCES = \
 	$${PWD}/src/views/jobs_view.cc \
 	$${PWD}/src/views/objects/delete_objects_dialog.cc \
 	$${PWD}/src/views/session_dialog.cc \
-	$${PWD}/src/views/session_view.cc
+	$${PWD}/src/views/session_view.cc \
+	src/quazip-0.7.1/quazip/JlCompress.cpp \
+	src/quazip-0.7.1/quazip/qioapi.cpp \
+	src/quazip-0.7.1/quazip/quaadler32.cpp \
+	src/quazip-0.7.1/quazip/quacrc32.cpp \
+	src/quazip-0.7.1/quazip/quagzipfile.cpp \
+	src/quazip-0.7.1/quazip/quaziodevice.cpp \
+	src/quazip-0.7.1/quazip/quazipdir.cpp \
+	src/quazip-0.7.1/quazip/quazipfile.cpp \
+	src/quazip-0.7.1/quazip/quazipfileinfo.cpp \
+	src/quazip-0.7.1/quazip/quazipnewinfo.cpp \
+	src/quazip-0.7.1/quazip/quazip.cpp \
+	src/quazip-0.7.1/quazip/unzip.c \
+	src/quazip-0.7.1/quazip/zip.c
 
 msvc {
 	LIBS += ds3.lib
@@ -102,7 +131,7 @@ msvc {
 		LIBS += -L/usr/local/lib
 	}
 
-	LIBS += -lds3 -lcurl
+	LIBS += -lds3 -lcurl -lz
 }
 
 gcc: QMAKE_CXXFLAGS += -Werror

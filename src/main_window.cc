@@ -179,7 +179,11 @@ MainWindow::LogFile()
 {
 	QSettings settings;
 	bool loggingEnabled = settings.value("mainWindow/loggingEnabled", true).toBool();
-	m_logFile = settings.value("mainWindow/logFileName", QDir::homePath()+"/ds3_browser_log.txt").toString();
+	// Default log name based on app name
+	QString logName = APP_NAME;
+	logName.replace(" ", "_");
+	logName = logName.toCaseFolded()+".log";
+	m_logFile = settings.value("mainWindow/logFileName", QDir::homePath()+"/"+logName).toString();
 
 	m_preferences = new QWidget;
 	QGridLayout* layout = new QGridLayout(m_preferences);
