@@ -14,17 +14,7 @@
  * *****************************************************************************
  */
 
-#include <QApplication>
-#include <QCloseEvent>
-#include <QDialog>
-#include <QMenuBar>
-#include <QMessageBox>
-#include <QSettings>
-#include <QThreadPool>
-#include <QWindow>
-
 #include "lib/logger.h"
-
 #include "global.h"
 #include "main_window.h"
 #include "models/session.h"
@@ -178,23 +168,42 @@ void
 MainWindow::LogFile()
 {
 	QSettings settings;
-	bool loggingEnabled = settings.value("mainWindow/loggingEnabled", true).toBool();
 	// Default log name based on app name
 	QString logName = APP_NAME;
 	logName.replace(" ", "_");
 	logName = logName.toCaseFolded()+".log";
 	m_logFile = settings.value("mainWindow/logFileName", QDir::homePath()+"/"+logName).toString();
+	bool loggingEnabled = settings.value("mainWindow/loggingEnabled", true).toBool();
+	m_logFileSize = settings.value("mainWindow/logFileSize", 52428800).toULongLong();
 
 	m_preferences = new QWidget;
-	QGridLayout* layout = new QGridLayout(m_preferences);
 	m_enableLoggingBox = new QCheckBox;
+	m_fileSizeInput = new QLineEdit;
+	m_fileSizeSuffix = new QComboBox;
 	m_fileInputDialog = new QLineEdit;
 	QDialogButtonBox* buttons = new QDialogButtonBox;
+	QGridLayout* layout = new QGridLayout(m_preferences);
 
 	m_enableLoggingBox->setCheckState(Qt::Unchecked);
 	if(loggingEnabled)
 		m_enableLoggingBox->setCheckState(Qt::Checked);
 	m_enableLoggingBox->setText("Enable Logging to Log File");
+
+	m_fileSizeInput->setText(FormatFileSize());
+
+	m_fileSizeSuffix->addItem(tr("KB"));
+	m_fileSizeSuffix->addItem(tr("MB"));
+	m_fileSizeSuffix->addItem(tr("GB"));
+	m_fileSizeSuffix->addItem(tr("TB"));
+	if(m_logFileSizeSuffix == "KB") {
+		m_fileSizeSuffix->setCurrentIndex(0);
+	} else if(m_logFileSizeSuffix == "MB") {
+		m_fileSizeSuffix->setCurrentIndex(1);
+	} else if(m_logFileSizeSuffix == "GB") {
+		m_fileSizeSuffix->setCurrentIndex(2);
+	} else {
+		m_fileSizeSuffix->setCurrentIndex(3);
+	}
 
 	m_fileInputDialog->setText(m_logFile);
 	QSizePolicy sp = m_fileInputDialog->sizePolicy();
@@ -215,9 +224,11 @@ MainWindow::LogFile()
 	layout->setHorizontalSpacing(6);
 	layout->setVerticalSpacing(6);
 	layout->addWidget(m_enableLoggingBox, 1, 1, 1, 3, Qt::AlignLeft);
-	layout->addWidget(m_fileInputDialog, 2, 1, 1, 2);
-	layout->addWidget(browse, 2, 3, 1, 1, Qt::AlignRight);
-	layout->addWidget(buttons, 3, 1, 1, 3, Qt::AlignRight);
+	layout->addWidget(m_fileSizeInput, 2, 1, 1, 2);
+	layout->addWidget(m_fileSizeSuffix, 2, 3, 1, 1, Qt::AlignRight);
+	layout->addWidget(m_fileInputDialog, 3, 1, 1, 2);
+	layout->addWidget(browse, 3, 3, 1, 1, Qt::AlignRight);
+	layout->addWidget(buttons, 4, 1, 1, 3, Qt::AlignRight);
 	m_preferences->setLayout(layout);
 	m_preferences->setFixedHeight(m_preferences->sizeHint().height());
 	m_preferences->setWindowModality(Qt::WindowModal);
@@ -264,5 +275,62 @@ MainWindow::ApplyChanges()
 	settings.setValue("mainWindow/loggingEnabled", m_enableLoggingBox->checkState());
 	m_logFile = m_fileInputDialog->text();
 	settings.setValue("mainWindow/logFileName", m_logFile);
+	m_logFileSizeSuffix = m_fileSizeSuffix->currentText();
+	settings.setValue("mainWindow/logFileSize", DeFormatFileSize());
 	ClosePreferences();
+}
+
+QString
+MainWindow::FormatFileSize()
+{
+	double sizeHolder = m_logFileSize;
+	m_logFileSizeSuffix = "KB";
+
+	if(sizeHolder > 1024) {
+		sizeHolder /= 1024.0;
+		m_logFileSizeSuffix = "KB";
+	}
+	if(sizeHolder > 1024) {
+		sizeHolder /= 1024.0;
+		m_logFileSizeSuffix = "MB";
+	}
+	if(sizeHolder > 1024) {
+		sizeHolder /= 1024.0;
+		m_logFileSizeSuffix = "GB";
+	}
+	if(sizeHolder > 1024) {
+		sizeHolder /= 1024.0;
+		m_logFileSizeSuffix = "TB";
+	}
+
+	// Round to two decimal places
+	double ret = ceil((sizeHolder*100)-0.49)/100.0;
+	return QString::number(ret);
+}
+
+double
+MainWindow::DeFormatFileSize()
+{
+	double sizeHolder = m_fileSizeInput->text().toDouble();
+	LOG_INFO(QString::number(sizeHolder));
+	if(m_logFileSizeSuffix == "TB") {
+		sizeHolder *= 1024.0;
+		m_logFileSizeSuffix = "GB";
+	}
+	if(m_logFileSizeSuffix == "GB") {
+		sizeHolder *= 1024.0;
+		m_logFileSizeSuffix = "MB";
+	}
+	if(m_logFileSizeSuffix == "MB") {
+		sizeHolder *= 1024.0;
+		m_logFileSizeSuffix = "KB";
+	}
+	if(m_logFileSizeSuffix == "KB") {
+		sizeHolder *= 1024.0;
+	}
+
+	double ret = ceil((sizeHolder*100)-0.49)/100.0;
+	LOG_INFO(QString::number(ret));
+
+	return ret;
 }

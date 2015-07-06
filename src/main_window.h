@@ -30,6 +30,18 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QPushButton>
+#include <QComboBox>
+
+#include <QApplication>
+#include <QCloseEvent>
+#include <QDialog>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QSettings>
+#include <QThreadPool>
+#include <QWindow>
+
+#include <math.h>
 
 class Console;
 class JobsView;
@@ -59,6 +71,8 @@ private:
 	void ReadSettings();
 	void CreateMenus();
 	void CancelActiveJobs();
+	QString FormatFileSize();
+	double DeFormatFileSize();
 
 	QMenu* m_helpMenu;
 	QAction* m_aboutAction;
@@ -81,8 +95,12 @@ private:
 	QWidget* m_preferences;
 	QCheckBox* m_enableLoggingBox;
 	QLineEdit* m_fileInputDialog;
+	QLineEdit* m_fileSizeInput;
+	QComboBox* m_fileSizeSuffix;
 	QWidget* m_logFileBrowser;
 	QString  m_logFile;
+	double m_logFileSize;
+	QString m_logFileSizeSuffix;
 
 private slots:
 	void About();
