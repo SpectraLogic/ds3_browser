@@ -246,7 +246,9 @@ MainWindow::CreateLoggingPage()
 	layout->addWidget(new QLabel("Maximum Log Size:"), 2, 1, 1, 1, Qt::AlignRight);
 	layout->addWidget(m_fileSizeInput, 2, 2, 1, 1);
 	layout->addWidget(m_fileSizeSuffix, 2, 3, 1, 1, Qt::AlignLeft);
-	layout->addWidget(new QLabel("Maximum Number of Saved Logs:"), 3, 1, 1, 1, Qt::AlignRight);
+	QLabel* temp = new QLabel(tr("Maximum Number\nof Saved Logs:"));
+	temp->setAlignment(Qt::AlignRight);
+	layout->addWidget(temp, 3, 1, 1, 1, Qt::AlignRight);
 	layout->addWidget(m_logNumberInput, 3, 2, 1, 1);
 	layout->addWidget(m_enableLoggingBox, 4, 2, 1, 1, Qt::AlignLeft);
 	layout->addWidget(buttons, 5, 3, 1, 1, Qt::AlignRight);
