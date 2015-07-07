@@ -132,8 +132,10 @@ Console::LogToFile(QString message)
 
 	QString filename = settings.value("mainWindow/logFileName").toString();
 	QFile* file = new QFile(filename);
+	double logSize = settings.value("mainWindow/logFileSize", 52428800).toDouble();
+	
 	// Checking if log size is over 50MBs
-	if(file->size() >= 52428800) {
+	if(file->size() >= logSize) {
 		// Close and delete log file
 		delete file;
 		ArchiveLog(filename);
@@ -166,6 +168,9 @@ Console::ArchiveLog(QString filename)
 void
 Console::IncrementLog(QString filename, QString filetype, qint64 number)
 {
+	QSettings settings;
+	int logNumberLimit = settings.value("mainWindow/logNumberLimit", 10).toInt();
+
 	// Flag for whether or not the current file is zipped or not
 	bool compressed = true;
 	// File being read and moved into the zip created soon
@@ -183,7 +188,7 @@ Console::IncrementLog(QString filename, QString filetype, qint64 number)
 	// Output zip file
 	QFile* newFile = new QFile(filename+filetype+"."+QString::number(number)+".zip");
 	// Recursively call this function until the highest unused file is found
-	if(newFile->exists()) {
+	if(newFile->exists() && number < logNumberLimit) {
 		IncrementLog(filename, filetype, number+1);
 	}
 	// No longer need this handle, so delete it

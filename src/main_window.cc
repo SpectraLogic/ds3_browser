@@ -121,19 +121,19 @@ MainWindow::CreateMenus()
 	m_aboutAction = new QAction(tr("&About %1").arg(APP_NAME), this);
 	connect(m_aboutAction, SIGNAL(triggered()), this, SLOT(About()));
 
-	m_logFileAction = new QAction(tr("&Log File Location"), this);
-	connect(m_logFileAction, SIGNAL(triggered()), this, SLOT(LogFile()));
+	m_settingsAction = new QAction(tr("&Settings"), this);
+	connect(m_settingsAction, SIGNAL(triggered()), this, SLOT(Settings()));
+
+	m_editMenu = new QMenu(tr("&Edit"), this);
+	m_editMenu->addAction(m_settingsAction);
+
+	menuBar()->addMenu(m_editMenu);
 
 	m_viewMenu = new QMenu(tr("&View"), this);
 	m_viewMenu->addAction(m_consoleDock->toggleViewAction());
 	m_viewMenu->addAction(m_jobsDock->toggleViewAction());
 
 	menuBar()->addMenu(m_viewMenu);
-
-	m_helpMenu = new QMenu(tr("&Settings"), this);
-	m_helpMenu->addAction(m_logFileAction);
-
-	menuBar()->addMenu(m_helpMenu);
 
 	m_helpMenu = new QMenu(tr("&Help"), this);
 	m_helpMenu->addAction(m_aboutAction);
@@ -165,7 +165,23 @@ MainWindow::About()
 }
 
 void
-MainWindow::LogFile()
+MainWindow::Settings()
+{
+	m_tabs = new QTabWidget;
+	m_tabs->setWindowTitle(tr("Settings"));
+
+	CreateLoggingPage();
+	const QString& logName = "Logging";
+	m_tabs->addTab(m_logging, logName);
+	m_tabs->setWindowModality(Qt::WindowModal);
+	m_tabs->setFixedHeight(m_tabs->sizeHint().height());
+	m_tabs->setFixedWidth(m_tabs->sizeHint().width()+100);
+
+	m_tabs->show();
+}
+
+void
+MainWindow::CreateLoggingPage()
 {
 	QSettings settings;
 	// Default log name based on app name
@@ -174,66 +190,69 @@ MainWindow::LogFile()
 	logName = logName.toCaseFolded()+".log";
 	m_logFile = settings.value("mainWindow/logFileName", QDir::homePath()+"/"+logName).toString();
 	bool loggingEnabled = settings.value("mainWindow/loggingEnabled", true).toBool();
-	m_logFileSize = settings.value("mainWindow/logFileSize", 52428800).toULongLong();
+	m_logFileSize = settings.value("mainWindow/logFileSize", 52428800).toDouble();
+	m_logNumberLimit = settings.value("mainWindow/logNumberLimit", 10).toInt();
 
-	m_preferences = new QWidget;
+	m_logging = new QWidget;
 	m_enableLoggingBox = new QCheckBox;
 	m_fileSizeInput = new QLineEdit;
 	m_fileSizeSuffix = new QComboBox;
 	m_fileInputDialog = new QLineEdit;
+	m_logNumberInput = new QLineEdit;
+	m_browse = new QPushButton;
+	QPushButton* apply = new QPushButton;
 	QDialogButtonBox* buttons = new QDialogButtonBox;
-	QGridLayout* layout = new QGridLayout(m_preferences);
+	QGridLayout* layout = new QGridLayout(m_logging);
+
+	m_logging->setWindowTitle(tr("Settings"));
 
 	m_enableLoggingBox->setCheckState(Qt::Unchecked);
 	if(loggingEnabled)
 		m_enableLoggingBox->setCheckState(Qt::Checked);
 	m_enableLoggingBox->setText("Enable Logging to Log File");
+	connect(m_enableLoggingBox, SIGNAL(stateChanged(int)), this, SLOT(ChangedEnabled(int)));
 
 	m_fileSizeInput->setText(FormatFileSize());
+	m_fileSizeInput->setAlignment(Qt::AlignRight);
 
-	m_fileSizeSuffix->addItem(tr("KB"));
 	m_fileSizeSuffix->addItem(tr("MB"));
 	m_fileSizeSuffix->addItem(tr("GB"));
-	m_fileSizeSuffix->addItem(tr("TB"));
-	if(m_logFileSizeSuffix == "KB") {
+	if(m_logFileSizeSuffix == "MB") {
 		m_fileSizeSuffix->setCurrentIndex(0);
-	} else if(m_logFileSizeSuffix == "MB") {
-		m_fileSizeSuffix->setCurrentIndex(1);
-	} else if(m_logFileSizeSuffix == "GB") {
-		m_fileSizeSuffix->setCurrentIndex(2);
 	} else {
-		m_fileSizeSuffix->setCurrentIndex(3);
+		m_fileSizeSuffix->setCurrentIndex(1);
 	}
 
-	m_fileInputDialog->setText(m_logFile);
-	QSizePolicy sp = m_fileInputDialog->sizePolicy();
-	sp.setHorizontalStretch(1);
-	m_fileInputDialog->setSizePolicy(sp);
+	m_logNumberInput->setText(QString::number(m_logNumberLimit));
+	m_logNumberInput->setAlignment(Qt::AlignRight);
 
-	QPushButton* ok = new QPushButton;
-	ok->setText("OK");
-	QPushButton* browse = new QPushButton;
-	browse->setText("Browse");
+	m_fileInputDialog->setText(m_logFile);
+	m_fileInputDialog->setAlignment(Qt::AlignJustify);
+
+	apply->setText("Apply");
+	m_browse->setText("Browse");
 	buttons->addButton("Cancel", QDialogButtonBox::RejectRole);
-	buttons->addButton(ok, QDialogButtonBox::ApplyRole);
-	connect(browse, SIGNAL(clicked(bool)), this, SLOT(ChooseLogFile()));
+	buttons->addButton(apply, QDialogButtonBox::ApplyRole);
+	connect(m_browse, SIGNAL(clicked(bool)), this, SLOT(ChooseLogFile()));
 	connect(buttons, SIGNAL(rejected()), this, SLOT(ClosePreferences()));
-	connect(ok, SIGNAL(clicked(bool)), this, SLOT(ApplyChanges()));
+	connect(apply, SIGNAL(clicked(bool)), this, SLOT(ApplyChanges()));
 
 	layout->setContentsMargins (6, 6, 6, 6);
 	layout->setHorizontalSpacing(6);
 	layout->setVerticalSpacing(6);
-	layout->addWidget(m_enableLoggingBox, 1, 1, 1, 3, Qt::AlignLeft);
-	layout->addWidget(m_fileSizeInput, 2, 1, 1, 2);
-	layout->addWidget(m_fileSizeSuffix, 2, 3, 1, 1, Qt::AlignRight);
-	layout->addWidget(m_fileInputDialog, 3, 1, 1, 2);
-	layout->addWidget(browse, 3, 3, 1, 1, Qt::AlignRight);
-	layout->addWidget(buttons, 4, 1, 1, 3, Qt::AlignRight);
-	m_preferences->setLayout(layout);
-	m_preferences->setFixedHeight(m_preferences->sizeHint().height());
-	m_preferences->setWindowModality(Qt::WindowModal);
-	m_preferences->move(0,0);
-	m_preferences->show();
+	layout->addWidget(new QLabel("Location:"), 1, 1, 1, 1, Qt::AlignRight);
+	layout->addWidget(m_fileInputDialog, 1, 2, 1, 1);
+	layout->addWidget(m_browse, 1, 3, 1, 1, Qt::AlignLeft);
+	layout->addWidget(new QLabel("Maximum Log Size:"), 2, 1, 1, 1, Qt::AlignRight);
+	layout->addWidget(m_fileSizeInput, 2, 2, 1, 1);
+	layout->addWidget(m_fileSizeSuffix, 2, 3, 1, 1, Qt::AlignLeft);
+	layout->addWidget(new QLabel("Maximum Number of Saved Logs:"), 3, 1, 1, 1, Qt::AlignRight);
+	layout->addWidget(m_logNumberInput, 3, 2, 1, 1);
+	layout->addWidget(m_enableLoggingBox, 4, 2, 1, 1, Qt::AlignLeft);
+	layout->addWidget(buttons, 5, 3, 1, 1, Qt::AlignRight);
+	m_logging->setLayout(layout);
+	
+	ChangedEnabled(loggingEnabled);
 }
 
 void
@@ -256,8 +275,6 @@ MainWindow::ChooseLogFile()
 		m_logFileBrowser->setLayout(layout);
 		m_logFile = fileDialog->selectedFiles()[0];
 		m_fileInputDialog->setText(m_logFile);
-		delete layout;
-		delete fileDialog;
 		delete m_logFileBrowser;
 	}
 }
@@ -265,7 +282,7 @@ MainWindow::ChooseLogFile()
 void
 MainWindow::ClosePreferences()
 {
-	delete m_preferences;
+	delete m_tabs;
 }
 
 void
@@ -277,6 +294,10 @@ MainWindow::ApplyChanges()
 	settings.setValue("mainWindow/logFileName", m_logFile);
 	m_logFileSizeSuffix = m_fileSizeSuffix->currentText();
 	settings.setValue("mainWindow/logFileSize", DeFormatFileSize());
+	m_logNumberLimit = m_logNumberInput->text().toInt();
+	if(m_logNumberLimit > 0) {
+		settings.setValue("mainWindow/logNumberLimit", m_logNumberLimit);
+	}
 	ClosePreferences();
 }
 
@@ -284,27 +305,30 @@ QString
 MainWindow::FormatFileSize()
 {
 	double sizeHolder = m_logFileSize;
-	m_logFileSizeSuffix = "KB";
+	m_logFileSizeSuffix = "B";
 
-	if(sizeHolder > 1024) {
+	if(sizeHolder >= 1024) {
 		sizeHolder /= 1024.0;
 		m_logFileSizeSuffix = "KB";
 	}
-	if(sizeHolder > 1024) {
+	if(sizeHolder >= 1024) {
 		sizeHolder /= 1024.0;
 		m_logFileSizeSuffix = "MB";
 	}
-	if(sizeHolder > 1024) {
+	if(sizeHolder >= 1024) {
 		sizeHolder /= 1024.0;
 		m_logFileSizeSuffix = "GB";
 	}
-	if(sizeHolder > 1024) {
-		sizeHolder /= 1024.0;
-		m_logFileSizeSuffix = "TB";
-	}
 
+	if(m_logFileSizeSuffix == "KB" && sizeHolder/1024 >= 0.01) {
+		sizeHolder/=1024.0;
+		m_logFileSizeSuffix = "MB";
+	} else if(m_logFileSizeSuffix == "KB" && sizeHolder/1024 < 0.01){
+		sizeHolder = 50;
+		m_logFileSizeSuffix = "MB";
+	}
 	// Round to two decimal places
-	double ret = ceil((sizeHolder*100)-0.49)/100.0;
+	double ret = ceil((sizeHolder*100.0)-0.49)/100.0;
 	return QString::number(ret);
 }
 
@@ -312,10 +336,9 @@ double
 MainWindow::DeFormatFileSize()
 {
 	double sizeHolder = m_fileSizeInput->text().toDouble();
-	LOG_INFO(QString::number(sizeHolder));
-	if(m_logFileSizeSuffix == "TB") {
-		sizeHolder *= 1024.0;
-		m_logFileSizeSuffix = "GB";
+	if((sizeHolder < 0.01 && m_logFileSizeSuffix == "MB") || (sizeHolder*1024.0 < 0.01 && m_logFileSizeSuffix == "GB")) {
+		sizeHolder = 50;
+		m_logFileSizeSuffix = "MB";
 	}
 	if(m_logFileSizeSuffix == "GB") {
 		sizeHolder *= 1024.0;
@@ -329,8 +352,19 @@ MainWindow::DeFormatFileSize()
 		sizeHolder *= 1024.0;
 	}
 
-	double ret = ceil((sizeHolder*100)-0.49)/100.0;
-	LOG_INFO(QString::number(ret));
-
+	double ret = ceil((sizeHolder*100.0)-0.49)/100.0;
+	if(ret < 10485)
+		ret = 52428800;
+	m_logFileSize = ret;
 	return ret;
+}
+
+void
+MainWindow::ChangedEnabled(int state)
+{
+	m_fileSizeInput->setEnabled(state);
+	m_fileSizeSuffix->setEnabled(state);
+	m_fileInputDialog->setEnabled(state);
+	m_logNumberInput->setEnabled(state);
+	m_browse->setEnabled(state);
 }

@@ -73,14 +73,16 @@ private:
 	void CancelActiveJobs();
 	QString FormatFileSize();
 	double DeFormatFileSize();
+	void CreateLoggingPage();
 
+	QMenu* m_editMenu;
 	QMenu* m_helpMenu;
 	QAction* m_aboutAction;
 
 	QMenu* m_viewMenu;
 
 	QMenu* m_preferencesMenu;
-	QAction* m_logFileAction;
+	QAction* m_settingsAction;
 
 	QTabWidget* m_sessionTabs;
 	QList<SessionView*> m_sessionViews;
@@ -92,22 +94,27 @@ private:
 	Console* m_console;
 	QDockWidget* m_consoleDock;
 
-	QWidget* m_preferences;
+	QTabWidget* m_tabs;
+	QWidget* m_logging;
 	QCheckBox* m_enableLoggingBox;
 	QLineEdit* m_fileInputDialog;
 	QLineEdit* m_fileSizeInput;
+	QLineEdit* m_logNumberInput;
 	QComboBox* m_fileSizeSuffix;
+	QPushButton* m_browse;
 	QWidget* m_logFileBrowser;
 	QString  m_logFile;
 	double m_logFileSize;
 	QString m_logFileSizeSuffix;
+	int m_logNumberLimit;
 
 private slots:
 	void About();
-	void LogFile();
+	void Settings();
 	void ChooseLogFile();
 	void ClosePreferences();
 	void ApplyChanges();
+	void ChangedEnabled(int state);
 };
 
 #endif
