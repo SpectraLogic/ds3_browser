@@ -60,6 +60,9 @@ public:
 						    const QString& marker,
 						    bool silent = false,
 						    const QString& delimiter = "/");
+	QFuture<ds3_get_objects_response*> GetObjects(const QString& bucketName,
+						      const QString& id, const QString& name,
+		 				      const QString& type, const QString& version);
 
 	void CreateBucket(const QString& name);
 	void DeleteBucket(const QString& name);
@@ -76,7 +79,6 @@ public:
 		       const QString& fileName,
 		       uint64_t offset,
 		       BulkGetWorkItem* bulkGetWorkItem);
-
 	void PutObject(const QString& bucket,
 		       const QString& object,
 		       const QString& fileName,
@@ -98,7 +100,9 @@ private:
 					     const QString& delimiter,
 					     const QString& marker,
 					     bool silent = false);
-
+	ds3_get_objects_response* DoGetObjects(const QString& bucketName,
+					       const QString& id, const QString& name,
+		  			       const QString& type, const QString& version);
 	void PrepareBulkGets(BulkGetWorkItem* workItem);
 	void PrepareBulkPuts(BulkPutWorkItem* workItem);
 	void DoBulk(BulkWorkItem* workItem);

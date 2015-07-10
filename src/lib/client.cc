@@ -250,6 +250,20 @@ Client::GetObject(const QString& bucket,
 	}
 }
 
+QFuture<ds3_get_objects_response*>
+Client::GetObjects(const QString& bucketName, const QString& id,
+		  const QString& name, const QString& type, const QString& version)
+{
+	QFuture<ds3_get_objects_response*> future = run(this,
+						       &Client::DoGetObjects,
+						       bucketName,
+						       id,
+						       name,
+						       type,
+						       version);
+	return future;
+}
+
 void
 Client::PutObject(const QString& bucket,
 		  const QString& object,
@@ -368,6 +382,59 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 	}
 	ds3_get_bucket_response* response;
 	ds3_error* ds3Error = ds3_get_bucket(m_client,
+					     request,
+					     &response);
+	ds3_free_request(request);
+
+	if (ds3Error != NULL) {
+		DS3Error error(ds3Error);
+		ds3_free_error(ds3Error);
+		throw (error);
+	}
+
+	return response;
+}
+
+ds3_get_objects_response*
+Client::DoGetObjects(const QString& bucketName, const QString& id,
+		     const QString& name, const QString& type, const QString& version)
+{
+	LOG_DEBUG("DoGetObjects - bucket: " + bucketName +
+		  ", name: " + name);
+
+	ds3_request* request = ds3_init_get_objects(bucketName.toUtf8().constData(),
+						    id.toUtf8().constData());
+	QString logMsg = "List Objects (GET " + m_endpoint + "/";
+	logMsg += bucketName;
+	QStringList logQueryParams;
+	if (!bucketName.isEmpty()) {
+		ds3_request_set_name(request, bucketName.toUtf8().constData());
+		logQueryParams << "bucket_id=" + bucketName;
+	}
+	if (!name.isEmpty()) {
+		ds3_request_set_name(request, name.toUtf8().constData());
+		logQueryParams << "name=" + name;
+	}
+	if (!id.isEmpty()) {
+		ds3_request_set_id(request, id.toUtf8().constData());
+		logQueryParams << "id=" + id;
+	}
+	if (!type.isEmpty()) {
+		ds3_request_set_type(request, type.toUtf8().constData());
+		logQueryParams << "type=" + type;
+	}
+	if (!version.isEmpty()) {
+		ds3_request_set_version(request, version.toUtf8().constData());
+		logQueryParams << "version=" + version;
+	}
+	if (!logQueryParams.isEmpty()) {
+		logMsg += "&" + logQueryParams.join("&");
+	}
+	logMsg += ")";
+	LOG_INFO(logMsg);
+
+	ds3_get_objects_response* response;
+	ds3_error* ds3Error = ds3_get_objects(m_client,
 					     request,
 					     &response);
 	ds3_free_request(request);

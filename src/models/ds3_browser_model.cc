@@ -27,6 +27,7 @@
 #include "lib/mime_data.h"
 #include "lib/errors/ds3_error.h"
 #include "lib/watchers/get_bucket_watcher.h"
+#include "lib/watchers/get_objects_watcher.h"
 #include "models/ds3_browser_model.h"
 #include "models/ds3_url.h"
 
@@ -984,8 +985,8 @@ DS3BrowserModel::HandleGetBucketResponse()
 // Model for searches
 DS3SearchModel::DS3SearchModel(Client* client, QObject* parent) : DS3BrowserModel(client, parent)
 {
-	// Active searches counter, used to figure out when to display all search results
-	this->activeSearchesCount = 0;
+	activeSearchCount = 0;
+	searchFoundCount = 0;
 }
 
 // This function makes sure all data isn't fetched for the search tree, just what is searched for. When
@@ -994,22 +995,39 @@ DS3SearchModel::DS3SearchModel(Client* client, QObject* parent) : DS3BrowserMode
 void
 DS3SearchModel::fetchMore(const QModelIndex& parent)
 {
+	// Have to do something with parent for compiling, and since
+	//   parent is invalid, this doesn't affect the logs. Initially
+	//   I tried return here, but a vfork() segfaults after a while
+	//   with that.
 	if(parent.isValid())
+		return;
+	else
 		return;
 }
 
 // This function adds retrieved search objects from the DS3 model and puts them in the search model
 void
-DS3SearchModel::AppendItem(ds3_object obj, QString bucketName) {
+DS3SearchModel::AppendItem(ds3_search_object obj, QString bucketName) {
 	// Data to go into new item in model
 	QList<QVariant> data;
+
+	QString name;
+	if(obj.name != NULL)
+		name = "/"+bucketName+QString("/")+obj.name->value;
+	else
+		name = QString("");
 	// Checks search results, bucketName!="" means files were found
 	if(bucketName != QString("")) {
-		QString name = "/"+bucketName+QString("/")+obj.name->value;
 		data << name;
-		data << obj.owner->name->value;
+		if(obj.owner != NULL && obj.owner->name != NULL)
+			data << obj.owner->name->value;
+		else
+			data << QString("");
 		qulonglong size = obj.size;
-		data << size;
+		if(size != 0)
+			data << size;
+		else
+			data << QString("--");
 		if(name == "/"+bucketName+"/")
 			data << QString("Bucket");
 		else if(name.endsWith("/"))
@@ -1018,10 +1036,13 @@ DS3SearchModel::AppendItem(ds3_object obj, QString bucketName) {
 			data << QString("Object");
 		else
 			data << QString("");
-		data << QDateTime::fromString(QString::fromUtf8(obj.last_modified->value), REST_TIMESTAMP_FORMAT).toString(VIEW_TIMESTAMP_FORMAT);
+		if(obj.last_modified != NULL)
+			data << QDateTime::fromString(QString::fromUtf8(obj.last_modified->value), REST_TIMESTAMP_FORMAT).toString(VIEW_TIMESTAMP_FORMAT);
+		else
+			data << QString("");
 	// Search results were empty, so only need these values
 	} else {
-		data << QString(obj.name->value) << QString("") << QString("--");
+		data << name << QString("") << QString("--");
 	}
 	// Create the new item
 	DS3BrowserItem* newItem = new DS3BrowserItem(data, QString(""), QString(""), m_rootItem);
@@ -1035,52 +1056,17 @@ DS3SearchModel::Search(const QModelIndex& index, QString bucket, QString prefix,
 	// This case is for initial bucket search when no common prefixes are known. These searches
 	//   call this function again but with search = "".
 	if(search != "") {
-		// Check if prefix is empty or a bucket name
-		if(prefix == "" || prefix == bucket) {
-			// Setting prefix to this since buckets are only at the root directory
-			prefix = "";
-			GetBucketWatcher* watcher = new GetBucketWatcher(index,
-									 bucket,
-									 prefix);
-			connect(watcher, SIGNAL(finished()), this, SLOT(HandleGetBucketResponse()));
-			QFuture<ds3_get_bucket_response*> future = m_client->GetBucket(bucket,
-										       prefix,
-										       "",
-										       false,
-										       search);
-			watcher->setFuture(future);
-		// If the prefix has the bucket name in it, like a search on a folder as the root
-		} else if(prefix.contains(bucket)) {
-			// Because GetPath is how the prefix is determined by calling function, remove the
-			//   bucket name and first '/' from the prefix for correct searches
-			prefix.remove(0, bucket.length()+1);
-			GetBucketWatcher* watcher = new GetBucketWatcher(index,
-									 bucket,
-									 prefix);
-			connect(watcher, SIGNAL(finished()), this, SLOT(HandleGetBucketResponse()));
-			QFuture<ds3_get_bucket_response*> future = m_client->GetBucket(bucket,
-										       prefix,
-										       "",
-										       false,
-										       search);
-			watcher->setFuture(future);
-		// This case means that the search is being done in a different bucket, so don't search
-		//   and decrement activeSearchesCount since normally that happens in HandleGetBucketResponse()
-		} else {
-			activeSearchesCount--;
-		}
-	// This case means that the initial search has completed and is now asking for just the files that
-	//   match the search terms
-	} else {
-		GetBucketWatcher* watcher = new GetBucketWatcher(index,
-								 bucket,
-								 prefix);
-		connect(watcher, SIGNAL(finished()), this, SLOT(HandleGetBucketResponse()));
-		QFuture<ds3_get_bucket_response*> future = m_client->GetBucket(bucket,
-									       prefix,
-									       "",
-									       false,
-									       "");
+		// Setting prefix to this since buckets are only at the root directory
+		GetObjectsWatcher* watcher = new GetObjectsWatcher(index,
+								   bucket,
+								   prefix,
+								   NULL);
+		connect(watcher, SIGNAL(finished()), this, SLOT(HandleGetObjectsResponse()));
+		QFuture<ds3_get_objects_response*> future = m_client->GetObjects(bucket,
+									         "",
+									         search,
+									         "",
+									         "");
 		watcher->setFuture(future);
 	}
 }
@@ -1093,8 +1079,6 @@ DS3SearchModel::HandleGetServiceResponse(QString search, QTreeView* tree, DS3Bro
 	//   can be used for indices and object names
 	m_searchedTree = tree;
 	m_searchedModel = model;
-	// Counter for the number of search results
-	searchFoundCount = 0;
 	// Set index to the root index of the searched tree
 	QModelIndex index = m_searchedTree->rootIndex();
 
@@ -1113,28 +1097,28 @@ DS3SearchModel::HandleGetServiceResponse(QString search, QTreeView* tree, DS3Bro
 			ds3_bucket rawBucket = response->buckets[i];
 
 			name = QString::fromUtf8(rawBucket.name->value);
+			if(m_searchedModel->GetPath(index) != QString("/") && !m_searchedModel->GetPath(index).contains(name))
+				continue;
 
 			QString prefix = m_searchedModel->GetPath(index);
 			// Because of GetPath(), the initial "/" needs to be removed for searches to work
 			if(prefix.startsWith("/"))
 				prefix.remove(0, 1);
-			// Increment the count of active searches and search
-			activeSearchesCount ++;
-			Search(index, name, prefix, search);
+			activeSearchCount++;
+			Search(index, name, prefix, QString("%"+search+"%"));
 		}
 	}
 }
 
 void
-DS3SearchModel::HandleGetBucketResponse()
+DS3SearchModel::HandleGetObjectsResponse()
 {
 	// Temporary list to hold objects as they are found
-	QList<ds3_object> objectList;
+	QList<ds3_search_object> objectList;
 	// Get the watcher and response
-	GetBucketWatcher* watcher = static_cast<GetBucketWatcher*>(sender());
-	ds3_get_bucket_response* response = NULL;
+	GetObjectsWatcher* watcher = static_cast<GetObjectsWatcher*>(sender());
+	ds3_get_objects_response* response = NULL;
 	const QString& bucketName = watcher->GetBucketName();
-	QModelIndex index = m_searchedTree->rootIndex();
 	try {
 		response = watcher->result();
 	}
@@ -1147,54 +1131,48 @@ DS3SearchModel::HandleGetBucketResponse()
 		}
 		LOG_ERROR("Error listing objects - " + msg);
 	}
-
 	// Checks that response isn't empty
 	if(response != NULL) {
-		// This case is for the actual search and gets the objects that match
-		if(response->num_common_prefixes == 0 && response->delimiter == NULL) {
-			for (size_t i = 0; i < response->num_objects; i++) {
-				// Increment the found count and add the object to the search model
-				objectList << response->objects[i];
-			}
-		// This case calls search on the common prefixes that were found, which will
-		//   find the actual matching results for the search
-		} else {
-			for (size_t i=0; i<response->num_common_prefixes; i++) {
-				// Get the common prefix, increment active search count, and search
-				QString prefix = QString::fromUtf8(response->common_prefixes[i]->value);
-				activeSearchesCount++;
-				Search(index, bucketName, prefix, "");
-			}
+		for (size_t i = 0; i < response->num_objects; i++) {
+			// Increment the found count and add the object to the search model
+			objectList << response->objects[i];
 		}
 	}
-
-	// The search is complete now, so decrement the active counter
-	activeSearchesCount--;
-
 	for(int i=0; i<objectList.size(); i++) {
 		searchFoundCount++;
-		AppendItem(objectList[i], bucketName);
+		m_foundList << objectList[i];
+		m_bucketList << bucketName;
+		// AppendItem(objectList[i], bucketName);
 	}
+	bool found = true;
+	activeSearchCount--;
 
-	// If active searches count is 0, then this was the last search to run,
-	//   and DoneSearching signal is sent
-	if(activeSearchesCount == 0) {
-		// Flag that says if there were any search results
-		bool found = true;
+	if(activeSearchCount == 0) {
 		// If no results were found, then create a fake item that tells
 		//   this to the user
 		if(searchFoundCount == 0) {
 			found = false;
-			ds3_object empty;
+			ds3_search_object empty;
 			ds3_str* name = new ds3_str();
 			char* nameChar = new char[40];
 			strcpy(nameChar, "There are currently no items to display");
 			name->value = nameChar;
 			empty.name = name;
-			AppendItem(empty, QString(""));
+			m_foundList << empty;
+			m_bucketList << QString("");
+			// AppendItem(empty, QString(""));
 		}
+		AddToTree();
 		emit DoneSearching(found);
 	}
 
 	delete watcher;
+}
+
+void
+DS3SearchModel::AddToTree()
+{
+	for(int i=0; i<m_foundList.size(); i++) {
+		AppendItem(m_foundList[i], m_bucketList[i]);
+	}
 }

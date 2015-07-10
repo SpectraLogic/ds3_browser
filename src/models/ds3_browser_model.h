@@ -25,6 +25,7 @@
 #include <ds3.h>
 
 #include "lib/watchers/get_service_watcher.h"
+#include "lib/watchers/get_objects_watcher.h"
 
 class Client;
 class DS3BrowserItem;
@@ -104,17 +105,20 @@ public:
 	void HandleGetServiceResponse(QString search, QTreeView* tree, DS3BrowserModel* model, GetServiceWatcher* watcher);
 
 public slots:
-	void HandleGetBucketResponse();
+	void HandleGetObjectsResponse();
 
 signals:
 	void DoneSearching(bool found);
 
 private:
-	size_t activeSearchesCount;
+	size_t activeSearchCount;
 	size_t searchFoundCount;
+	QList<ds3_search_object> m_foundList;
+	QList<QString> m_bucketList;
 	DS3BrowserModel* m_searchedModel;
 	QTreeView* m_searchedTree;
-	void AppendItem(ds3_object obj, QString bucketName);
+	void AddToTree();
+	void AppendItem(ds3_search_object obj, QString bucketName);
 	void Search(const QModelIndex& index, QString bucket, QString prefix, QString search);
 };
 
