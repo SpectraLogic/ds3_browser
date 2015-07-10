@@ -1011,13 +1011,13 @@ DS3SearchModel::AppendItem(ds3_search_object obj, QString bucketName) {
 	// Data to go into new item in model
 	QList<QVariant> data;
 
-	QString name;
-	if(obj.name != NULL)
-		name = "/"+bucketName+QString("/")+obj.name->value;
-	else
-		name = QString("");
 	// Checks search results, bucketName!="" means files were found
 	if(bucketName != QString("")) {
+		QString name;
+		if(obj.name != NULL)
+			name = "/"+bucketName+QString("/")+obj.name->value;
+		else
+			name = QString("");
 		data << name;
 		if(obj.owner != NULL && obj.owner->name != NULL)
 			data << obj.owner->name->value;
@@ -1042,7 +1042,7 @@ DS3SearchModel::AppendItem(ds3_search_object obj, QString bucketName) {
 			data << QString("");
 	// Search results were empty, so only need these values
 	} else {
-		data << name << QString("") << QString("--");
+		data << obj.name->value << QString("") << QString("--");
 	}
 	// Create the new item
 	DS3BrowserItem* newItem = new DS3BrowserItem(data, QString(""), QString(""), m_rootItem);
