@@ -56,22 +56,22 @@ HEADERS = \
 	$${PWD}/src/views/objects/delete_objects_dialog.h \
 	$${PWD}/src/views/session_dialog.h \
 	$${PWD}/src/views/session_view.h \
-	src/vendor/quazip/crypt.h \
-	src/vendor/quazip/ioapi.h \
-	src/vendor/quazip/JlCompress.h \
-	src/vendor/quazip/quaadler32.h \
-	src/vendor/quazip/quachecksum32.h \
-	src/vendor/quazip/quacrc32.h \
-	src/vendor/quazip/quagzipfile.h \
-	src/vendor/quazip/quaziodevice.h \
-	src/vendor/quazip/quazipdir.h \
-	src/vendor/quazip/quazipfile.h \
-	src/vendor/quazip/quazipfileinfo.h \
-	src/vendor/quazip/quazipnewinfo.h \
-	src/vendor/quazip/quazip_global.h \
-	src/vendor/quazip/quazip.h \
-	src/vendor/quazip/unzip.h \
-	src/vendor/quazip/zip.h
+	vendor/quazip/crypt.h \
+	vendor/quazip/ioapi.h \
+	vendor/quazip/JlCompress.h \
+	vendor/quazip/quaadler32.h \
+	vendor/quazip/quachecksum32.h \
+	vendor/quazip/quacrc32.h \
+	vendor/quazip/quagzipfile.h \
+	vendor/quazip/quaziodevice.h \
+	vendor/quazip/quazipdir.h \
+	vendor/quazip/quazipfile.h \
+	vendor/quazip/quazipfileinfo.h \
+	vendor/quazip/quazipnewinfo.h \
+	vendor/quazip/quazip_global.h \
+	vendor/quazip/quazip.h \
+	vendor/quazip/unzip.h \
+	vendor/quazip/zip.h
 
 SOURCES = \
 	$${PWD}/src/main_window.cc \
