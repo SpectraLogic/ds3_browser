@@ -19,27 +19,15 @@
 
 #include <QMainWindow>
 #include <QAction>
+#include <QCheckBox>
+#include <QCloseEvent>
+#include <QComboBox>
 #include <QDockWidget>
 #include <QList>
 #include <QMenu>
+#include <QPushButton>
 #include <QTabWidget>
 #include <QScrollArea>
-
-#include <QCheckBox>
-#include <QDialogButtonBox>
-#include <QFileDialog>
-#include <QInputDialog>
-#include <QPushButton>
-#include <QComboBox>
-
-#include <QApplication>
-#include <QCloseEvent>
-#include <QDialog>
-#include <QMenuBar>
-#include <QMessageBox>
-#include <QSettings>
-#include <QThreadPool>
-#include <QWindow>
 
 #include <math.h>
 

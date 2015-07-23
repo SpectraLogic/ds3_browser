@@ -14,8 +14,16 @@
  * *****************************************************************************
  */
 
-#include "lib/logger.h"
+#include <QApplication>
+#include <QDialogButtonBox>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QMenuBar>
+#include <QSettings>
+#include <QThreadPool>
+
 #include "global.h"
+#include "lib/logger.h"
 #include "main_window.h"
 #include "models/session.h"
 #include "views/console.h"
