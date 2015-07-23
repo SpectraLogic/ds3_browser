@@ -56,22 +56,22 @@ HEADERS = \
 	$${PWD}/src/views/objects/delete_objects_dialog.h \
 	$${PWD}/src/views/session_dialog.h \
 	$${PWD}/src/views/session_view.h \
-	vendor/quazip/crypt.h \
-	vendor/quazip/ioapi.h \
-	vendor/quazip/JlCompress.h \
-	vendor/quazip/quaadler32.h \
-	vendor/quazip/quachecksum32.h \
-	vendor/quazip/quacrc32.h \
-	vendor/quazip/quagzipfile.h \
-	vendor/quazip/quaziodevice.h \
-	vendor/quazip/quazipdir.h \
-	vendor/quazip/quazipfile.h \
-	vendor/quazip/quazipfileinfo.h \
-	vendor/quazip/quazipnewinfo.h \
-	vendor/quazip/quazip_global.h \
-	vendor/quazip/quazip.h \
-	vendor/quazip/unzip.h \
-	vendor/quazip/zip.h
+	$${PWD}/vendor/quazip/crypt.h \
+	$${PWD}/vendor/quazip/ioapi.h \
+	$${PWD}/vendor/quazip/JlCompress.h \
+	$${PWD}/vendor/quazip/quaadler32.h \
+	$${PWD}/vendor/quazip/quachecksum32.h \
+	$${PWD}/vendor/quazip/quacrc32.h \
+	$${PWD}/vendor/quazip/quagzipfile.h \
+	$${PWD}/vendor/quazip/quaziodevice.h \
+	$${PWD}/vendor/quazip/quazipdir.h \
+	$${PWD}/vendor/quazip/quazipfile.h \
+	$${PWD}/vendor/quazip/quazipfileinfo.h \
+	$${PWD}/vendor/quazip/quazipnewinfo.h \
+	$${PWD}/vendor/quazip/quazip_global.h \
+	$${PWD}/vendor/quazip/quazip.h \
+	$${PWD}/vendor/quazip/unzip.h \
+	$${PWD}/vendor/quazip/zip.h
 
 SOURCES = \
 	$${PWD}/src/main_window.cc \
@@ -104,19 +104,19 @@ SOURCES = \
 	$${PWD}/src/views/objects/delete_objects_dialog.cc \
 	$${PWD}/src/views/session_dialog.cc \
 	$${PWD}/src/views/session_view.cc \
-	src/vendor/quazip/JlCompress.cpp \
-	src/vendor/quazip/qioapi.cpp \
-	src/vendor/quazip/quaadler32.cpp \
-	src/vendor/quazip/quacrc32.cpp \
-	src/vendor/quazip/quagzipfile.cpp \
-	src/vendor/quazip/quaziodevice.cpp \
-	src/vendor/quazip/quazipdir.cpp \
-	src/vendor/quazip/quazipfile.cpp \
-	src/vendor/quazip/quazipfileinfo.cpp \
-	src/vendor/quazip/quazipnewinfo.cpp \
-	src/vendor/quazip/quazip.cpp \
-	src/vendor/quazip/unzip.c \
-	src/vendor/quazip/zip.c
+	$${PWD}/vendor/quazip/JlCompress.cpp \
+	$${PWD}/vendor/quazip/qioapi.cpp \
+	$${PWD}/vendor/quazip/quaadler32.cpp \
+	$${PWD}/vendor/quazip/quacrc32.cpp \
+	$${PWD}/vendor/quazip/quagzipfile.cpp \
+	$${PWD}/vendor/quazip/quaziodevice.cpp \
+	$${PWD}/vendor/quazip/quazipdir.cpp \
+	$${PWD}/vendor/quazip/quazipfile.cpp \
+	$${PWD}/vendor/quazip/quazipfileinfo.cpp \
+	$${PWD}/vendor/quazip/quazipnewinfo.cpp \
+	$${PWD}/vendor/quazip/quazip.cpp \
+	$${PWD}/vendor/quazip/unzip.c \
+	$${PWD}/vendor/quazip/zip.c
 
 msvc {
 	LIBS += ds3.lib
