@@ -38,7 +38,6 @@ public:
 	static Console* Instance();
 
 	void Log(Level level, const QString& msg);
-	void LogToFile(QString msg);
 
 signals:
 	void MessageReadyToLog(int level, const QString& msg);
@@ -48,6 +47,7 @@ private:
 	void SaveToFile();
 	void ArchiveLog(QString filename);
 	void IncrementLog(QString filename, QString filetype, qint64 number);
+	void LogToFile(QString msg);
 
 	static Console* s_instance;
 
