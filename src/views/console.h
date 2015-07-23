@@ -23,9 +23,9 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "src/quazip-0.7.1/quazip/quazip.h"
-#include "src/quazip-0.7.1/quazip/quazipfile.h"
-#include "src/quazip-0.7.1/quazip/quazipfileinfo.h"
+#include "src/vendor/quazip/quazip.h"
+#include "src/vendor/quazip/quazipfile.h"
+#include "src/vendor/quazip/quazipfileinfo.h"
 
 class Console : public QWidget
 {
