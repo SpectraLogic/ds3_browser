@@ -32,7 +32,7 @@ Release:RCC_DIR = release/.qrc
 Release:UI_DIR = release/.ui
 Release:DEFINES += NO_DEBUG
 
-SOURCES += src/main.cc
+SOURCES += src/main.cc 
 
 RESOURCES = ds3_browser.qrc
 

@@ -55,7 +55,23 @@ HEADERS = \
 	$${PWD}/src/views/jobs_view.h \
 	$${PWD}/src/views/objects/delete_objects_dialog.h \
 	$${PWD}/src/views/session_dialog.h \
-	$${PWD}/src/views/session_view.h
+	$${PWD}/src/views/session_view.h \
+	vendor/quazip/crypt.h \
+	vendor/quazip/ioapi.h \
+	vendor/quazip/JlCompress.h \
+	vendor/quazip/quaadler32.h \
+	vendor/quazip/quachecksum32.h \
+	vendor/quazip/quacrc32.h \
+	vendor/quazip/quagzipfile.h \
+	vendor/quazip/quaziodevice.h \
+	vendor/quazip/quazipdir.h \
+	vendor/quazip/quazipfile.h \
+	vendor/quazip/quazipfileinfo.h \
+	vendor/quazip/quazipnewinfo.h \
+	vendor/quazip/quazip_global.h \
+	vendor/quazip/quazip.h \
+	vendor/quazip/unzip.h \
+	vendor/quazip/zip.h
 
 SOURCES = \
 	$${PWD}/src/main_window.cc \
@@ -87,7 +103,20 @@ SOURCES = \
 	$${PWD}/src/views/jobs_view.cc \
 	$${PWD}/src/views/objects/delete_objects_dialog.cc \
 	$${PWD}/src/views/session_dialog.cc \
-	$${PWD}/src/views/session_view.cc
+	$${PWD}/src/views/session_view.cc \
+	src/vendor/quazip/JlCompress.cpp \
+	src/vendor/quazip/qioapi.cpp \
+	src/vendor/quazip/quaadler32.cpp \
+	src/vendor/quazip/quacrc32.cpp \
+	src/vendor/quazip/quagzipfile.cpp \
+	src/vendor/quazip/quaziodevice.cpp \
+	src/vendor/quazip/quazipdir.cpp \
+	src/vendor/quazip/quazipfile.cpp \
+	src/vendor/quazip/quazipfileinfo.cpp \
+	src/vendor/quazip/quazipnewinfo.cpp \
+	src/vendor/quazip/quazip.cpp \
+	src/vendor/quazip/unzip.c \
+	src/vendor/quazip/zip.c
 
 msvc {
 	LIBS += ds3.lib
@@ -102,7 +131,7 @@ msvc {
 		LIBS += -L/usr/local/lib
 	}
 
-	LIBS += -lds3 -lcurl
+	LIBS += -lds3 -lcurl -lz
 }
 
 gcc: QMAKE_CXXFLAGS += -Werror
