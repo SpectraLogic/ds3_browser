@@ -52,6 +52,11 @@ struct ClientAndObjectWorkItem
 	ObjectWorkItem* objectWorkItem;
 };
 
+static void printLog(const char* message, void* userData) {
+	userData = userData;
+	printf("LOG: %s\n", message);
+}
+
 Client::Client(const Session* session)
 {
 	m_creds = ds3_create_creds(session->GetAccessId().toUtf8().constData(),
@@ -66,6 +71,7 @@ Client::Client(const Session* session)
 	}
 
 	m_client = ds3_create_client(m_endpoint.toUtf8().constData(), m_creds);
+	ds3_client_register_logging(m_client, DS3_DEBUG, printLog, NULL);
 	QString proxy = session->GetProxy();
 	if (!proxy.isEmpty()) {
 		ds3_client_proxy(m_client, proxy.toUtf8().constData());
@@ -178,6 +184,24 @@ Client::DeleteObjects(const QString& bucketName, const QStringList& objectNames)
 		DS3Error error(ds3Error);
 		ds3_free_error(ds3Error);
 		throw (error);
+	}
+}
+
+void
+Client::DeleteFolders(const QString& bucketName, const QStringList& folderNames)
+{
+	for(int i=0; i<folderNames.size(); i++) {
+		ds3_request* request = ds3_init_delete_folder(bucketName.toUtf8().constData(), folderNames[i].toUtf8().constData());
+		LOG_INFO("Delete Folder " + bucketName + "/" + folderNames[i]);
+
+		ds3_error* ds3Error = ds3_delete_folder(m_client, request, bucketName.toUtf8().constData());
+		ds3_free_request(request);
+
+		if (ds3Error != NULL) {
+			DS3Error error(ds3Error);
+			ds3_free_error(ds3Error);
+			throw (error);
+		}
 	}
 }
 

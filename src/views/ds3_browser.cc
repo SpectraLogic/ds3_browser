@@ -170,7 +170,7 @@ DS3Browser::DeleteSelected()
 	DS3DeleteDialog* dialog;
 
 	QString bucketName = m_model->GetBucketName(selectedIndex);
-	QStringList nameList, tempList;
+	QStringList objectList, folderList;
 	for (int i=0; i<selectedIndexes.size(); i++) {
 		if (m_model->IsBucket(selectedIndexes[i])) {
 			QString name = m_model->GetFullName(selectedIndexes[i]);
@@ -178,23 +178,23 @@ DS3Browser::DeleteSelected()
 			if (dialog->exec() == QDialog::Accepted) {
 				Refresh();
 			}
-			tempList.clear();
 			delete dialog;
-			break;
+			return;
 		} else if (m_model->IsFolder(selectedIndexes[i])) {
-			tempList << m_model->GetFullName(selectedIndexes[i])+"/";
+			folderList << m_model->GetFullName(selectedIndexes[i]);
+			objectList << m_model->GetFullName(selectedIndexes[i])+"/";
 		} else {
-			tempList << m_model->GetFullName(selectedIndexes[i]);
+			objectList << m_model->GetFullName(selectedIndexes[i]);
 		}
 	}
-	tempList.sort();
-	// Reverse the order so that files in any folder are deleted before the folder
-	for (int i=tempList.size()-1; i>=0; i--) {
-		nameList << tempList[i];
-	}
-	if(nameList.size() > 0) {
-		dialog = new DeleteObjectsDialog(m_client, bucketName, nameList);
+	objectList.sort();
+
+	if(objectList.size() > 0) {
+		dialog = new DeleteObjectsDialog(m_client, bucketName, objectList);
 		if (dialog->exec() == QDialog::Accepted) {
+			if(folderList.size() > 0) {
+				m_client->DeleteFolders(bucketName, folderList);
+			}
 			Refresh();
 		}
 		delete dialog;
