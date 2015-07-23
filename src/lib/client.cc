@@ -406,10 +406,6 @@ Client::DoGetObjects(const QString& bucketName, const QString& id,
 	QString logMsg = "List Objects (GET " + m_endpoint + "/";
 	logMsg += bucketName;
 	QStringList logQueryParams;
-	if (!bucketName.isEmpty()) {
-		ds3_request_set_name(request, bucketName.toUtf8().constData());
-		logQueryParams << "bucket_id=" + bucketName;
-	}
 	if (!name.isEmpty()) {
 		ds3_request_set_name(request, name.toUtf8().constData());
 		logQueryParams << "name=" + name;
