@@ -39,15 +39,10 @@ DS3Browser::DS3Browser(Client* client, JobsView* jobsView,
 	m_model = new DS3BrowserModel(m_client, this);
 	m_model->SetView(m_treeView);
 	m_treeView->setModel(m_model);
-	m_searchButton = new QPushButton("", this);
-	m_searchButton->setFont(QFont("FontAwesome"));
-	QString searchIcon = QString::fromUtf8("\uf002");
-	m_searchButton->setText(searchIcon);
-	m_layout->addWidget(m_searchButton,1,2,1,1,Qt::AlignRight);
 	m_searchBar = new QLineEdit();
 	m_searchBar->setPlaceholderText("Search");
 	m_searchBar->setToolTip("Search in current folder");
-	m_layout->addWidget(m_searchBar,1,3,1,1,Qt::AlignRight);
+	m_layout->addWidget(m_searchBar,1,2,1,1);
 	m_searchModel = new DS3SearchModel(m_client, this);
 	m_searchView = new DS3SearchTree();
 
@@ -61,9 +56,6 @@ DS3Browser::DS3Browser(Client* client, JobsView* jobsView,
 		m_jobsView, SLOT(UpdateJob(const Job)));
 
 	connect(m_searchBar, SIGNAL(returnPressed()),
-		this, SLOT(BeginSearch()));
-
-	connect(m_searchButton, SIGNAL(pressed()),
 		this, SLOT(BeginSearch()));
 }
 
@@ -88,6 +80,13 @@ DS3Browser::AddCustomToolBarActions()
 				      "Refresh", this);
 	connect(m_refreshAction, SIGNAL(triggered()), this, SLOT(Refresh()));
 	m_toolBar->addAction(m_refreshAction);
+
+	QString searchIcon = QString::fromUtf8("\uf002");
+	m_searchAction = new QAction(searchIcon, this);
+	m_searchAction->setFont(QFont("FontAwesome", 16));
+	m_searchAction->setText(searchIcon);
+	connect(m_searchAction, SIGNAL(triggered()), this, SLOT(BeginSearch()));
+	m_toolBar->addAction(m_searchAction);
 }
 
 QString
