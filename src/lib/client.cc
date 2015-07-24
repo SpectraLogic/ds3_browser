@@ -478,7 +478,7 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 					QString subFilePath = QDir::cleanPath(destination + "/" +
 									      bucketPrefix + "/" + prefix +
 									      "/" + objNameMinusPrefix);
-					LOG_INFO("     GET     Object    "+subFullObjName+"->"subFilePath);
+					LOG_INFO("     GET     Object    "+subFullObjName+"->"+subFilePath);
 					if (subFullObjName.endsWith("/")) {
 						workItem->AppendDirsToCreate(subFilePath);
 					} else if (QFile(subFilePath).exists()) {
