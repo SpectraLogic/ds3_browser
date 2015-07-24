@@ -19,6 +19,7 @@
 
 #include <QStringList>
 #include <QLineEdit>
+#include <QPushButton>
 
 #include "lib/watchers/get_bucket_watcher.h"
 #include "lib/watchers/get_service_watcher.h"
@@ -54,6 +55,7 @@ protected:
 
 	QAction* m_rootAction;
 	QAction* m_refreshAction;
+	QPushButton* m_searchButton;
 	QLineEdit* m_searchBar;
 
 protected slots:

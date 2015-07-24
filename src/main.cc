@@ -17,6 +17,7 @@
 #include <QApplication>
 #include <QFile>
 #include <ds3.h>
+#include <QFontDatabase>
 
 #include "global.h"
 #include "models/job.h"
@@ -32,6 +33,17 @@ main(int argc, char *argv[])
 	app.setOrganizationName("Spectra Logic");
 	app.setOrganizationDomain("spectralogic.com");
 	app.setApplicationName(APP_NAME);
+
+	QFile res(":/resources/fonts/fontawesome-webfont.ttf");
+	res.open(QIODevice::ReadOnly);
+	QFontDatabase::addApplicationFontFromData(res.readAll());
+	// Using font-awesome characters example:
+	//   widget->setFont(QFont("FontAwesome"));
+	//   QString searchIcon = QString::fromUtf8("\uf002");
+	//   widget->setText(searchIcon);
+	//
+	// "\uf002" is the unicode for the search icon, their other icon codes
+	//   can be found on "http://fortawesome.github.io/Font-Awesome/cheatsheet/"
 
 	QFile qssf(":/resources/stylesheets/main.qss");
 	qssf.open(QFile::ReadOnly);
