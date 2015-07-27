@@ -588,12 +588,12 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 				if (subFileInfo.isDir()) {
 					subObjName += "/";
 				}
-				LOG_INFO("     GET     Object    "+subObjName+"->"+subFilePath);
+				LOG_INFO("     PUT     OBJECT    "+subObjName+"->"+subFilePath);
 				workItem->InsertObjMap(subObjName, subFilePath);
 			}
 			workItem->DeleteDirIterator();
 		}
-		LOG_INFO("     GET     Object    "+objName+"->"+filePath);
+		LOG_INFO("     PUT     OBJECT    "+objName+"->"+filePath);
 		workItem->InsertObjMap(objName, filePath);
 		workItem->SetLastProcessedUrl(*ui);
 	}
@@ -694,6 +694,7 @@ Client::DoBulk(BulkWorkItem* workItem)
 	}
 
 	ProcessJobChunk(workItem);
+	LOG_INFO("BULK JOB     Complete");
 }
 
 void
