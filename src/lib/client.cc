@@ -336,7 +336,7 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 		    const QString& delimiter, const QString& marker,
 		    bool silent)
 {
-	LOG_DEBUG("DoGetBucket - bucket: " + bucketName +
+	LOG_DEBUG("GET          Bucket    " + bucketName +
 		  ", prefix: " + prefix + ", marker: " + marker);
 
 	ds3_request* request = ds3_init_get_bucket(bucketName.toUtf8().constData());
@@ -478,6 +478,7 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 					QString subFilePath = QDir::cleanPath(destination + "/" +
 									      bucketPrefix + "/" + prefix +
 									      "/" + objNameMinusPrefix);
+					LOG_INFO("     GET     Object    "+subFullObjName+"->"+subFilePath);
 					if (subFullObjName.endsWith("/")) {
 						workItem->AppendDirsToCreate(subFilePath);
 					} else if (QFile(subFilePath).exists()) {
@@ -492,6 +493,7 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 		} else if (QFile(filePath).exists()) {
 			LOG_ERROR("ERROR:       "+filePath+" already exists. Skipping");
 		} else {
+			LOG_INFO("     GET     Object    "+fullObjName+"->"+filePath);
 			workItem->InsertObjMap(fullObjName, filePath);
 		}
 
@@ -586,10 +588,12 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 				if (subFileInfo.isDir()) {
 					subObjName += "/";
 				}
+				LOG_INFO("     PUT     OBJECT    "+subObjName+"->"+subFilePath);
 				workItem->InsertObjMap(subObjName, subFilePath);
 			}
 			workItem->DeleteDirIterator();
 		}
+		LOG_INFO("     PUT     OBJECT    "+objName+"->"+filePath);
 		workItem->InsertObjMap(objName, filePath);
 		workItem->SetLastProcessedUrl(*ui);
 	}
@@ -602,7 +606,7 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 void
 Client::DoBulk(BulkWorkItem* workItem)
 {
-	LOG_DEBUG("DoBulk");
+	LOG_DEBUG("DO BULK");
 
 	workItem->SetState(Job::INPROGRESS);
 	workItem->SetTransferStartIfNull();
@@ -690,6 +694,7 @@ Client::DoBulk(BulkWorkItem* workItem)
 	}
 
 	ProcessJobChunk(workItem);
+	LOG_INFO("BULK JOB     Complete");
 }
 
 void
