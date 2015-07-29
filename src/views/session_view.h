@@ -37,7 +37,7 @@ class SessionView : public QWidget
 
 public:
 	SessionView(Session* session, JobsView* jobsView, QWidget* parent = 0);
-	virtual ~SessionView();
+	~SessionView();
 
 	int GetNumActiveJobs() const;
 	void CancelActiveJobs();
