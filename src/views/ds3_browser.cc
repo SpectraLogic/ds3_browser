@@ -161,7 +161,7 @@ DS3Browser::DeleteSelected()
 	QModelIndexList selectedIndexes = m_treeView->selectionModel()->selectedRows();
 
 	if (selectedIndexes.count() == 0) {
-		LOG_ERROR("Nothing selected to delete");
+		LOG_ERROR("ERROR:       DELETE OBJECT failed, nothing selected to delete");
 		return;
 	}
 

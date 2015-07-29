@@ -104,11 +104,8 @@ private:
 	void DoBulk(BulkWorkItem* workItem);
 
 	void CreateBulkGetDirs(BulkGetWorkItem* workItem);
-	void ProcessGetJobChunk(BulkGetWorkItem* workItem);
-	ds3_get_available_chunks_response* GetAvailableJobChunks(BulkGetWorkItem* bulkGetWorkItem);
-
-	void ProcessPutJobChunk(BulkPutWorkItem* workItem);
-	ds3_allocate_chunk_response* AllocateJobChunk(const char* chunkID);
+	void ProcessJobChunk(BulkWorkItem* workItem);
+	ds3_get_available_chunks_response* GetAvailableJobChunks(BulkWorkItem* workItem);
 
 	void DeleteOrRequeueBulkWorkItem(BulkWorkItem* workItem);
 	void DeleteBulkWorkItem(BulkWorkItem* workItem);

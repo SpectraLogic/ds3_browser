@@ -135,8 +135,7 @@ void
 Client::CreateBucket(const QString& name)
 {
 	ds3_request* request = ds3_init_put_bucket(name.toUtf8().constData());
-	LOG_INFO("Create Bucket " + name + " (PUT " + m_endpoint + "/" + \
-		 name + ")");
+	LOG_INFO("PUT          BUCKET    "+m_endpoint+"/"+name);
 	ds3_error* ds3Error = ds3_put_bucket(m_client, request);
 	ds3_free_request(request);
 
@@ -151,8 +150,7 @@ void
 Client::DeleteBucket(const QString& name)
 {
 	ds3_request* request = ds3_init_delete_bucket(name.toUtf8().constData());
-	LOG_INFO("Delete Bucket " + name + " (DELETE " + m_endpoint + "/" + \
-		 name + ")");
+	LOG_INFO("DELETE       BUCKET    "+m_endpoint+"/"+name);
 	ds3_error* ds3Error = ds3_delete_bucket(m_client, request);
 	ds3_free_request(request);
 
@@ -167,7 +165,7 @@ void
 Client::DeleteObjects(const QString& bucketName, const QStringList& objectNames)
 {
 	ds3_request* request = ds3_init_delete_objects(bucketName.toUtf8().constData());
-	LOG_INFO("Delete Object " + bucketName + "/" + objectNames.join(","));
+	LOG_INFO("DELETE       OBJECT    "+bucketName+"/"+objectName);
 
 	ds3_bulk_object_list *bulkObjList = ds3_init_bulk_object_list(objectNames.size());
 
@@ -178,6 +176,7 @@ Client::DeleteObjects(const QString& bucketName, const QStringList& objectNames)
 	}
 
 	ds3_error* ds3Error = ds3_delete_objects(m_client, request, bulkObjList);
+
 	ds3_free_request(request);
 
 	if (ds3Error != NULL) {
@@ -270,7 +269,7 @@ Client::GetObject(const QString& bucket,
 		ds3Error = ds3_get_object(m_client, request,
 					  &caowi, write_to_file);
 	} else {
-		LOG_ERROR("GET object failed: unable to open file " + fileName);
+		LOG_ERROR("ERROR:       GET OBJECT failed, unable to open file "+fileName);
 	}
 
 	ds3_free_request(request);
@@ -311,7 +310,7 @@ Client::PutObject(const QString& bucket,
 			ds3Error = ds3_put_object(m_client, request,
 						  &caowi, read_from_file);
 		} else {
-			LOG_ERROR("PUT object failed: unable to open file " + fileName);
+			LOG_ERROR("ERROR:       PUT OBJECT failed, unable to open file "+fileName);
 		}
 	}
 	ds3_free_request(request);
@@ -330,7 +329,8 @@ Client::PutObject(const QString& bucket,
 void
 Client::CancelBulkJob(QUuid workItemID)
 {
-	LOG_DEBUG("Client::CancelBulkJob - " + workItemID.toString());
+	LOG_DEBUG("BULK CANCEL  JOB       "+workItemID.toString());
+
 	m_bulkWorkItemsLock.lock();
 	if (m_bulkWorkItems.contains(workItemID)) {
 		BulkWorkItem* workItem = m_bulkWorkItems[workItemID];
@@ -347,7 +347,8 @@ ds3_get_service_response*
 Client::DoGetService()
 {
 	ds3_request* request = ds3_init_get_service();
-	LOG_INFO("Get Buckets (GET " + m_endpoint + ")");
+	LOG_INFO("BULK GET     BUCKETS   "+m_endpoint);
+
 	ds3_get_service_response *response;
 	ds3_error* ds3Error = ds3_get_service(m_client,
 					       request,
@@ -372,8 +373,8 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 		  ", prefix: " + prefix + ", marker: " + marker);
 
 	ds3_request* request = ds3_init_get_bucket(bucketName.toUtf8().constData());
-	QString logMsg = "List Objects (GET " + m_endpoint + "/";
-	logMsg += bucketName;
+	QString logFileMsg = "BULK GET     OBJECTS   "+m_endpoint+"/";
+	logFileMsg += bucketName;
 	QStringList logQueryParams;
 	if (!prefix.isEmpty()) {
 		ds3_request_set_prefix(request, prefix.toUtf8().constData());
@@ -392,11 +393,11 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 		logQueryParams << "max-keys=" + QString::number(MAX_KEYS);
 	}
 	if (!logQueryParams.isEmpty()) {
-		logMsg += "&" + logQueryParams.join("&");
+		logFileMsg += "&"+logQueryParams.join("&");
 	}
-	logMsg += ")";
+
 	if (!silent) {
-		LOG_INFO(logMsg);
+		LOG_INFO(logFileMsg);
 	}
 	ds3_get_bucket_response* response;
 	ds3_error* ds3Error = ds3_get_bucket(m_client,
@@ -416,7 +417,7 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 void
 Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 {
-	LOG_DEBUG("PrepareBulkGets");
+	LOG_DEBUG("PREPARE BULK OBJECT");
 
 	workItem->SetState(Job::PREPARING);
 	Job job = workItem->ToJob();
@@ -513,7 +514,7 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 					if (subFullObjName.endsWith("/")) {
 						workItem->AppendDirsToCreate(subFilePath);
 					} else if (QFile(subFilePath).exists()) {
-						LOG_ERROR(subFilePath + " already exists.  Skipping");
+						LOG_ERROR("ERROR:       "+subFilePath+" already exists. Skipping");
 					} else {
 						workItem->InsertObjMap(subFullObjName, subFilePath);
 					}
@@ -522,7 +523,7 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 			workItem->SetGetBucketResponseIterator(0);
 			workItem->SetGetBucketResponse(NULL);
 		} else if (QFile(filePath).exists()) {
-			LOG_ERROR(filePath + " already exists.  Skipping");
+			LOG_ERROR("ERROR:       "+filePath+" already exists. Skipping");
 		} else {
 			workItem->InsertObjMap(fullObjName, filePath);
 		}
@@ -542,7 +543,7 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 void
 Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 {
-	LOG_DEBUG("PrepareBulkPuts");
+	LOG_DEBUG("PREPARE BULK PUTS");
 
 	workItem->SetState(Job::PREPARING);
 	Job job = workItem->ToJob();
@@ -687,24 +688,25 @@ Client::DoBulk(BulkWorkItem* workItem)
 		if (isGet) {
 			throw (error);
 		} else {
-			QString errorMsg = "Error uploading objects to server: ";
+			QString errorFileMsg = "ERROR:       Uploading objects to server, ";
+
 			if (error.GetStatusCode() == 409) {
 				QString body = error.GetErrorBody();
 				QRegularExpression rx(", ([^\\)]+)\\) already exists");
 				QRegularExpressionMatch match = rx.match(body);
 				if (match.hasMatch()) {
-					errorMsg += match.captured(1) + " already exists " \
-						    "and objects cannot be replaced";
+					errorFileMsg += match.captured(1)+ "already exists"\
+					                "and objects cannot be replaced";
 				} else {
-					errorMsg += "one or more of the objects " \
-						    "already exist and objects " \
-						    "cannot be replaced";
+					errorFileMsg += "one or more of the objects "\
+					                "already exists and objects "\
+					                "cannot be replaced";
 				}
 			} else {
-				errorMsg += error.ToString();
+				errorFileMsg += error.ToString();
 			}
-			errorMsg += ".  Canceling job.";
-			LOG_ERROR(errorMsg);
+			errorFileMsg += ".  Canceling job.";
+			LOG_ERROR(errorFileMsg);
 			workItem->SetResponse(NULL);
 			DeleteOrRequeueBulkWorkItem(workItem);
 			return;
@@ -720,11 +722,7 @@ Client::DoBulk(BulkWorkItem* workItem)
 		return;
 	}
 
-	if (isGet) {
-		ProcessGetJobChunk(static_cast<BulkGetWorkItem*>(workItem));
-	} else {
-		ProcessPutJobChunk(static_cast<BulkPutWorkItem*>(workItem));
-	}
+	ProcessJobChunk(workItem);
 }
 
 void
@@ -740,9 +738,9 @@ Client::CreateBulkGetDirs(BulkGetWorkItem* workItem)
 }
 
 void
-Client::ProcessGetJobChunk(BulkGetWorkItem* workItem)
+Client::ProcessJobChunk(BulkWorkItem* workItem)
 {
-	LOG_DEBUG("ProcessGetJobChunk");
+	LOG_DEBUG("PROCESS GET  JOB CHUNK");
 
 	// If the get available chunks response doesn't include any objects, it
 	// means the server isn't ready yet (e.g. it could still be transferring
@@ -764,23 +762,20 @@ Client::ProcessGetJobChunk(BulkGetWorkItem* workItem)
 			retryAfter = chunksResponse->retry_after;
 		}
 		catch (DS3Error& e) {
-			errMsg = "Error getting available job chunks - " +
-				 e.ToString();
-			LOG_ERROR(errMsg);
+			LOG_ERROR("ERROR:       GET JOB CHUNKS failed, "+e.ToString());
+
 		}
 		if (numChunks == 0) {
 			ds3_free_available_chunks_response(chunksResponse);
-			if (errMsg.isEmpty()) {
-				LOG_INFO("Next bulk get job chunk not ready " \
-					 "yet.  Sleeping for " +
-					 QString::number(retryAfter) +
-					 " seconds.");
-			}
+			LOG_INFO("BULK GET     JOB CHUNK Not ready. Sleeping for " +
+				  QString::number(retryAfter) + " seconds.");
 			QThread::sleep(retryAfter);
 		}
 	}
 
 	QString bucketName = workItem->GetBucketName();
+	bool isGet = workItem->GetType() == Job::GET;
+	QString op = isGet ? "GET" : "PUT";
 	// TODO PUT multiple objects at once.  Start the next chunk as soon
 	//      as the number of objects left to put is less than the size
 	//      of the "put objects" thread pool.
@@ -797,12 +792,21 @@ Client::ProcessGetJobChunk(BulkGetWorkItem* workItem)
 			QString filePath = workItem->GetObjMapValue(objName);
 			uint64_t offset = bulkObj->offset;
 			try {
-				Client::GetObject(bucketName, objName, filePath,
-						  offset, workItem);
+				if (isGet) {
+					Client::GetObject(bucketName, objName,
+							  filePath, offset,
+							  static_cast<BulkGetWorkItem*>(workItem));
+				} else {
+					uint64_t length = bulkObj->length;
+					Client::PutObject(bucketName, objName,
+							  filePath, offset,
+							  length,
+							  static_cast<BulkPutWorkItem*>(workItem));
+				}
 			}
 			catch (DS3Error& e) {
-				LOG_ERROR("Error getting object \"" + objName +
-					  "\" - " + e.ToString());
+				LOG_ERROR("ERROR:       " + op + " OBJECT failed, "+objName+
+					  "\" - "+e.ToString());
 			}
 		}
 		workItem->IncNumChunksProcessed();
@@ -812,12 +816,12 @@ Client::ProcessGetJobChunk(BulkGetWorkItem* workItem)
 	if (workItem->IsPageFinished()) {
 		DeleteOrRequeueBulkWorkItem(workItem);
 	} else {
-		run(this, &Client::ProcessGetJobChunk, workItem);
+		run(this, &Client::ProcessJobChunk, workItem);
 	}
 }
 
 ds3_get_available_chunks_response*
-Client::GetAvailableJobChunks(BulkGetWorkItem* workItem)
+Client::GetAvailableJobChunks(BulkWorkItem* workItem)
 {
 	ds3_bulk_response *response = workItem->GetResponse();
 	ds3_request* request = ds3_init_get_available_chunks(response->job_id->value);
@@ -835,103 +839,10 @@ Client::GetAvailableJobChunks(BulkGetWorkItem* workItem)
 }
 
 void
-Client::ProcessPutJobChunk(BulkPutWorkItem* workItem)
-{
-	LOG_DEBUG("ProcessPutJobChunk");
-
-	// If the allocate chunk response doesn't include any objects, it
-	// means the server isn't ready yet.  In this situation, we have to
-	// wait and try again.
-	//
-	// TODO Consider changing this to make use of timers/slots/etc instead
-	//      of just sleeping.
-	ds3_allocate_chunk_response* chunkResponse = NULL;
-	int chunkNum = workItem->GetNumChunksProcessed();
-	ds3_bulk_response *response = workItem->GetResponse();
-	const char* chunkID = response->list[chunkNum]->chunk_id->value;
-	while (chunkResponse == NULL) {
-		if (workItem->WasCanceled()) {
-			ds3_free_allocate_chunk_response(chunkResponse);
-			DeleteOrRequeueBulkWorkItem(workItem);
-			return;
-		}
-		try {
-			chunkResponse = AllocateJobChunk(chunkID);
-		}
-		catch (DS3Error& e) {
-			if (e.GetStatusCode() == 503) {
-				// The S3 server isn't ready for the next chunk.
-				// While this is technically an error response,
-				// the user shouldn't see this as an error as
-				// it's normal for this to happen.
-				LOG_INFO("Next bulk put job chunk not ready yet.");
-			} else {
-				LOG_ERROR("Error allocating job chunk - " + e.ToString());
-			}
-			// Sleep for "retry-later" seconds that's in the
-			// response once the C SDK supports it.
-			QThread::sleep(60);
-		}
-	}
-
-	QString bucketName = workItem->GetBucketName();
-	uint64_t numObjects = chunkResponse->objects->size;
-	// TODO PUT multiple objects at once.  Start the next chunk as soon
-	//      as the number of objects left to put is less than the size
-	//      of the "put objects" thread pool.
-	for (uint64_t i = 0; i < numObjects;  i++) {
-		if (workItem->WasCanceled()) {
-			ds3_free_allocate_chunk_response(chunkResponse);
-			DeleteOrRequeueBulkWorkItem(workItem);
-			return;
-		}
-		ds3_bulk_object bulkObj = chunkResponse->objects->list[i];
-		QString objName = QString::fromUtf8(bulkObj.name->value);
-		QString filePath = workItem->GetObjMapValue(objName);
-		uint64_t length = bulkObj.length;
-		uint64_t offset = bulkObj.offset;
-		try {
-			Client::PutObject(bucketName, objName, filePath,
-					  offset, length, workItem);
-		}
-		catch (DS3Error& e) {
-			LOG_ERROR("Error putting object \"" + objName + "\"" +
-				  " - " + e.ToString());
-		}
-	}
-	ds3_free_allocate_chunk_response(chunkResponse);
-
-	workItem->IncNumChunksProcessed();
-
-	if (workItem->IsPageFinished()) {
-		DeleteOrRequeueBulkWorkItem(workItem);
-	} else {
-		run(this, &Client::ProcessPutJobChunk, workItem);
-	}
-}
-
-ds3_allocate_chunk_response*
-Client::AllocateJobChunk(const char* chunkID)
-{
-	ds3_request* request = ds3_init_allocate_chunk(chunkID);
-	ds3_allocate_chunk_response* chunkResponse;
-	ds3_error* ds3Error = ds3_allocate_chunk(m_client, request, &chunkResponse);
-	ds3_free_request(request);
-
-	if (ds3Error != NULL) {
-		DS3Error error(ds3Error);
-		ds3_free_error(ds3Error);
-		throw (error);
-	}
-
-	return chunkResponse;
-}
-
-void
 Client::DeleteOrRequeueBulkWorkItem(BulkWorkItem* workItem)
 {
 	if (workItem->WasCanceled()) {
-		LOG_INFO("Bulk job canceled");
+		LOG_INFO("BULK GET     JOB       Canceled");
 		workItem->SetState(Job::CANCELED);
 		Job job = workItem->ToJob();
 		emit JobProgressUpdate(job);
@@ -987,7 +898,7 @@ Client::GetFileSize(const QString& path)
 		size <<= 32;
 		size += data.nFileSizeLow;
 	} else {
-		LOG_ERROR("Error getting size  of file: " + nativePath);
+		LOG_ERROR("ERROR:       GET FILE SIZE failed for "+nativePath);
 	}
 #else
 	size = QFileInfo(path).size();
