@@ -20,6 +20,7 @@
 #include <QVBoxLayout>
 #include <QSplitter>
 #include <QWidget>
+#include <QMimeData>
 
 class DS3Browser;
 class HostBrowser;
@@ -32,9 +33,11 @@ class Client;
 // DS3 system on the right.
 class SessionView : public QWidget
 {
+	Q_OBJECT
+
 public:
 	SessionView(Session* session, JobsView* jobsView, QWidget* parent = 0);
-	~SessionView();
+	virtual ~SessionView();
 
 	int GetNumActiveJobs() const;
 	void CancelActiveJobs();
@@ -47,6 +50,12 @@ private:
 
 	QVBoxLayout* m_topLayout;
 	QSplitter* m_splitter;
+
+private slots:
+	void HostToDS3();
+	void DS3ToHost();
+	void SendToDS3(QMimeData* data);
+	void SendToHost(QMimeData* data);
 };
 
 #endif
