@@ -91,26 +91,28 @@ Console::LogPrivate(int level, const QString& msg)
 	};
 
 	m_lock.lock();
-	if (m_numLines >= MAX_LINES) {
-		m_text->moveCursor(QTextCursor::Start,
+	if(!msg.startsWith("     ")) {
+		if (m_numLines >= MAX_LINES) {
+			m_text->moveCursor(QTextCursor::Start,
+					   QTextCursor::MoveAnchor);
+			m_text->moveCursor(QTextCursor::Down,
+					   QTextCursor::KeepAnchor);
+			m_text->moveCursor(QTextCursor::StartOfLine,
+					   QTextCursor::KeepAnchor);
+			m_text->textCursor().removeSelectedText();
+			m_numLines--;
+		}
+		m_text->moveCursor(QTextCursor::End,
 				   QTextCursor::MoveAnchor);
-		m_text->moveCursor(QTextCursor::Down,
-				   QTextCursor::KeepAnchor);
-		m_text->moveCursor(QTextCursor::StartOfLine,
-				   QTextCursor::KeepAnchor);
-		m_text->textCursor().removeSelectedText();
-		m_numLines--;
+		QString html = "<font";
+		if (!color.isEmpty()) {
+			html += " color=\"" + color + "\"";
+		}
+		html += ">" + msg + "</font><br>";
+		m_text->insertHtml(html);
+		m_numLines++;
+		m_text->ensureCursorVisible();
 	}
-	m_text->moveCursor(QTextCursor::End,
-			   QTextCursor::MoveAnchor);
-	QString html = "<font";
-	if (!color.isEmpty()) {
-		html += " color=\"" + color + "\"";
-	}
-	html += ">" + msg + "</font><br>";
-	m_text->insertHtml(html);
-	m_numLines++;
-	m_text->ensureCursorVisible();
 
 	if(fileLogging)
 		LogToFile(msg);

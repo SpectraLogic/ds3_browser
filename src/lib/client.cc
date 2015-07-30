@@ -478,7 +478,6 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 					QString subFilePath = QDir::cleanPath(destination + "/" +
 									      bucketPrefix + "/" + prefix +
 									      "/" + objNameMinusPrefix);
-					LOG_INFO("     GET     Object    "+subFullObjName+"->"+subFilePath);
 					if (subFullObjName.endsWith("/")) {
 						workItem->AppendDirsToCreate(subFilePath);
 					} else if (QFile(subFilePath).exists()) {
@@ -493,7 +492,6 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 		} else if (QFile(filePath).exists()) {
 			LOG_ERROR("ERROR:       "+filePath+" already exists. Skipping");
 		} else {
-			LOG_INFO("     GET     Object    "+fullObjName+"->"+filePath);
 			workItem->InsertObjMap(fullObjName, filePath);
 		}
 
@@ -588,12 +586,10 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 				if (subFileInfo.isDir()) {
 					subObjName += "/";
 				}
-				LOG_INFO("     PUT     OBJECT    "+subObjName+"->"+subFilePath);
 				workItem->InsertObjMap(subObjName, subFilePath);
 			}
 			workItem->DeleteDirIterator();
 		}
-		LOG_INFO("     PUT     OBJECT    "+objName+"->"+filePath);
 		workItem->InsertObjMap(objName, filePath);
 		workItem->SetLastProcessedUrl(*ui);
 	}
@@ -768,12 +764,14 @@ Client::ProcessJobChunk(BulkWorkItem* workItem)
 					Client::GetObject(bucketName, objName,
 							  filePath, offset,
 							  static_cast<BulkGetWorkItem*>(workItem));
+					LOG_INFO("     GET     OBJECT    "+"/"+bucketName+"/"+objName+"->"+filePath);
 				} else {
 					uint64_t length = bulkObj->length;
 					Client::PutObject(bucketName, objName,
 							  filePath, offset,
 							  length,
 							  static_cast<BulkPutWorkItem*>(workItem));
+					LOG_INFO("     PUT     OBJECT    "+filePath+"->"+"/"+bucketName+"/"+objName);
 				}
 			}
 			catch (DS3Error& e) {
