@@ -56,6 +56,7 @@ HostBrowser::AddCustomToolBarActions()
 
 	QString rightArrow = QString::fromUtf8("\uf061");
 	m_transferAction = new QAction(rightArrow, this);
+	m_transferAction->setStyleSheet("QAction { color : green; }");
 	m_transferAction->setFont(QFont("FontAwesome", 16));
 	m_transferAction->setText(rightArrow);
 	m_transferAction->setEnabled(false);
