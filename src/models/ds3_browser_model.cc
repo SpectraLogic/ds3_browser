@@ -1065,7 +1065,7 @@ DS3SearchModel::Search(const QModelIndex& index, QString bucket, QString prefix,
 		QFuture<ds3_get_objects_response*> future = m_client->GetObjects(bucket,
 									         "",
 									         search,
-									         "",
+									         NO_TYPE,
 									         "");
 		watcher->setFuture(future);
 	}
