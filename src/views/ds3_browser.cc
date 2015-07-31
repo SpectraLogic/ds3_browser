@@ -69,6 +69,11 @@ DS3Browser::AddCustomToolBarActions()
 				      "Refresh", this);
 	connect(m_refreshAction, SIGNAL(triggered()), this, SLOT(Refresh()));
 	m_toolBar->addAction(m_refreshAction);
+
+	m_transferAction = new QAction("<-", this);
+	m_transferAction->setEnabled(false);
+	connect(m_transferAction, SIGNAL(triggered()), this, SLOT(PrepareTransfer()));
+	m_toolBar->addAction(m_transferAction);
 }
 
 QString
@@ -143,6 +148,8 @@ DS3Browser::OnModelItemClick(const QModelIndex& index)
 	if (m_model->IsPageBreak(index)) {
 		m_model->fetchMore(index.parent());
 	}
+
+	emit Transferable();
 }
 
 void
@@ -213,4 +220,53 @@ DS3Browser::IsBucketSelectedOnly() const
 		}
 	}
 	return bucketSelected;
+}
+
+bool
+DS3Browser::CanReceive(QModelIndex& index)
+{
+	bool able = false;
+	QModelIndexList indicies = GetSelected();
+	if (indicies.isEmpty()) {
+		index = m_treeView->rootIndex();
+	} else if (indicies.count() == 1) {
+		index = indicies[0];
+	}
+
+	if ((index.isValid()) && (m_model->IsBucket(index) || m_model->IsFolder(index))) {
+		able = true;
+	}
+	return able;
+}
+
+void
+DS3Browser::CanTransfer(bool enable)
+{
+	m_transferAction->setEnabled(enable);
+}
+
+QModelIndexList
+DS3Browser::GetSelected()
+{
+	return m_treeView->selectionModel()->selectedRows(0);
+}
+
+void
+DS3Browser::PrepareTransfer()
+{
+	emit StartTransfer(m_model->mimeData(GetSelected()));
+}
+
+void
+DS3Browser::GetData(QMimeData* data)
+{
+	// Row and column for this call are -1 so that the data is "dropped" directly
+	//   on the parent index given
+	m_model->dropMimeData(data, Qt::CopyAction, -1, -1, m_treeView->rootIndex());
+}
+
+void
+DS3Browser::SetViewRoot(const QModelIndex& index)
+{
+	OnModelItemDoubleClick(index);
 }

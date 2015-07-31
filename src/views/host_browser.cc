@@ -36,6 +36,9 @@ HostBrowser::HostBrowser(Client* client, QWidget* parent, Qt::WindowFlags flags)
 			   QDir::NoDotAndDotDot |
 			   QDir::Hidden);
 	m_treeView->setModel(m_model);
+
+	connect(m_treeView, SIGNAL(clicked(const QModelIndex&)),
+		this, SLOT(OnModelItemClick(const QModelIndex&)));
 }
 
 void
@@ -50,6 +53,11 @@ HostBrowser::AddCustomToolBarActions()
 				   "Home directory", this);
 	connect(m_homeAction, SIGNAL(triggered()), this, SLOT(GoToHome()));
 	m_toolBar->addAction(m_homeAction);
+
+	m_transferAction = new QAction("->", this);
+	m_transferAction->setEnabled(false);
+	connect(m_transferAction, SIGNAL(triggered()), this, SLOT(PrepareTransfer()));
+	m_toolBar->addAction(m_transferAction);
 }
 
 QString
@@ -82,6 +90,14 @@ HostBrowser::OnContextMenuRequested(const QPoint& /*pos*/)
 }
 
 void
+HostBrowser::OnModelItemClick(const QModelIndex& index)
+{
+	QModelIndex temp = index;
+	temp = temp;
+	emit Transferable();
+}
+
+void
 HostBrowser::OnModelItemDoubleClick(const QModelIndex& index)
 {
 	QString path = m_model->filePath(index);
@@ -91,4 +107,53 @@ HostBrowser::OnModelItemDoubleClick(const QModelIndex& index)
 		m_treeView->setRootIndex(index);
 		UpdatePathLabel(path);
 	}
+}
+
+bool
+HostBrowser::CanReceive(QModelIndex& index)
+{
+	bool able = false;
+	QModelIndexList indicies = GetSelected();
+	if (indicies.isEmpty()) {
+		index = m_treeView->rootIndex();
+	} else if (indicies.count() == 1) {
+		index = indicies[0];
+	}
+
+	if (m_model->isDir(index) && (m_model->filePath(index) != m_model->rootPath())) {
+		able = true;
+	}
+	return able;
+}
+
+void
+HostBrowser::CanTransfer(bool enable)
+{
+	m_transferAction->setEnabled(enable);
+}
+
+QModelIndexList
+HostBrowser::GetSelected()
+{
+	return m_treeView->selectionModel()->selectedRows(0);
+}
+
+void
+HostBrowser::PrepareTransfer()
+{
+	emit StartTransfer(m_model->mimeData(GetSelected()));
+}
+
+void
+HostBrowser::GetData(QMimeData* data)
+{
+	// Row and column for this call are -1 so that the data is "dropped" directly
+	//   on the parent index given
+	m_model->dropMimeData(data, Qt::CopyAction, -1, -1, m_treeView->rootIndex());
+}
+
+void
+HostBrowser::SetViewRoot(const QModelIndex& index)
+{
+	OnModelItemDoubleClick(index);
 }
