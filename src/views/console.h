@@ -32,7 +32,7 @@ class Console : public QWidget
 	Q_OBJECT
 
 public:
-	enum Level { DEBUG, INFO, WARNING, ERR };
+	enum Level { DEBUG, INFO, WARNING, ERR, FILE };
 	static const unsigned int MAX_LINES;
 
 	static Console* Instance();

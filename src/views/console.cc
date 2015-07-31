@@ -75,6 +75,7 @@ Console::Log(Level level, const QString& msg)
 void
 Console::LogPrivate(int level, const QString& msg)
 {
+	bool fileOnly = false;
 	bool fileLogging = true;
 	QString color;
 	switch (level) {
@@ -88,10 +89,13 @@ Console::LogPrivate(int level, const QString& msg)
 	case ERR:
 		color = "red";
 		break;
+	case FILE:
+		fileOnly = true;
+		break;
 	};
 
 	m_lock.lock();
-	if(!msg.startsWith("     ")) {
+	if(!fileOnly) {
 		if (m_numLines >= MAX_LINES) {
 			m_text->moveCursor(QTextCursor::Start,
 					   QTextCursor::MoveAnchor);
