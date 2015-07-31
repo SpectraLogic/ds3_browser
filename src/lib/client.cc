@@ -764,14 +764,14 @@ Client::ProcessJobChunk(BulkWorkItem* workItem)
 					Client::GetObject(bucketName, objName,
 							  filePath, offset,
 							  static_cast<BulkGetWorkItem*>(workItem));
-					LOG_INFO("     GET     OBJECT    "+"/"+bucketName+"/"+objName+"->"+filePath);
+					LOG_FILE(QString("     GET     OBJECT    ")+"/"+bucketName+"/"+objName+"->"+filePath);
 				} else {
 					uint64_t length = bulkObj->length;
 					Client::PutObject(bucketName, objName,
 							  filePath, offset,
 							  length,
 							  static_cast<BulkPutWorkItem*>(workItem));
-					LOG_INFO("     PUT     OBJECT    "+filePath+"->"+"/"+bucketName+"/"+objName);
+					LOG_FILE(QString("     PUT     OBJECT    ")+filePath+"->"+"/"+bucketName+"/"+objName);
 				}
 			}
 			catch (DS3Error& e) {
