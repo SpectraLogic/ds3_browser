@@ -42,7 +42,7 @@ BrowserTreeViewStyle::drawPrimitive(PrimitiveElement element,
 			opt.rect.setRight(widget->width());
 		}
 		QProxyStyle::drawPrimitive(element, &opt, painter, widget);
-		return;
+	} else {
+		QProxyStyle::drawPrimitive(element, option, painter, widget);
 	}
-	QProxyStyle::drawPrimitive(element, option, painter, widget);
 }

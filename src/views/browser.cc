@@ -20,7 +20,7 @@
 
 Browser::Browser(Client* client, QWidget* parent, Qt::WindowFlags flags)
 	: QWidget(parent, flags),
-	  m_layout(new QVBoxLayout(this)),
+	  m_layout(new QGridLayout(this)),
 	  m_path(new QLabel("/")),
 	  m_toolBar(new QToolBar),
 	  m_treeView(new QTreeView),
@@ -49,9 +49,9 @@ Browser::Browser(Client* client, QWidget* parent, Qt::WindowFlags flags)
 	m_treeView->setStyle(m_treeViewStyle);
 
 	m_layout->setContentsMargins (0, 0, 0, 0);
-	m_layout->addWidget(m_toolBar);
-	m_layout->addWidget(m_path);
-	m_layout->addWidget(m_treeView);
+	m_layout->addWidget(m_toolBar,1,1,1,1,Qt::AlignLeft);
+	m_layout->addWidget(m_path,2,1,1,1,Qt::AlignLeft);
+	m_layout->addWidget(m_treeView,3,1,1,2);
 
 	setLayout(m_layout);
 }

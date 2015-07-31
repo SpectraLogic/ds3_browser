@@ -23,7 +23,7 @@
 #include <QPoint>
 #include <QToolBar>
 #include <QTreeView>
-#include <QVBoxLayout>
+#include <QGridLayout>
 #include <QWidget>
 
 class Client;
@@ -45,7 +45,7 @@ protected:
 	virtual QString IndexToPath(const QModelIndex& index) const = 0;
 	virtual void UpdatePathLabel(const QString& path);
 
-	QVBoxLayout* m_layout;
+	QGridLayout* m_layout;
 	QLabel* m_path;
 	QToolBar* m_toolBar;
 	QTreeView* m_treeView;

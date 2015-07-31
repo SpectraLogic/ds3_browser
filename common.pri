@@ -37,6 +37,7 @@ HEADERS = \
 	$${PWD}/src/lib/errors/ds3_error.h \
 	$${PWD}/src/lib/watchers/get_bucket_watcher.h \
 	$${PWD}/src/lib/watchers/get_service_watcher.h \
+	$${PWD}/src/lib/watchers/get_objects_watcher.h \
 	$${PWD}/src/models/ds3_browser_model.h \
 	$${PWD}/src/models/ds3_url.h \
 	$${PWD}/src/models/host_browser_model.h \
@@ -81,6 +82,7 @@ SOURCES = \
 	$${PWD}/src/lib/errors/ds3_error.cc \
 	$${PWD}/src/lib/watchers/get_bucket_watcher.cc \
 	$${PWD}/src/lib/watchers/get_service_watcher.cc \
+	$${PWD}/src/lib/watchers/get_objects_watcher.cc \
 	$${PWD}/src/lib/work_items/bulk_work_item.cc \
 	$${PWD}/src/lib/work_items/bulk_get_work_item.cc \
 	$${PWD}/src/lib/work_items/bulk_put_work_item.cc \

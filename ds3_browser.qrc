@@ -10,5 +10,6 @@
 	<file>resources/logos/black_pearl.png</file>
 	<file>resources/logos/spectra.png</file>
 	<file>resources/stylesheets/main.qss</file>
+	<file>resources/fonts/fontawesome-webfont.ttf</file>
 </qresource>
 </RCC>

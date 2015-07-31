@@ -27,6 +27,8 @@
 #include "views/ds3_browser.h"
 #include "views/jobs_view.h"
 
+static const QString BUCKET = "Bucket";
+
 DS3Browser::DS3Browser(Client* client, JobsView* jobsView,
 		       QWidget* parent, Qt::WindowFlags flags)
 	: Browser(client, parent, flags),
@@ -37,6 +39,12 @@ DS3Browser::DS3Browser(Client* client, JobsView* jobsView,
 	m_model = new DS3BrowserModel(m_client, this);
 	m_model->SetView(m_treeView);
 	m_treeView->setModel(m_model);
+	m_searchBar = new QLineEdit();
+	m_searchBar->setPlaceholderText("Search");
+	m_searchBar->setToolTip("Search in current folder");
+	m_layout->addWidget(m_searchBar,1,2,1,1);
+	m_searchModel = new DS3SearchModel(m_client, this);
+	m_searchView = new DS3SearchTree();
 
 	connect(m_treeView, SIGNAL(clicked(const QModelIndex&)),
 		this, SLOT(OnModelItemClick(const QModelIndex&)));
@@ -46,6 +54,9 @@ DS3Browser::DS3Browser(Client* client, JobsView* jobsView,
 
 	connect(m_client, SIGNAL(JobProgressUpdate(const Job)),
 		m_jobsView, SLOT(UpdateJob(const Job)));
+
+	connect(m_searchBar, SIGNAL(returnPressed()),
+		this, SLOT(BeginSearch()));
 }
 
 void
@@ -70,7 +81,17 @@ DS3Browser::AddCustomToolBarActions()
 	connect(m_refreshAction, SIGNAL(triggered()), this, SLOT(Refresh()));
 	m_toolBar->addAction(m_refreshAction);
 
-	m_transferAction = new QAction("<-", this);
+	QString searchIcon = QString::fromUtf8("\uf002");
+	m_searchAction = new QAction(searchIcon, this);
+	m_searchAction->setFont(QFont("FontAwesome", 16));
+	m_searchAction->setText(searchIcon);
+	connect(m_searchAction, SIGNAL(triggered()), this, SLOT(BeginSearch()));
+	m_toolBar->addAction(m_searchAction);
+
+	QString leftArrow = QString::fromUtf8("\uf060");
+	m_transferAction = new QAction(leftArrow, this);
+	m_transferAction->setFont(QFont("FontAwesome", 16));
+	m_transferAction->setText(leftArrow);
 	m_transferAction->setEnabled(false);
 	connect(m_transferAction, SIGNAL(triggered()), this, SLOT(PrepareTransfer()));
 	m_toolBar->addAction(m_transferAction);
@@ -220,6 +241,63 @@ DS3Browser::IsBucketSelectedOnly() const
 		}
 	}
 	return bucketSelected;
+}
+
+// This is called when enter is pressed in the search bar
+void
+DS3Browser::BeginSearch()
+{
+	// Recreate the search model and view
+	delete m_searchModel;
+	delete m_searchView;
+	m_searchModel = new DS3SearchModel(m_client, this);
+	m_searchView = new DS3SearchTree();
+	// Connect the slot to display the search results for later
+	connect(m_searchModel, SIGNAL(DoneSearching(bool)), this, SLOT(CreateSearchTree(bool)));
+
+	// Retrieve the index for the DS3 view
+	QModelIndex index = m_treeView->rootIndex();
+	// If the current root has children, run the search
+	if(m_model->hasChildren(index)) {
+		GetServiceWatcher* watcher = new GetServiceWatcher(index);
+		connect(watcher, SIGNAL(finished()), this, SLOT(RunSearch()));
+		QFuture<ds3_get_service_response*> future = m_client->GetService();
+		watcher->setFuture(future);
+	}
+}
+
+// This slot starts the actual search
+void
+DS3Browser::RunSearch() {
+	// Watcher has to be set here in order to pass it to the search model
+	GetServiceWatcher* watcher = static_cast<GetServiceWatcher*>(sender());
+	// Passing through the search term, tree view, ds3 model, and the watcher
+	m_searchModel->HandleGetServiceResponse(m_searchBar->text(), m_treeView, m_model, watcher);
+	// Delete watcher when complete
+	delete watcher;
+}
+
+// This slot is run when the search model is done searching
+void
+DS3Browser::CreateSearchTree(bool found) {
+	// If nothing was found, then don't let users drag the warning message off of list
+	if(!found)
+		m_searchView->setDragEnabled(false);
+	// Set the model and tree to use each other
+	m_searchModel->SetView(m_searchView);
+	m_searchView->setModel(m_searchModel);
+	// Add the widget to the GUI
+	m_layout->addWidget(m_searchView,4,1,1,2);
+}
+
+DS3SearchTree::DS3SearchTree() : QTreeView::QTreeView()
+{
+	// Lets the user drag files off of search
+	this->setDragEnabled(true);
+	// Since this is a flat list, we don't need indentation
+	this->setIndentation(0);
+	// Sorts the search results alphabetically
+	this->sortByColumn(0, Qt::AscendingOrder);
 }
 
 bool

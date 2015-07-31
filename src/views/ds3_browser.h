@@ -18,11 +18,17 @@
 #define DS3_BROWSER_H
 
 #include <QStringList>
+#include <QLineEdit>
 
+#include "lib/watchers/get_bucket_watcher.h"
+#include "lib/watchers/get_service_watcher.h"
 #include "models/job.h"
 #include "views/browser.h"
 
+class DS3BrowserItem;
 class DS3BrowserModel;
+class DS3SearchModel;
+class DS3SearchTree;
 class JobsView;
 
 // DS3Browser, a Browser class used for browsing a DS3 system (e.g a
@@ -57,11 +63,16 @@ protected:
 
 	QAction* m_rootAction;
 	QAction* m_refreshAction;
+	QAction* m_searchAction;
+	QLineEdit* m_searchBar;
 	QAction* m_transferAction;
 
 protected slots:
+	void BeginSearch();
+	void RunSearch();
 	void Refresh();
 	void OnModelItemClick(const QModelIndex& index);
+	void CreateSearchTree(bool found);
 	void PrepareTransfer();
 
 private:
@@ -70,7 +81,20 @@ private:
 	bool IsBucketSelectedOnly() const;
 
 	DS3BrowserModel* m_model;
+	DS3SearchModel* m_searchModel;
+	DS3SearchTree* m_searchView;
 	JobsView* m_jobsView;
+
+signals:
+	void searchComplete();
 };
+
+
+class DS3SearchTree : public QTreeView
+{
+public:
+	DS3SearchTree();
+};
+
 
 #endif
