@@ -48,10 +48,7 @@ bool
 DeleteObjectsDialog::Delete()
 {
 	try {
-		// TODO Handle multiple object deletion
-		if (m_objectNames.count() == 1) {
-			m_client->DeleteObject(m_bucketName, m_objectNames[0]);
-		}
+		m_client->DeleteObjects(m_bucketName, m_objectNames);
 	}
 	catch (DS3Error& e) {
 		QString body;
@@ -71,7 +68,7 @@ DeleteObjectsDialog::Delete()
 		}
 		m_baseErrorLabel->setText(msg);
 		m_form->addWidget(m_baseErrorLabel, 0, 0, 1, 3);
-		LOG_ERROR("Error deleting objects - " + msg);
+		LOG_ERROR("ERROR:       DELETE OBJECTS failed, "+msg);
 		return false;
 	}
 

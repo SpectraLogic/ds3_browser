@@ -32,6 +32,15 @@ public:
 	HostBrowser(Client* client,
 		    QWidget* parent = 0,
 		    Qt::WindowFlags flags = 0);
+	bool CanReceive(QModelIndex& index);
+	void CanTransfer(bool enable);
+	QModelIndexList GetSelected();
+	void GetData(QMimeData* data);
+	void SetViewRoot(const QModelIndex& index);
+
+signals:
+	void Transferable();
+	void StartTransfer(QMimeData* data);
 
 protected:
 	void AddCustomToolBarActions();
@@ -43,7 +52,12 @@ protected:
 private:
 	QAction* m_rootAction;
 	QAction* m_homeAction;
+	QAction* m_transferAction;
 	HostBrowserModel* m_model;
+
+protected slots:
+	void OnModelItemClick(const QModelIndex& index);
+	void PrepareTransfer();
 
 private slots:
 	void GoToHome();

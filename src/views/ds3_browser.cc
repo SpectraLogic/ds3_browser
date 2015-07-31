@@ -87,6 +87,14 @@ DS3Browser::AddCustomToolBarActions()
 	m_searchAction->setText(searchIcon);
 	connect(m_searchAction, SIGNAL(triggered()), this, SLOT(BeginSearch()));
 	m_toolBar->addAction(m_searchAction);
+
+	QString leftArrow = QString::fromUtf8("\uf060");
+	m_transferAction = new QAction(leftArrow, this);
+	m_transferAction->setFont(QFont("FontAwesome", 16));
+	m_transferAction->setText(leftArrow);
+	m_transferAction->setEnabled(false);
+	connect(m_transferAction, SIGNAL(triggered()), this, SLOT(PrepareTransfer()));
+	m_toolBar->addAction(m_transferAction);
 }
 
 QString
@@ -161,6 +169,8 @@ DS3Browser::OnModelItemClick(const QModelIndex& index)
 	if (m_model->IsPageBreak(index)) {
 		m_model->fetchMore(index.parent());
 	}
+
+	emit Transferable();
 }
 
 void
@@ -177,32 +187,46 @@ void
 DS3Browser::DeleteSelected()
 {
 	QModelIndexList selectedIndexes = m_treeView->selectionModel()->selectedRows();
+
 	if (selectedIndexes.count() == 0) {
-		LOG_ERROR("Nothing selected to delete");
-		return;
-	} else if (selectedIndexes.count() > 1) {
-		LOG_ERROR("Deleting more than one item at a time is not supported");
+		LOG_ERROR("ERROR:       DELETE OBJECT failed, nothing selected to delete");
 		return;
 	}
 
 	QModelIndex selectedIndex = selectedIndexes[0];
-	if (m_model->IsFolder(selectedIndex)) {
-		LOG_ERROR("Deleting folders is not yet supported");
-		return;
-	}
 
-	QString name = m_model->GetFullName(selectedIndex);
 	DS3DeleteDialog* dialog;
-	if (m_model->IsBucket(selectedIndex)) {
-		dialog = new DeleteBucketDialog(m_client, name);
-	} else {
-		QString bucketName = m_model->GetBucketName(selectedIndex);
-		dialog = new DeleteObjectsDialog(m_client, bucketName, QStringList(name));
+
+	QString bucketName = m_model->GetBucketName(selectedIndex);
+	QStringList objectList, folderList;
+	for (int i=0; i<selectedIndexes.size(); i++) {
+		if (m_model->IsBucket(selectedIndexes[i])) {
+			QString name = m_model->GetFullName(selectedIndexes[i]);
+			dialog = new DeleteBucketDialog(m_client, name);
+			if (dialog->exec() == QDialog::Accepted) {
+				Refresh();
+			}
+			delete dialog;
+			return;
+		} else if (m_model->IsFolder(selectedIndexes[i])) {
+			folderList << m_model->GetFullName(selectedIndexes[i]);
+			objectList << m_model->GetFullName(selectedIndexes[i])+"/";
+		} else {
+			objectList << m_model->GetFullName(selectedIndexes[i]);
+		}
 	}
-	if (dialog->exec() == QDialog::Accepted) {
-		Refresh();
+	objectList.sort();
+
+	if(objectList.size() > 0) {
+		dialog = new DeleteObjectsDialog(m_client, bucketName, objectList);
+		if (dialog->exec() == QDialog::Accepted) {
+			if(folderList.size() > 0) {
+				m_client->DeleteFolders(bucketName, folderList);
+			}
+			Refresh();
+		}
+		delete dialog;
 	}
-	delete dialog;
 }
 
 bool
@@ -274,4 +298,53 @@ DS3SearchTree::DS3SearchTree() : QTreeView::QTreeView()
 	this->setIndentation(0);
 	// Sorts the search results alphabetically
 	this->sortByColumn(0, Qt::AscendingOrder);
+}
+
+bool
+DS3Browser::CanReceive(QModelIndex& index)
+{
+	bool able = false;
+	QModelIndexList indicies = GetSelected();
+	if (indicies.isEmpty()) {
+		index = m_treeView->rootIndex();
+	} else if (indicies.count() == 1) {
+		index = indicies[0];
+	}
+
+	if ((index.isValid()) && (m_model->IsBucket(index) || m_model->IsFolder(index))) {
+		able = true;
+	}
+	return able;
+}
+
+void
+DS3Browser::CanTransfer(bool enable)
+{
+	m_transferAction->setEnabled(enable);
+}
+
+QModelIndexList
+DS3Browser::GetSelected()
+{
+	return m_treeView->selectionModel()->selectedRows(0);
+}
+
+void
+DS3Browser::PrepareTransfer()
+{
+	emit StartTransfer(m_model->mimeData(GetSelected()));
+}
+
+void
+DS3Browser::GetData(QMimeData* data)
+{
+	// Row and column for this call are -1 so that the data is "dropped" directly
+	//   on the parent index given
+	m_model->dropMimeData(data, Qt::CopyAction, -1, -1, m_treeView->rootIndex());
+}
+
+void
+DS3Browser::SetViewRoot(const QModelIndex& index)
+{
+	OnModelItemDoubleClick(index);
 }

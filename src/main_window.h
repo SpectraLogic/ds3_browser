@@ -19,11 +19,17 @@
 
 #include <QMainWindow>
 #include <QAction>
+#include <QCheckBox>
+#include <QCloseEvent>
+#include <QComboBox>
 #include <QDockWidget>
 #include <QList>
 #include <QMenu>
+#include <QPushButton>
 #include <QTabWidget>
 #include <QScrollArea>
+
+#include <math.h>
 
 class Console;
 class JobsView;
@@ -53,11 +59,18 @@ private:
 	void ReadSettings();
 	void CreateMenus();
 	void CancelActiveJobs();
+	QString FormatFileSize();
+	double DeFormatFileSize();
+	void CreateLoggingPage();
 
+	QMenu* m_editMenu;
 	QMenu* m_helpMenu;
 	QAction* m_aboutAction;
 
 	QMenu* m_viewMenu;
+
+	QMenu* m_preferencesMenu;
+	QAction* m_settingsAction;
 
 	QTabWidget* m_sessionTabs;
 	QList<SessionView*> m_sessionViews;
@@ -69,8 +82,27 @@ private:
 	Console* m_console;
 	QDockWidget* m_consoleDock;
 
+	QTabWidget* m_tabs;
+	QWidget* m_logging;
+	QCheckBox* m_enableLoggingBox;
+	QLineEdit* m_fileInputDialog;
+	QLineEdit* m_fileSizeInput;
+	QLineEdit* m_logNumberInput;
+	QComboBox* m_fileSizeSuffix;
+	QPushButton* m_browse;
+	QWidget* m_logFileBrowser;
+	QString  m_logFile;
+	double m_logFileSize;
+	QString m_logFileSizeSuffix;
+	int m_logNumberLimit;
+
 private slots:
 	void About();
+	void Settings();
+	void ChooseLogFile();
+	void ClosePreferences();
+	void ApplyChanges();
+	void ChangedEnabled(int state);
 };
 
 #endif

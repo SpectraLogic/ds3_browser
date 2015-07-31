@@ -42,6 +42,15 @@ public:
 		   JobsView* jobsView,
 		   QWidget* parent = 0,
 		   Qt::WindowFlags flags = 0);
+	bool CanReceive(QModelIndex& index);
+	void CanTransfer(bool enable);
+	QModelIndexList GetSelected();
+	void GetData(QMimeData* data);
+	void SetViewRoot(const QModelIndex& index);
+
+signals:
+	void Transferable();
+	void StartTransfer(QMimeData* data);
 
 public slots:
 	void HandleJobUpdate(const Job job);
@@ -56,6 +65,7 @@ protected:
 	QAction* m_refreshAction;
 	QAction* m_searchAction;
 	QLineEdit* m_searchBar;
+	QAction* m_transferAction;
 
 protected slots:
 	void BeginSearch();
@@ -63,6 +73,7 @@ protected slots:
 	void Refresh();
 	void OnModelItemClick(const QModelIndex& index);
 	void CreateSearchTree(bool found);
+	void PrepareTransfer();
 
 private:
 	void CreateBucket();

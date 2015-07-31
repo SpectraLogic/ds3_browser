@@ -66,8 +66,9 @@ public:
 
 	void CreateBucket(const QString& name);
 	void DeleteBucket(const QString& name);
-	void DeleteObject(const QString& bucketName, const QString& objectName);
-
+	void DeleteObjects(const QString& bucketName, const QStringList& objectNames);
+	void DeleteFolders(const QString& bucketName, const QStringList& folderNames);
+	
 	void BulkGet(const QList<QUrl> urls, const QString& destination);
 
 	void BulkPut(const QString& bucketName,
@@ -108,11 +109,8 @@ private:
 	void DoBulk(BulkWorkItem* workItem);
 
 	void CreateBulkGetDirs(BulkGetWorkItem* workItem);
-	void ProcessGetJobChunk(BulkGetWorkItem* workItem);
-	ds3_get_available_chunks_response* GetAvailableJobChunks(BulkGetWorkItem* bulkGetWorkItem);
-
-	void ProcessPutJobChunk(BulkPutWorkItem* workItem);
-	ds3_allocate_chunk_response* AllocateJobChunk(const char* chunkID);
+	void ProcessJobChunk(BulkWorkItem* workItem);
+	ds3_get_available_chunks_response* GetAvailableJobChunks(BulkWorkItem* workItem);
 
 	void DeleteOrRequeueBulkWorkItem(BulkWorkItem* workItem);
 	void DeleteBulkWorkItem(BulkWorkItem* workItem);

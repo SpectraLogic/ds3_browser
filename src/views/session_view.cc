@@ -32,6 +32,20 @@ SessionView::SessionView(Session* session, JobsView* jobsView, QWidget* parent)
 	m_hostBrowser = new HostBrowser(m_client);
 	m_ds3Browser = new DS3Browser(m_client, jobsView);
 
+	connect(m_hostBrowser, SIGNAL(Transferable()),
+		this, SLOT(HostToDS3()));
+	connect(m_hostBrowser, SIGNAL(Transferable()),
+		this, SLOT(DS3ToHost()));
+	connect(m_ds3Browser, SIGNAL(Transferable()),
+		this, SLOT(DS3ToHost()));
+	connect(m_ds3Browser, SIGNAL(Transferable()),
+		this, SLOT(HostToDS3()));
+
+	connect(m_hostBrowser, SIGNAL(StartTransfer(QMimeData*)),
+		this, SLOT(SendToDS3(QMimeData*)));
+	connect(m_ds3Browser, SIGNAL(StartTransfer(QMimeData*)),
+		this, SLOT(SendToHost(QMimeData*)));
+
 	m_splitter = new QSplitter;
 	m_splitter->addWidget(m_hostBrowser);
 	m_splitter->addWidget(m_ds3Browser);
@@ -61,4 +75,46 @@ void
 SessionView::CancelActiveJobs()
 {
 	m_client->CancelActiveJobs();
+}
+
+void
+SessionView::HostToDS3()
+{
+	bool transferable = false;
+	QModelIndex index;
+	if(m_ds3Browser->CanReceive(index)) {
+		transferable = true;
+	}
+	m_hostBrowser->CanTransfer(transferable);
+}
+
+void
+SessionView::DS3ToHost()
+{
+	bool transferable = false;
+	QModelIndex index;
+	if(m_hostBrowser->CanReceive(index)) {
+		transferable = true;
+	}
+	m_ds3Browser->CanTransfer(transferable);
+}
+
+void
+SessionView::SendToHost(QMimeData* data)
+{
+	QModelIndex index;
+	if(m_hostBrowser->CanReceive(index)) {
+		m_hostBrowser->SetViewRoot(index);
+		m_hostBrowser->GetData(data);
+	}
+}
+
+void
+SessionView::SendToDS3(QMimeData* data)
+{
+	QModelIndex index;
+	if(m_ds3Browser->CanReceive(index)) {
+		m_ds3Browser->SetViewRoot(index);
+		m_ds3Browser->GetData(data);
+	}
 }
