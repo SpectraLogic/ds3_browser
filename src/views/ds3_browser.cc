@@ -159,32 +159,46 @@ void
 DS3Browser::DeleteSelected()
 {
 	QModelIndexList selectedIndexes = m_treeView->selectionModel()->selectedRows();
+
 	if (selectedIndexes.count() == 0) {
 		LOG_ERROR("ERROR:       DELETE OBJECT failed, nothing selected to delete");
-		return;
-	} else if (selectedIndexes.count() > 1) {
-		LOG_ERROR("ERROR:       DELETE OBJECTS failed, deleting more than one item at a time is not supported");
 		return;
 	}
 
 	QModelIndex selectedIndex = selectedIndexes[0];
-	if (m_model->IsFolder(selectedIndex)) {
-		LOG_ERROR("ERROR:       DELETE OBJECT failed, deleting folders is not yet supported");
-		return;
-	}
 
-	QString name = m_model->GetFullName(selectedIndex);
 	DS3DeleteDialog* dialog;
-	if (m_model->IsBucket(selectedIndex)) {
-		dialog = new DeleteBucketDialog(m_client, name);
-	} else {
-		QString bucketName = m_model->GetBucketName(selectedIndex);
-		dialog = new DeleteObjectsDialog(m_client, bucketName, QStringList(name));
+
+	QString bucketName = m_model->GetBucketName(selectedIndex);
+	QStringList objectList, folderList;
+	for (int i=0; i<selectedIndexes.size(); i++) {
+		if (m_model->IsBucket(selectedIndexes[i])) {
+			QString name = m_model->GetFullName(selectedIndexes[i]);
+			dialog = new DeleteBucketDialog(m_client, name);
+			if (dialog->exec() == QDialog::Accepted) {
+				Refresh();
+			}
+			delete dialog;
+			return;
+		} else if (m_model->IsFolder(selectedIndexes[i])) {
+			folderList << m_model->GetFullName(selectedIndexes[i]);
+			objectList << m_model->GetFullName(selectedIndexes[i])+"/";
+		} else {
+			objectList << m_model->GetFullName(selectedIndexes[i]);
+		}
 	}
-	if (dialog->exec() == QDialog::Accepted) {
-		Refresh();
+	objectList.sort();
+
+	if(objectList.size() > 0) {
+		dialog = new DeleteObjectsDialog(m_client, bucketName, objectList);
+		if (dialog->exec() == QDialog::Accepted) {
+			if(folderList.size() > 0) {
+				m_client->DeleteFolders(bucketName, folderList);
+			}
+			Refresh();
+		}
+		delete dialog;
 	}
-	delete dialog;
 }
 
 bool

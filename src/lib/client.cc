@@ -156,18 +156,45 @@ Client::DeleteBucket(const QString& name)
 }
 
 void
-Client::DeleteObject(const QString& bucketName, const QString& objectName)
+Client::DeleteObjects(const QString& bucketName, const QStringList& objectNames)
 {
-	ds3_request* request = ds3_init_delete_object(bucketName.toUtf8().constData(),
-						      objectName.toUtf8().constData());
-	LOG_INFO("DELETE       OBJECT    "+bucketName+"/"+objectName);
-	ds3_error* ds3Error = ds3_delete_object(m_client, request);
+	ds3_request* request = ds3_init_delete_objects(bucketName.toUtf8().constData());
+	LOG_INFO("DELETE       OBJECTS    "+bucketName+"/{"+objectNames.join(",")+"}");
+
+	ds3_bulk_object_list *bulkObjList = ds3_init_bulk_object_list(objectNames.size());
+
+	for (int i=0; i<objectNames.size(); i++) {
+		ds3_bulk_object* bulkObj = &bulkObjList->list[i];
+		QString objName = objectNames[i];
+		bulkObj->name = ds3_str_init(objName.toUtf8().constData());
+	}
+
+	ds3_error* ds3Error = ds3_delete_objects(m_client, request, bulkObjList);
+
 	ds3_free_request(request);
 
 	if (ds3Error != NULL) {
 		DS3Error error(ds3Error);
 		ds3_free_error(ds3Error);
 		throw (error);
+	}
+}
+
+void
+Client::DeleteFolders(const QString& bucketName, const QStringList& folderNames)
+{
+	for(int i=0; i<folderNames.size(); i++) {
+		ds3_request* request = ds3_init_delete_folder(bucketName.toUtf8().constData(), folderNames[i].toUtf8().constData());
+		LOG_INFO("Delete Folder " + bucketName + "/" + folderNames[i]);
+
+		ds3_error* ds3Error = ds3_delete_folder(m_client, request);
+		ds3_free_request(request);
+
+		if (ds3Error != NULL) {
+			DS3Error error(ds3Error);
+			ds3_free_error(ds3Error);
+			throw (error);
+		}
 	}
 }
 

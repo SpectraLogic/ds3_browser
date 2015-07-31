@@ -62,8 +62,9 @@ public:
 
 	void CreateBucket(const QString& name);
 	void DeleteBucket(const QString& name);
-	void DeleteObject(const QString& bucketName, const QString& objectName);
-
+	void DeleteObjects(const QString& bucketName, const QStringList& objectNames);
+	void DeleteFolders(const QString& bucketName, const QStringList& folderNames);
+	
 	void BulkGet(const QList<QUrl> urls, const QString& destination);
 
 	void BulkPut(const QString& bucketName,

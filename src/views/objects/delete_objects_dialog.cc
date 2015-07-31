@@ -48,10 +48,7 @@ bool
 DeleteObjectsDialog::Delete()
 {
 	try {
-		// TODO Handle multiple object deletion
-		if (m_objectNames.count() == 1) {
-			m_client->DeleteObject(m_bucketName, m_objectNames[0]);
-		}
+		m_client->DeleteObjects(m_bucketName, m_objectNames);
 	}
 	catch (DS3Error& e) {
 		QString body;
