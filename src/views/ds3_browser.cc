@@ -90,10 +90,10 @@ DS3Browser::AddCustomToolBarActions()
 
 	QString leftArrow = QString::fromUtf8("\uf060");
 	m_transferAction = new QAction(leftArrow, this);
-	m_transferAction->setStyleSheet("QAction { color : green; }");
 	m_transferAction->setFont(QFont("FontAwesome", 16));
 	m_transferAction->setText(leftArrow);
 	m_transferAction->setEnabled(false);
+	m_transferAction->setToolTip("Transfer to Host");
 	connect(m_transferAction, SIGNAL(triggered()), this, SLOT(PrepareTransfer()));
 	m_toolBar->addAction(m_transferAction);
 }
