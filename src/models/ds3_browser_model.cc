@@ -1007,23 +1007,23 @@ DS3SearchModel::fetchMore(const QModelIndex& parent)
 
 // This function adds retrieved search objects from the DS3 model and puts them in the search model
 void
-DS3SearchModel::AppendItem(ds3_search_object obj, QString bucketName) {
+DS3SearchModel::AppendItem(ds3_search_object* obj, QString bucketName) {
 	// Data to go into new item in model
 	QList<QVariant> data;
 
 	// Checks search results, bucketName!="" means files were found
 	if(bucketName != QString("")) {
 		QString name;
-		if(obj.name != NULL)
-			name = "/"+bucketName+QString("/")+obj.name->value;
+		if(obj->name != NULL)
+			name = "/"+bucketName+QString("/")+obj->name->value;
 		else
 			name = QString("");
 		data << name;
-		if(obj.owner != NULL && obj.owner->name != NULL)
-			data << obj.owner->name->value;
+		if(obj->owner != NULL && obj->owner->name != NULL)
+			data << obj->owner->name->value;
 		else
 			data << QString("");
-		qulonglong size = obj.size;
+		qulonglong size = obj->size;
 		if(size != 0)
 			data << size;
 		else
@@ -1036,13 +1036,13 @@ DS3SearchModel::AppendItem(ds3_search_object obj, QString bucketName) {
 			data << QString("Object");
 		else
 			data << QString("");
-		if(obj.last_modified != NULL)
-			data << QDateTime::fromString(QString::fromUtf8(obj.last_modified->value), REST_TIMESTAMP_FORMAT).toString(VIEW_TIMESTAMP_FORMAT);
+		if(obj->last_modified != NULL)
+			data << QDateTime::fromString(QString::fromUtf8(obj->last_modified->value), REST_TIMESTAMP_FORMAT).toString(VIEW_TIMESTAMP_FORMAT);
 		else
 			data << QString("");
 	// Search results were empty, so only need these values
 	} else {
-		data << obj.name->value << QString("") << QString("--");
+		data << obj->name->value << QString("") << QString("--");
 	}
 	// Create the new item
 	DS3BrowserItem* newItem = new DS3BrowserItem(data, QString(""), QString(""), m_rootItem);
@@ -1114,7 +1114,7 @@ void
 DS3SearchModel::HandleGetObjectsResponse()
 {
 	// Temporary list to hold objects as they are found
-	QList<ds3_search_object> objectList;
+	QList<ds3_search_object*> objectList;
 	// Get the watcher and response
 	GetObjectsWatcher* watcher = static_cast<GetObjectsWatcher*>(sender());
 	ds3_get_objects_response* response = NULL;
@@ -1152,12 +1152,12 @@ DS3SearchModel::HandleGetObjectsResponse()
 		//   this to the user
 		if(searchFoundCount == 0) {
 			found = false;
-			ds3_search_object empty;
+			ds3_search_object* empty;
 			ds3_str* name = new ds3_str();
 			char* nameChar = new char[40];
 			strcpy(nameChar, "There are currently no items to display");
 			name->value = nameChar;
-			empty.name = name;
+			empty->name = name;
 			m_foundList << empty;
 			m_bucketList << QString("");
 			// AppendItem(empty, QString(""));

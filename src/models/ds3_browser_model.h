@@ -113,12 +113,12 @@ signals:
 private:
 	size_t activeSearchCount;
 	size_t searchFoundCount;
-	QList<ds3_search_object> m_foundList;
+	QList<ds3_search_object*> m_foundList;
 	QList<QString> m_bucketList;
 	DS3BrowserModel* m_searchedModel;
 	QTreeView* m_searchedTree;
 	void AddToTree();
-	void AppendItem(ds3_search_object obj, QString bucketName);
+	void AppendItem(ds3_search_object* obj, QString bucketName);
 	void Search(const QModelIndex& index, QString bucket, QString prefix, QString search);
 };
 
