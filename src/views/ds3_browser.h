@@ -84,9 +84,6 @@ private:
 	DS3SearchModel* m_searchModel;
 	DS3SearchTree* m_searchView;
 	JobsView* m_jobsView;
-
-signals:
-	void searchComplete();
 };
 
 
