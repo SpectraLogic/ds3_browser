@@ -983,10 +983,11 @@ DS3BrowserModel::HandleGetBucketResponse()
 }
 
 // Model for searches
-DS3SearchModel::DS3SearchModel(Client* client, QObject* parent) : DS3BrowserModel(client, parent)
+DS3SearchModel::DS3SearchModel(Client* client, QObject* parent)
+	: DS3BrowserModel(client, parent),
+	  m_activeSearchCount(0),
+	  m_searchFoundCount(0)
 {
-	m_activeSearchCount = 0;
-	m_searchFoundCount = 0;
 }
 
 // This function makes sure all data isn't fetched for the search tree, just what is searched for. When
