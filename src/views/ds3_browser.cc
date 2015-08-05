@@ -297,14 +297,15 @@ DS3Browser::CreateSearchTree(bool found) {
 	m_layout->addWidget(m_searchView,4,1,1,2);
 }
 
-DS3SearchTree::DS3SearchTree() : QTreeView::QTreeView()
+DS3SearchTree::DS3SearchTree()
+	: QTreeView()
 {
 	// Lets the user drag files off of search
-	this->setDragEnabled(true);
+	setDragEnabled(true);
 	// Since this is a flat list, we don't need indentation
-	this->setIndentation(0);
+	setIndentation(0);
 	// Sorts the search results alphabetically
-	this->sortByColumn(0, Qt::AscendingOrder);
+	sortByColumn(0, Qt::AscendingOrder);
 }
 
 bool
