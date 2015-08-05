@@ -46,6 +46,9 @@ DS3Browser::DS3Browser(Client* client, JobsView* jobsView,
 	m_searchModel = new DS3SearchModel(m_client, this);
 	m_searchView = new DS3SearchTree();
 
+	// Remove the focus rectangle around the search view on OSX.
+	m_searchView->setAttribute(Qt::WA_MacShowFocusRect, 0);
+
 	connect(m_treeView, SIGNAL(clicked(const QModelIndex&)),
 		this, SLOT(OnModelItemClick(const QModelIndex&)));
 
@@ -253,6 +256,8 @@ DS3Browser::BeginSearch()
 	delete m_searchView;
 	m_searchModel = new DS3SearchModel(m_client, this);
 	m_searchView = new DS3SearchTree();
+	// Remove the focus rectangle around the search view on OSX.
+	m_searchView->setAttribute(Qt::WA_MacShowFocusRect, 0);
 	// Connect the slot to display the search results for later
 	connect(m_searchModel, SIGNAL(DoneSearching(bool)), this, SLOT(CreateSearchTree(bool)));
 
