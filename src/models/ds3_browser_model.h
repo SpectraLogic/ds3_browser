@@ -111,8 +111,8 @@ signals:
 	void DoneSearching(bool found);
 
 private:
-	size_t activeSearchCount;
-	size_t searchFoundCount;
+	size_t m_activeSearchCount;
+	size_t m_searchFoundCount;
 	QList<ds3_search_object*> m_foundList;
 	QList<QString> m_bucketList;
 	DS3BrowserModel* m_searchedModel;

@@ -985,8 +985,8 @@ DS3BrowserModel::HandleGetBucketResponse()
 // Model for searches
 DS3SearchModel::DS3SearchModel(Client* client, QObject* parent) : DS3BrowserModel(client, parent)
 {
-	activeSearchCount = 0;
-	searchFoundCount = 0;
+	m_activeSearchCount = 0;
+	m_searchFoundCount = 0;
 }
 
 // This function makes sure all data isn't fetched for the search tree, just what is searched for. When
@@ -1104,7 +1104,7 @@ DS3SearchModel::HandleGetServiceResponse(QString search, QTreeView* tree, DS3Bro
 			// Because of GetPath(), the initial "/" needs to be removed for searches to work
 			if(prefix.startsWith("/"))
 				prefix.remove(0, 1);
-			activeSearchCount++;
+			m_activeSearchCount++;
 			Search(index, name, prefix, QString("%"+search+"%"));
 		}
 	}
@@ -1139,18 +1139,18 @@ DS3SearchModel::HandleGetObjectsResponse()
 		}
 	}
 	for(int i=0; i<objectList.size(); i++) {
-		searchFoundCount++;
+		m_searchFoundCount++;
 		m_foundList << objectList[i];
 		m_bucketList << bucketName;
 		// AppendItem(objectList[i], bucketName);
 	}
 	bool found = true;
-	activeSearchCount--;
+	m_activeSearchCount--;
 
-	if(activeSearchCount == 0) {
+	if(m_activeSearchCount == 0) {
 		// If no results were found, then create a fake item that tells
 		//   this to the user
-		if(searchFoundCount == 0) {
+		if(m_searchFoundCount == 0) {
 			found = false;
 			ds3_search_object* empty;
 			ds3_str* name = new ds3_str();
