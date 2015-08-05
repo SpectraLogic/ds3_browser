@@ -1048,31 +1048,39 @@ DS3SearchModel::AppendDS3SearchObject(ds3_search_object* obj, QString bucketName
 	if (bucketName != QString("")) {
 		QString name;
 		if (obj->name != NULL) {
-			name = "/"+bucketName+QString("/")+obj->name->value;
+			name = "/"+bucketName+QString("/")+QString::fromUtf8(obj->name->value);
 		} else {
 			name = QString("");
 		}
 		data << name;
+
 		if (obj->owner != NULL && obj->owner->name != NULL) {
-			data << obj->owner->name->value;
+			data << QString::fromUtf8(obj->owner->name->value);
 		} else {
 			data << QString("");
 		}
+
+		QString type(OBJECT);
+		if (name == "/"+bucketName+"/") {
+			type = BUCKET;
+		} else if (name.endsWith("/")) {
+			type = FOLDER;
+		}
+
 		qulonglong size = obj->size;
-		if (size != 0) {
+		// Always report the size for objects when the GetObjects
+		// response includes sizes since empty objects are valid
+		// and we'd want to report them as 0 bytes.
+		// Probably want to do something like:
+		//   if (type == OBJECT || size > 0) {
+		if (size > 0) {
 			data << size;
 		} else {
 			data << QString("--");
 		}
-		if (name == "/"+bucketName+"/") {
-			data << QString("Bucket");
-		} else if (name.endsWith("/")) {
-			data << QString("Folder");
-		} else if (bucketName != QString("")) {
-			data << QString("Object");
-		} else {
-			data << QString("");
-		}
+
+		data << type;
+
 		if (obj->last_modified != NULL) {
 			data << QDateTime::fromString(QString::fromUtf8(obj->last_modified->value), REST_TIMESTAMP_FORMAT).toString(VIEW_TIMESTAMP_FORMAT);
 		} else {
