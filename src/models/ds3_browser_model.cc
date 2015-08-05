@@ -488,7 +488,9 @@ DS3BrowserModel::hasChildren(const QModelIndex& parent) const
 }
 
 QVariant
-DS3BrowserModel::headerData(int section, Qt::Orientation /*orientation*/, int role) const
+DS3BrowserModel::headerData(int section,
+			    Qt::Orientation /*orientation*/,
+			    int role) const
 {
 	if (role == Qt::DisplayRole) {
 		return m_rootItem->GetData(section);
@@ -990,20 +992,21 @@ DS3SearchModel::DS3SearchModel(Client* client, QObject* parent)
 {
 }
 
-// This function makes sure all data isn't fetched for the search tree, just what is searched for. When
-//   a tree is created it calls the fetchMore function, so this function doesn't do anything for
-//   the search tree.
+// This function makes sure all data isn't fetched for the search tree, just
+// what is searched for. When a tree is created it calls the fetchMore
+// function, so this function doesn't do anything for the search tree.
 void
 DS3SearchModel::fetchMore(const QModelIndex& parent)
 {
 	// Have to do something with parent for compiling, and since
-	//   parent is invalid, this doesn't affect the logs. Initially
-	//   I tried return here, but a vfork() segfaults after a while
-	//   with that.
-	if(parent.isValid())
+	// parent is invalid, this doesn't affect the logs. Initially
+	// I tried return here, but a vfork() segfaults after a while
+	// with that.
+	if(parent.isValid()) {
 		return;
-	else
+	} else {
 		return;
+	}
 }
 
 // This function adds retrieved search objects from the DS3 model and puts them in the search model
@@ -1013,51 +1016,63 @@ DS3SearchModel::AppendItem(ds3_search_object* obj, QString bucketName) {
 	QList<QVariant> data;
 
 	// Checks search results, bucketName!="" means files were found
-	if(bucketName != QString("")) {
+	if (bucketName != QString("")) {
 		QString name;
-		if(obj->name != NULL)
+		if (obj->name != NULL) {
 			name = "/"+bucketName+QString("/")+obj->name->value;
-		else
+		} else {
 			name = QString("");
+		}
 		data << name;
-		if(obj->owner != NULL && obj->owner->name != NULL)
+		if (obj->owner != NULL && obj->owner->name != NULL) {
 			data << obj->owner->name->value;
-		else
+		} else {
 			data << QString("");
+		}
 		qulonglong size = obj->size;
-		if(size != 0)
+		if (size != 0) {
 			data << size;
-		else
+		} else {
 			data << QString("--");
-		if(name == "/"+bucketName+"/")
+		}
+		if (name == "/"+bucketName+"/") {
 			data << QString("Bucket");
-		else if(name.endsWith("/"))
+		} else if (name.endsWith("/")) {
 			data << QString("Folder");
-		else if(bucketName != QString(""))
+		} else if (bucketName != QString("")) {
 			data << QString("Object");
-		else
+		} else {
 			data << QString("");
-		if(obj->last_modified != NULL)
+		}
+		if (obj->last_modified != NULL) {
 			data << QDateTime::fromString(QString::fromUtf8(obj->last_modified->value), REST_TIMESTAMP_FORMAT).toString(VIEW_TIMESTAMP_FORMAT);
-		else
+		} else {
 			data << QString("");
+		}
 	// Search results were empty, so only need these values
 	} else {
 		data << obj->name->value << QString("") << QString("--");
 	}
 	// Create the new item
-	DS3BrowserItem* newItem = new DS3BrowserItem(data, QString(""), QString(""), m_rootItem);
+	DS3BrowserItem* newItem = new DS3BrowserItem(data,
+						     QString(""),
+						     QString(""),
+						     m_rootItem);
 	// Append it to the root
 	m_rootItem->AppendChild(newItem);
 }
 
 void
-DS3SearchModel::Search(const QModelIndex& index, QString bucket, QString prefix, QString search)
+DS3SearchModel::Search(const QModelIndex& index,
+		       QString bucket,
+		       QString prefix,
+		       QString search)
 {
-	// This case is for initial bucket search when no common prefixes are known. These searches
-	//   call this function again but with search = "".
-	if(search != "") {
-		// Setting prefix to this since buckets are only at the root directory
+	// This case is for initial bucket search when no common prefixes are
+	// known. These searches call this function again but with search = "".
+	if (search != "") {
+		// Setting prefix to this since buckets are only at the root
+		// directory
 		GetObjectsWatcher* watcher = new GetObjectsWatcher(index,
 								   bucket,
 								   prefix,
@@ -1072,12 +1087,16 @@ DS3SearchModel::Search(const QModelIndex& index, QString bucket, QString prefix,
 	}
 }
 
-// This function retrieves all of the bucket names and calls the search function on each bucket
+// This function retrieves all of the bucket names and calls the search
+// function on each bucket
 void
-DS3SearchModel::HandleGetServiceResponse(QString search, QTreeView* tree, DS3BrowserModel* model, GetServiceWatcher* watcher)
+DS3SearchModel::HandleGetServiceResponse(QString search,
+					 QTreeView* tree,
+					 DS3BrowserModel* model,
+					 GetServiceWatcher* watcher)
 {
-	// Set these class variables so that the model and tree that the search is being done on
-	//   can be used for indices and object names
+	// Set these class variables so that the model and tree that the
+	// search is being done on can be used for indices and object names
 	m_searchedTree = tree;
 	m_searchedModel = model;
 	// Set index to the root index of the searched tree
@@ -1090,7 +1109,8 @@ DS3SearchModel::HandleGetServiceResponse(QString search, QTreeView* tree, DS3Bro
 	catch (DS3Error& e) {
 		LOG_ERROR("Error listing buckets - " + e.ToString());
 	}
-	// Checks to make sure that there is a response and that the search isn't empty
+	// Checks to make sure that there is a response and that the search
+	// isn't empty
 	if (response && search != "") {
 		// Iterate through buckets
 		for (size_t i = 0; i < response->num_buckets; i++) {
@@ -1098,13 +1118,17 @@ DS3SearchModel::HandleGetServiceResponse(QString search, QTreeView* tree, DS3Bro
 			ds3_bucket rawBucket = response->buckets[i];
 
 			name = QString::fromUtf8(rawBucket.name->value);
-			if(m_searchedModel->GetPath(index) != QString("/") && !m_searchedModel->GetPath(index).contains(name))
+			if (m_searchedModel->GetPath(index) != QString("/") &&
+			    !m_searchedModel->GetPath(index).contains(name)) {
 				continue;
+			}
 
 			QString prefix = m_searchedModel->GetPath(index);
-			// Because of GetPath(), the initial "/" needs to be removed for searches to work
-			if(prefix.startsWith("/"))
+			// Because of GetPath(), the initial "/" needs to be
+			// removed for searches to work
+			if (prefix.startsWith("/")) {
 				prefix.remove(0, 1);
+			}
 			m_activeSearchCount++;
 			Search(index, name, prefix, QString("%"+search+"%"));
 		}
@@ -1133,13 +1157,14 @@ DS3SearchModel::HandleGetObjectsResponse()
 		LOG_ERROR("Error listing objects - " + msg);
 	}
 	// Checks that response isn't empty
-	if(response != NULL) {
+	if (response != NULL) {
 		for (size_t i = 0; i < response->num_objects; i++) {
-			// Increment the found count and add the object to the search model
+			// Increment the found count and add the object to the
+			// search model
 			objectList << response->objects[i];
 		}
 	}
-	for(int i=0; i<objectList.size(); i++) {
+	for (int i = 0; i < objectList.size(); i++) {
 		m_searchFoundCount++;
 		m_foundList << objectList[i];
 		m_bucketList << bucketName;
@@ -1148,10 +1173,10 @@ DS3SearchModel::HandleGetObjectsResponse()
 	bool found = true;
 	m_activeSearchCount--;
 
-	if(m_activeSearchCount == 0) {
+	if (m_activeSearchCount == 0) {
 		// If no results were found, then create a fake item that tells
-		//   this to the user
-		if(m_searchFoundCount == 0) {
+		// this to the user
+		if (m_searchFoundCount == 0) {
 			found = false;
 			ds3_search_object* empty;
 			ds3_str* name = new ds3_str();
@@ -1173,7 +1198,7 @@ DS3SearchModel::HandleGetObjectsResponse()
 void
 DS3SearchModel::AddToTree()
 {
-	for(int i=0; i<m_foundList.size(); i++) {
+	for (int i = 0; i < m_foundList.size(); i++) {
 		AppendItem(m_foundList[i], m_bucketList[i]);
 	}
 }
