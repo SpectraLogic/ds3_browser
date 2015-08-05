@@ -68,6 +68,7 @@ public:
 	DS3BrowserItem* GetParent() const;
 	virtual bool IsLoadingItem() const;
 	virtual bool IsPageBreak() const;
+	virtual bool IsNoSearchResultsItem() const;
 	bool IsFetching() const;
 	void Reset();
 	QString GetFullName() const;
@@ -215,6 +216,12 @@ DS3BrowserItem::IsPageBreak() const
 }
 
 inline bool
+DS3BrowserItem::IsNoSearchResultsItem() const
+{
+	return false;
+}
+
+inline bool
 DS3BrowserItem::IsFetching() const
 {
 	return m_fetching;
@@ -316,6 +323,26 @@ LoadingItem::IsLoadingItem() const
 	return true;
 }
 
+class NoSearchResultsItem : public DS3BrowserItem
+{
+public:
+	NoSearchResultsItem(DS3BrowserItem* parent = 0);
+
+	bool IsNoSearchResultsItem() const;
+};
+
+NoSearchResultsItem::NoSearchResultsItem(DS3BrowserItem* parent)
+	: DS3BrowserItem(QList<QVariant>(), "", "", parent)
+{
+	m_data << "There are currently no items to display";
+}
+
+inline bool
+NoSearchResultsItem::IsNoSearchResultsItem() const
+{
+	return true;
+}
+
 //
 // DS3BrowserModel
 //
@@ -376,7 +403,10 @@ DS3BrowserModel::data(const QModelIndex &index, int role) const
 	{
 	case Qt::DisplayRole:
 		data = item->GetData(column);
-		if (column == 0 && (item->IsPageBreak() || item->IsLoadingItem())) {
+		if (column == 0 &&
+		    (item->IsPageBreak() ||
+		     item->IsLoadingItem() ||
+		     item->IsNoSearchResultsItem())) {
 			m_view->setFirstColumnSpanned(index.row(), index.parent(), true);
 		}
 		break;
@@ -1009,9 +1039,8 @@ DS3SearchModel::fetchMore(const QModelIndex& parent)
 	}
 }
 
-// This function adds retrieved search objects from the DS3 model and puts them in the search model
 void
-DS3SearchModel::AppendItem(ds3_search_object* obj, QString bucketName) {
+DS3SearchModel::AppendDS3SearchObject(ds3_search_object* obj, QString bucketName) {
 	// Data to go into new item in model
 	QList<QVariant> data;
 
@@ -1049,9 +1078,6 @@ DS3SearchModel::AppendItem(ds3_search_object* obj, QString bucketName) {
 		} else {
 			data << QString("");
 		}
-	// Search results were empty, so only need these values
-	} else {
-		data << obj->name->value << QString("") << QString("--");
 	}
 	// Create the new item
 	DS3BrowserItem* newItem = new DS3BrowserItem(data,
@@ -1133,13 +1159,14 @@ DS3SearchModel::HandleGetServiceResponse(QString search,
 			Search(index, name, prefix, QString("%"+search+"%"));
 		}
 	}
+	if (response) {
+		ds3_free_service_response(response);
+	}
 }
 
 void
 DS3SearchModel::HandleGetObjectsResponse()
 {
-	// Temporary list to hold objects as they are found
-	QList<ds3_search_object*> objectList;
 	// Get the watcher and response
 	GetObjectsWatcher* watcher = static_cast<GetObjectsWatcher*>(sender());
 	ds3_get_objects_response* response = NULL;
@@ -1161,14 +1188,9 @@ DS3SearchModel::HandleGetObjectsResponse()
 		for (size_t i = 0; i < response->num_objects; i++) {
 			// Increment the found count and add the object to the
 			// search model
-			objectList << response->objects[i];
+			m_searchFoundCount++;
+			AppendDS3SearchObject(response->objects[i], bucketName);
 		}
-	}
-	for (int i = 0; i < objectList.size(); i++) {
-		m_searchFoundCount++;
-		m_foundList << objectList[i];
-		m_bucketList << bucketName;
-		// AppendItem(objectList[i], bucketName);
 	}
 	bool found = true;
 	m_activeSearchCount--;
@@ -1178,27 +1200,14 @@ DS3SearchModel::HandleGetObjectsResponse()
 		// this to the user
 		if (m_searchFoundCount == 0) {
 			found = false;
-			ds3_search_object* empty;
-			ds3_str* name = new ds3_str();
-			char* nameChar = new char[40];
-			strcpy(nameChar, "There are currently no items to display");
-			name->value = nameChar;
-			empty->name = name;
-			m_foundList << empty;
-			m_bucketList << QString("");
-			// AppendItem(empty, QString(""));
+			DS3BrowserItem* noResultsItem = new NoSearchResultsItem(m_rootItem);
+			m_rootItem->AppendChild(noResultsItem);
 		}
-		AddToTree();
 		emit DoneSearching(found);
 	}
 
-	delete watcher;
-}
-
-void
-DS3SearchModel::AddToTree()
-{
-	for (int i = 0; i < m_foundList.size(); i++) {
-		AppendItem(m_foundList[i], m_bucketList[i]);
+	if (response) {
+		ds3_free_objects_response(response);
 	}
+	delete watcher;
 }
