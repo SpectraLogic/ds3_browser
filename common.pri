@@ -57,23 +57,7 @@ HEADERS = \
 	$${PWD}/src/views/jobs_view.h \
 	$${PWD}/src/views/objects/delete_objects_dialog.h \
 	$${PWD}/src/views/session_dialog.h \
-	$${PWD}/src/views/session_view.h \
-	$${PWD}/vendor/quazip/crypt.h \
-	$${PWD}/vendor/quazip/ioapi.h \
-	$${PWD}/vendor/quazip/JlCompress.h \
-	$${PWD}/vendor/quazip/quaadler32.h \
-	$${PWD}/vendor/quazip/quachecksum32.h \
-	$${PWD}/vendor/quazip/quacrc32.h \
-	$${PWD}/vendor/quazip/quagzipfile.h \
-	$${PWD}/vendor/quazip/quaziodevice.h \
-	$${PWD}/vendor/quazip/quazipdir.h \
-	$${PWD}/vendor/quazip/quazipfile.h \
-	$${PWD}/vendor/quazip/quazipfileinfo.h \
-	$${PWD}/vendor/quazip/quazipnewinfo.h \
-	$${PWD}/vendor/quazip/quazip_global.h \
-	$${PWD}/vendor/quazip/quazip.h \
-	$${PWD}/vendor/quazip/unzip.h \
-	$${PWD}/vendor/quazip/zip.h
+	$${PWD}/src/views/session_view.h
 
 SOURCES = \
 	$${PWD}/src/main_window.cc \
@@ -106,20 +90,7 @@ SOURCES = \
 	$${PWD}/src/views/jobs_view.cc \
 	$${PWD}/src/views/objects/delete_objects_dialog.cc \
 	$${PWD}/src/views/session_dialog.cc \
-	$${PWD}/src/views/session_view.cc \
-	$${PWD}/vendor/quazip/JlCompress.cpp \
-	$${PWD}/vendor/quazip/qioapi.cpp \
-	$${PWD}/vendor/quazip/quaadler32.cpp \
-	$${PWD}/vendor/quazip/quacrc32.cpp \
-	$${PWD}/vendor/quazip/quagzipfile.cpp \
-	$${PWD}/vendor/quazip/quaziodevice.cpp \
-	$${PWD}/vendor/quazip/quazipdir.cpp \
-	$${PWD}/vendor/quazip/quazipfile.cpp \
-	$${PWD}/vendor/quazip/quazipfileinfo.cpp \
-	$${PWD}/vendor/quazip/quazipnewinfo.cpp \
-	$${PWD}/vendor/quazip/quazip.cpp \
-	$${PWD}/vendor/quazip/unzip.c \
-	$${PWD}/vendor/quazip/zip.c
+	$${PWD}/src/views/session_view.cc
 
 msvc {
 	LIBS += ds3.lib

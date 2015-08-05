@@ -13,6 +13,7 @@
 ################################################################################
 
 include(common.pri)
+include(vendor/quazip/quazip.pri)
 
 TARGET = "BlackPearl DS3 Browser"
 
