@@ -22,6 +22,7 @@ QT += concurrent core gui widgets
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 INCLUDEPATH += $${PWD}/src
+INCLUDEPATH += $${PWD}/vendor
 
 HEADERS = \
 	$${PWD}/src/main_window.h \
