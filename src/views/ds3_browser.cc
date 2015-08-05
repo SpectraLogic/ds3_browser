@@ -88,6 +88,7 @@ DS3Browser::AddCustomToolBarActions()
 	m_searchAction = new QAction(searchIcon, this);
 	m_searchAction->setFont(QFont("FontAwesome", 16));
 	m_searchAction->setText(searchIcon);
+	m_searchAction->setToolTip("Search");
 	connect(m_searchAction, SIGNAL(triggered()), this, SLOT(BeginSearch()));
 	m_toolBar->addAction(m_searchAction);
 
