@@ -20,6 +20,8 @@
 #include <QList>
 #include <QMimeData>
 #include <QUrl>
+#include <QIODevice>
+#include <QDataStream>
 
 // MimeData, a QMimeData class that recognizes the custom MIME type we use
 // for DS3 bucket/object URLs.

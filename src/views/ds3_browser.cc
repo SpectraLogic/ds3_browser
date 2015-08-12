@@ -84,15 +84,8 @@ DS3Browser::AddCustomToolBarActions()
 	connect(m_refreshAction, SIGNAL(triggered()), this, SLOT(Refresh()));
 	m_toolBar->addAction(m_refreshAction);
 
-	QString searchIcon = QString::fromUtf8("\uf002");
-	m_searchAction = new QAction(searchIcon, this);
-	m_searchAction->setFont(QFont("FontAwesome", 16));
-	m_searchAction->setText(searchIcon);
-	m_searchAction->setToolTip("Search");
-	connect(m_searchAction, SIGNAL(triggered()), this, SLOT(BeginSearch()));
-	m_toolBar->addAction(m_searchAction);
-
-	QString leftArrow = QString::fromUtf8("\uf060");
+	QTextCodec* codec = QTextCodec::codecForName("UTF-8");
+	QString leftArrow = codec->fromUnicode("");
 	m_transferAction = new QAction(leftArrow, this);
 	m_transferAction->setFont(QFont("FontAwesome", 16));
 	m_transferAction->setText(leftArrow);
@@ -100,6 +93,14 @@ DS3Browser::AddCustomToolBarActions()
 	m_transferAction->setToolTip("Transfer to Host");
 	connect(m_transferAction, SIGNAL(triggered()), this, SLOT(PrepareTransfer()));
 	m_toolBar->addAction(m_transferAction);
+
+	QString searchIcon = codec->fromUnicode("");
+	m_searchAction = new QAction(searchIcon, this);
+	m_searchAction->setFont(QFont("FontAwesome", 16));
+	m_searchAction->setText(searchIcon);
+	m_searchAction->setToolTip("Search");
+	connect(m_searchAction, SIGNAL(triggered()), this, SLOT(BeginSearch()));
+	m_toolBar->addAction(m_searchAction);
 }
 
 QString

@@ -41,6 +41,11 @@ In the Microsoft Visual Studio Developer Command Prompt:
     copy <ds3_c_sdk directory>\src\ds3.h .\
     copy <ds3_c_sdk directory>\win32\output\lib\*.lib .\
     copy <ds3_c_sdk directory>\win32\output\bin\*.dll .\release
+    mkdir curl
+    copy <ds3_c_sdk directory>\win32\deps\install\curl .\curl
+    copy <ds3_c_sdk directory>\win32\deps\install\include\zconf.h .\
+    copy <ds3_c_sdk directory>\win32\deps\install\include\zlib.h .\
+    copy <ds3_c_sdk directory>\win32\deps\install\lib\zlib_a.lib .\
     nmake release
 
 A release executable will be located under build/release.  Running `nmake`

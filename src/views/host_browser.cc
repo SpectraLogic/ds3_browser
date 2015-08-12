@@ -54,7 +54,8 @@ HostBrowser::AddCustomToolBarActions()
 	connect(m_homeAction, SIGNAL(triggered()), this, SLOT(GoToHome()));
 	m_toolBar->addAction(m_homeAction);
 
-	QString rightArrow = QString::fromUtf8("\uf061");
+	QTextCodec* codec = QTextCodec::codecForName("UTF-8");
+	QString rightArrow = codec->fromUnicode("");
 	m_transferAction = new QAction(rightArrow, this);
 	m_transferAction->setFont(QFont("FontAwesome", 16));
 	m_transferAction->setText(rightArrow);
