@@ -811,9 +811,9 @@ DS3BrowserModel::HandleGetServiceResponse()
 		LOG_ERROR("ERROR:       LIST BUCKETS failed, "+e.ToString());
 	}
 
-	size_t numBuckets = 0;
+	int numBuckets = 0;
 	if (response) {
-		numBuckets = response->num_buckets;
+		numBuckets = (int) response->num_buckets;
 	}
 	int startRow = 0;
 	if (numBuckets > 0) {

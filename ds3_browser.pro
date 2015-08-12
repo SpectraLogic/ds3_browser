@@ -52,6 +52,7 @@ win32 {
 	# macro compile error on Windows.
 	# See http://qt-project.org/forums/viewthread/22133
 	DEFINES += NOMINMAX
-
+	DEFINES += QUAZIP_STATIC
+	DEFINES += QUAZIP_BUILD
 	RC_FILE = ds3_browser.rc
 }

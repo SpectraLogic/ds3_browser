@@ -94,6 +94,7 @@ SOURCES = \
 
 msvc {
 	LIBS += ds3.lib
+	LIBS += zlib_a.lib
 	QMAKE_CXXFLAGS += /WX /D_CRT_SECURE_NO_WARNINGS
 } else {
 	# Necessary on OSX at least

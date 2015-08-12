@@ -151,7 +151,7 @@ inline size_t
 BulkWorkItem::GetNumChunksProcessed() const
 {
 	m_responseLock.lock();
-	int chunks = m_numChunksProcessed;
+	size_t chunks = m_numChunksProcessed;
 	m_responseLock.unlock();
 	return chunks;
 }
