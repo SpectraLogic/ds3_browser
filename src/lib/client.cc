@@ -519,13 +519,7 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 
 		QString fullObjName = url.GetObjectName();
 		QString lastPathPart = url.GetLastPathPart();
-		QString bucketPrefix;
-		if (url.IsBucket()) {
-			// The bucket name needs to be in the file name
-			bucketPrefix = bucket;
-		}
-		QString filePath = QDir::cleanPath(destination + "/" + bucketPrefix +
-						   "/" + lastPathPart);
+		QString filePath = QDir::cleanPath(destination + "/" + lastPathPart);
 		if (url.IsBucketOrFolder()) {
 			QString prefix = fullObjName;
 			ds3_get_bucket_response* getBucketRes;
@@ -565,8 +559,8 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 					QString objNameMinusPrefix = subFullObjName;
 					objNameMinusPrefix.replace(QRegularExpression("^" + prefix), "");
 					QString subFilePath = QDir::cleanPath(destination + "/" +
-									      bucketPrefix + "/" + prefix +
-									      "/" + objNameMinusPrefix);
+									      lastPathPart + "/" +
+									      objNameMinusPrefix);
 					if (subFullObjName.endsWith("/")) {
 						workItem->AppendDirsToCreate(subFilePath);
 					} else if (QFile(subFilePath).exists()) {
