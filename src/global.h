@@ -19,7 +19,7 @@
 
 #include <QString>
 
-const QString APP_NAME = "BlackPearl DS3 Browser";
+const QString APP_NAME = "Deep Storage Browser";
 const QString SL_APP_NAME = "Spectra Logic " + APP_NAME;
 
 #endif

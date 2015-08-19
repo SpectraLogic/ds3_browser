@@ -15,7 +15,7 @@
 include(common.pri)
 include(vendor/quazip/quazip.pri)
 
-TARGET = "BlackPearl DS3 Browser"
+TARGET = "Deep Storage Browser"
 
 CONFIG -= release
 CONFIG += debug_and_release warn_on
@@ -35,7 +35,7 @@ Release:DEFINES += NO_DEBUG
 
 SOURCES += src/main.cc 
 
-RESOURCES = ds3_browser.qrc
+RESOURCES = deep_storage_browser.qrc
 
 macx {
 	# With Qt 5.4 at least, only release builds will generate the
@@ -43,7 +43,7 @@ macx {
 	# application icon will not be available for debug builds.
 	# Also, the build must be done outside of the source tree in order
 	# Qt to find its template Info.plist file.
-	ICON = resources/icons/ds3_browser.icns
+	ICON = resources/icons/deep_storage_browser.icns
 	QMAKE_INFO_PLIST = src/mac/Info.plist.app
 }
 
@@ -54,5 +54,5 @@ win32 {
 	DEFINES += NOMINMAX
 	DEFINES += QUAZIP_STATIC
 	DEFINES += QUAZIP_BUILD
-	RC_FILE = ds3_browser.rc
+	RC_FILE = deep_storage_browser.rc
 }

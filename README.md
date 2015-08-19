@@ -1,15 +1,15 @@
-DS3 Browser
-===========
+Deep Storage Browser
+====================
 
-DS3 Browser is a C++/Qt graphical desktop application for interacting with the
-DS3 Deep Storage REST interface.  Windows and Mac OSX are currently supported
-although it should work on any Qt compatible platform.
+Deep Storage Browser is a C++/Qt graphical desktop application for interacting
+with the Deep Storage REST interface.  Windows and Mac OSX are currently
+supported although it should work on any Qt compatible platform.
 
 BlackPearl Compatibility
 ------------------------
 
-This version of the DS3 Browser is only compatible with BlackPearl version
-1.1.
+This version of the Deep Storage Browser is only compatible with BlackPearl
+version 1.1.
 
 Build Requirements
 ------------------
@@ -100,7 +100,8 @@ Session Persistence
 
 The application is currently setup to automatically save the session data
 if the user selects that option.  Where the data is saved depends on the
-platform.  On OSX, it is stored in ~/Library/Preferences/com.spectralogic.BlackPearl DS3 Browser.plist.
+platform.  On OSX, it is stored in
+~/Library/Preferences/com.spectralogic.Deep Storage Browser.plist.
 
 OSX Note - OSX Yosemite, and possibly earlier versions, cache the plist files.
 Thus, deleting the plist file is not enough to clear the setting.  You must
