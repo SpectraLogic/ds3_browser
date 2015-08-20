@@ -9,7 +9,7 @@ BlackPearl Compatibility
 ------------------------
 
 This version of the Deep Storage Browser is only compatible with BlackPearl
-version 1.1.
+version 1.2.
 
 Build Requirements
 ------------------
