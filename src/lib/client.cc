@@ -276,8 +276,8 @@ Client::GetObject(const QString& bucket,
 }
 
 QFuture<ds3_get_objects_response*>
-Client::GetObjects(const QString& bucketName = "", const QString& id = "",
-		  const QString& name = "", object_type type = NO_TYPE, const QString& version = "")
+Client::GetObjects(const QString& bucketName, const QString& id,
+		  const QString& name, object_type type, const QString& version)
 {
 	QFuture<ds3_get_objects_response*> future = run(this,
 						       &Client::DoGetObjects,
@@ -426,15 +426,10 @@ ds3_get_objects_response*
 Client::DoGetObjects(const QString& bucketName, const QString& id,
 		     const QString& name, object_type type, const QString& version)
 {
-	if (bucketName == "") {
-		LOG_DEBUG("DoGetObjects - buckets: all, name: " + name);
-	} else {
-		LOG_DEBUG("DoGetObjects - bucket: " + bucketName +
-			  ", name: " + name);
-	}
+	LOG_DEBUG("DoGetObjects - bucket: " + bucketName +
+		  ", name: " + name);
 
-	ds3_request* request = ds3_init_get_objects();
-	ds3_request_set_bucket_name(request, bucketName.toUtf8().constData());
+	ds3_request* request = ds3_init_get_objects(bucketName.toUtf8().constData());
 	QString logMsg = "List Objects (GET " + m_endpoint + "/";
 	logMsg += bucketName;
 	QStringList logQueryParams;
