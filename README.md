@@ -83,6 +83,32 @@ XCode project file:
     cd build
     qmake -spec macx-xcode ../deep_storage_browser.pro
 
+Ubuntu Linux Builds
+--------------
+You'll need to install qmake, and then build as normal.
+
+    sudo apt-get install qt5-default
+    cd <deep_storage_browser directory>
+    mkdir build
+    cd build
+    qmake ../deep_storage_browser.pro
+    make release
+    ./release/Deep\ Storage\ Browser &
+
+CentOS Linux Builds
+--------------
+You'll need to install qmake, and then build as normal.
+
+    sudo yum install qt5-devel
+    sudo yum install gcc-c++
+    cd <deep_storage_browser directory>
+    mkdir build
+    cd build
+    qmake ../deep_storage_browser.pro
+    make release
+    ./release/Deep\ Storage\ Browser &
+
+
 Packaging and Deploying
 -----------------------
 
