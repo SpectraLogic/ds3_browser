@@ -429,8 +429,8 @@ Client::DoGetObjects(const QString& bucketName, const QString& id,
 	LOG_DEBUG("DoGetObjects - bucket: " + bucketName +
 		  ", name: " + name);
 
-  ds3_request* request = ds3_init_get_objects();
-  ds3_request_set_bucket_name(request, bucketName.toUtf8().constData());
+	ds3_request* request = ds3_init_get_objects();
+	ds3_request_set_bucket_name(request, bucketName.toUtf8().constData());
 	QString logMsg = "List Objects (GET " + m_endpoint + "/";
 	logMsg += bucketName;
 	QStringList logQueryParams;
