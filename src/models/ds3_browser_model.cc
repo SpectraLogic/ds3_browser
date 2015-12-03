@@ -39,7 +39,7 @@ static const QString VIEW_TIMESTAMP_FORMAT = "MMMM d, yyyy h:mm AP";
 
 static const QString BUCKET = "Bucket";
 static const QString OBJECT = "Object";
-static const QString FOLDER = "Folder";
+// static const QString FOLDER = "Folder";
 
 //
 // DS3BrowserItem
@@ -1115,7 +1115,7 @@ DS3SearchModel::Search(const QModelIndex& index,
 		QFuture<ds3_get_objects_response*> future = m_client->GetObjects(bucket,
 									         "",
 									         search,
-									         NO_TYPE,
+									         (ds3_object_type)FOLDER,
 									         "");
 		watcher->setFuture(future);
 	}

@@ -62,7 +62,7 @@ public:
 						    const QString& delimiter = "/");
 	QFuture<ds3_get_objects_response*> GetObjects(const QString& bucketName,
 						      const QString& id, const QString& name,
-		 				      object_type type, const QString& version);
+		 				      ds3_object_type type, const QString& version);
 
 	void CreateBucket(const QString& name);
 	void DeleteBucket(const QString& name);
@@ -103,7 +103,7 @@ private:
 					     bool silent = false);
 	ds3_get_objects_response* DoGetObjects(const QString& bucketName,
 					       const QString& id, const QString& name,
-		  			       object_type type, const QString& version);
+		  			       ds3_object_type type, const QString& version);
 	void PrepareBulkGets(BulkGetWorkItem* workItem);
 	void PrepareBulkPuts(BulkPutWorkItem* workItem);
 	void DoBulk(BulkWorkItem* workItem);
