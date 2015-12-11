@@ -277,7 +277,7 @@ Client::GetObject(const QString& bucket,
 
 QFuture<ds3_get_objects_response*>
 Client::GetObjects(const QString& bucketName, const QString& id,
-		  const QString& name, object_type type, const QString& version)
+		  const QString& name, ds3_object_type type, const QString& version)
 {
 	QFuture<ds3_get_objects_response*> future = run(this,
 						       &Client::DoGetObjects,
@@ -424,7 +424,7 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 
 ds3_get_objects_response*
 Client::DoGetObjects(const QString& bucketName, const QString& id,
-		     const QString& name, object_type type, const QString& version)
+		     const QString& name, ds3_object_type type, const QString& version)
 {
 	LOG_DEBUG("DoGetObjects - bucket: " + bucketName +
 		  ", name: " + name);
@@ -442,9 +442,9 @@ Client::DoGetObjects(const QString& bucketName, const QString& id,
 		ds3_request_set_id(request, id.toUtf8().constData());
 		logQueryParams << "id=" + id;
 	}
-	if (type == DATA) {
+	if ((type != FOLDER) && (type != DATA)){
 		ds3_request_set_type(request, type);
-		logQueryParams << "type=DATA";
+		logQueryParams << "type=" + type;
 	}
 	if (!version.isEmpty()) {
 		ds3_request_set_version(request, version.toUtf8().constData());

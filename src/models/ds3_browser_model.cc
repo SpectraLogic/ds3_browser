@@ -37,9 +37,9 @@ enum Column { NAME, OWNER, SIZE_COL, KIND, CREATED, COUNT };
 static const QString REST_TIMESTAMP_FORMAT = "yyyy-MM-ddThh:mm:ss.000Z";
 static const QString VIEW_TIMESTAMP_FORMAT = "MMMM d, yyyy h:mm AP";
 
-static const QString BUCKET = "Bucket";
-static const QString OBJECT = "Object";
-static const QString FOLDER = "Folder";
+static const QString ITEMKIND_BUCKET = "Bucket";
+static const QString ITEMKIND_OBJECT = "Object";
+static const QString ITEMKIND_FOLDER = "Folder";
 
 //
 // DS3BrowserItem
@@ -246,7 +246,7 @@ QString
 DS3BrowserItem::GetPath() const
 {
 	QString path = "/" + m_bucketName;
-	if (GetData(KIND) == BUCKET) {
+	if (GetData(KIND) == ITEMKIND_BUCKET) {
 		return path;
 	}
 
@@ -413,11 +413,11 @@ DS3BrowserModel::data(const QModelIndex &index, int role) const
 	case Qt::DecorationRole:
 		if (column == NAME) {
 			QVariant kind = item->GetData(KIND);
-			if (kind == BUCKET) {
+			if (kind == ITEMKIND_BUCKET) {
 				data = QIcon(":/resources/icons/bucket.png");
-			} else if (kind == FOLDER) {
+			} else if (kind == ITEMKIND_FOLDER) {
 				data = QIcon(":/resources/icons/files.png");
-			} else if (kind == OBJECT) {
+			} else if (kind == ITEMKIND_OBJECT) {
 				data = QIcon(":/resources/icons/file.png");
 			}
 		}
@@ -440,7 +440,7 @@ DS3BrowserModel::dropMimeData(const QMimeData* data,
 	DS3BrowserItem* parent = IndexToItem(parentIndex);
 	QString bucketName = parent->GetBucketName();
 	QString prefix = parent->GetPrefix();
-	if (parent->GetData(KIND) != BUCKET) {
+	if (parent->GetData(KIND) != ITEMKIND_BUCKET) {
 		prefix += parent->GetData(NAME).toString();
 	}
 	prefix.replace(QRegularExpression("^/"), "");
@@ -457,7 +457,7 @@ DS3BrowserModel::flags(const QModelIndex& index) const
 		DS3BrowserItem* item = IndexToItem(index);
 		QVariant kind = item->GetData(KIND);
 		flags |= Qt::ItemIsDragEnabled;
-		if (kind == BUCKET || kind == FOLDER) {
+		if (kind == ITEMKIND_BUCKET || kind == ITEMKIND_FOLDER) {
 			flags |= Qt::ItemIsDropEnabled;
 		}
 	}
@@ -514,7 +514,7 @@ DS3BrowserModel::hasChildren(const QModelIndex& parent) const
 
 	DS3BrowserItem* item = IndexToItem(parent);
 	QVariant kind = item->GetData(KIND);
-	return (kind == BUCKET || kind == FOLDER);
+	return (kind == ITEMKIND_BUCKET || kind == ITEMKIND_FOLDER);
 }
 
 QVariant
@@ -566,7 +566,7 @@ DS3BrowserModel::mimeData(const QModelIndexList& indexes) const
 			DS3BrowserItem* item = IndexToItem(index);
 			QString path = item->GetPath();
 			QVariant kind = item->GetData(KIND);
-			if (kind == FOLDER && !path.endsWith("/")) {
+			if (kind == ITEMKIND_FOLDER && !path.endsWith("/")) {
 				path += "/";
 			}
 			DS3URL url(endpoint, path);
@@ -650,7 +650,7 @@ DS3BrowserModel::IsBucket(const QModelIndex& index) const
 {
 	DS3BrowserItem* item = IndexToItem(index);
 	QVariant kind = item->GetData(KIND);
-	return (kind == BUCKET);
+	return (kind == ITEMKIND_BUCKET);
 }
 
 bool
@@ -658,7 +658,7 @@ DS3BrowserModel::IsFolder(const QModelIndex& index) const
 {
 	DS3BrowserItem* item = IndexToItem(index);
 	QVariant kind = item->GetData(KIND);
-	return (kind == FOLDER);
+	return (kind == ITEMKIND_FOLDER);
 }
 
 bool
@@ -666,7 +666,7 @@ DS3BrowserModel::IsBucketOrFolder(const QModelIndex& index) const
 {
 	DS3BrowserItem* item = IndexToItem(index);
 	QVariant kind = item->GetData(KIND);
-	return (kind == BUCKET || kind == FOLDER);
+	return (kind == ITEMKIND_BUCKET || kind == ITEMKIND_FOLDER);
 }
 
 bool
@@ -770,7 +770,7 @@ DS3BrowserModel::FetchMoreObjects(const QModelIndex& parent)
 
 	QString bucketName = parentItem->GetBucketName();
 	QString prefix = parentItem->GetPrefix();
-	bool isBucket = parentItem->GetData(KIND) == BUCKET;
+	bool isBucket = parentItem->GetData(KIND) == ITEMKIND_BUCKET;
 	if (!isBucket) {
 		prefix += parentItem->GetData(NAME).toString() + "/";
 	}
@@ -839,7 +839,7 @@ DS3BrowserModel::HandleGetServiceResponse()
 			bucketData << name;
 			bucketData << owner;
 			bucketData << "--";
-			bucketData << BUCKET;
+			bucketData << ITEMKIND_BUCKET;
 
 			rawCreated = rawBucket.creation_date->value;
 			createdDT = QDateTime::fromString(QString::fromUtf8(rawCreated),
@@ -908,7 +908,7 @@ DS3BrowserModel::HandleGetBucketResponse()
 		QSet<QString> currentCommonPrefixNames;
 		for (int i = 0; i < parentItem->GetChildCount(); i++) {
 			DS3BrowserItem* object = parentItem->GetChild(i);
-			if (object->GetData(KIND) == FOLDER) {
+			if (object->GetData(KIND) == ITEMKIND_FOLDER) {
 				currentCommonPrefixNames << object->GetData(NAME).toString();
 			}
 		}
@@ -930,7 +930,7 @@ DS3BrowserModel::HandleGetBucketResponse()
 				objectData << nextName;
 				objectData << owner;
 				objectData << "--";
-				objectData << FOLDER;
+				objectData << ITEMKIND_FOLDER;
 				objectData << "--";
 				object = new DS3BrowserItem(objectData,
 							    bucketName,
@@ -963,7 +963,7 @@ DS3BrowserModel::HandleGetBucketResponse()
 
 			objectData << (quint64)rawObject.size;
 
-			objectData << OBJECT;
+			objectData << ITEMKIND_OBJECT;
 
 			if (rawObject.last_modified) {
 				rawCreated = rawObject.last_modified->value;
@@ -1060,11 +1060,11 @@ DS3SearchModel::AppendDS3SearchObject(ds3_search_object* obj, QString bucketName
 			data << QString("");
 		}
 
-		QString type(OBJECT);
+		QString type(ITEMKIND_OBJECT);
 		if (name == "/"+bucketName+"/") {
-			type = BUCKET;
+			type = ITEMKIND_BUCKET;
 		} else if (name.endsWith("/")) {
-			type = FOLDER;
+			type = ITEMKIND_FOLDER;
 		}
 
 		qulonglong size = obj->size;
@@ -1072,7 +1072,7 @@ DS3SearchModel::AppendDS3SearchObject(ds3_search_object* obj, QString bucketName
 		// response includes sizes since empty objects are valid
 		// and we'd want to report them as 0 bytes.
 		// Probably want to do something like:
-		//   if (type == OBJECT || size > 0) {
+		//   if (type == ITEMKIND_OBJECT || size > 0) {
 		if (size > 0) {
 			data << size;
 		} else {
@@ -1115,7 +1115,7 @@ DS3SearchModel::Search(const QModelIndex& index,
 		QFuture<ds3_get_objects_response*> future = m_client->GetObjects(bucket,
 									         "",
 									         search,
-									         NO_TYPE,
+									         (ds3_object_type)NULL,
 									         "");
 		watcher->setFuture(future);
 	}
