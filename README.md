@@ -97,6 +97,8 @@ You'll need to install qmake, and then build as normal.
 
 CentOS Linux Builds
 --------------
+These instructions will work for versions 7 and later of CentOS. They will NOT work for prior versions of CentOS due to out-dated dependencies.
+
 You'll need to install qmake, and then build as normal.
 
     sudo yum install qt5-devel
