@@ -128,16 +128,48 @@ Client::GetBucket(const QString& bucketName, const QString& prefix,
 void
 Client::CreateBucket(const QString& name)
 {
-	ds3_request* request = ds3_init_put_bucket(name.toUtf8().constData());
-	LOG_INFO("PUT          BUCKET    "+m_endpoint+"/"+name);
-	ds3_error* ds3Error = ds3_put_bucket(m_client, request);
-	ds3_free_request(request);
+    ds3_request* request = ds3_init_put_bucket(name.toUtf8().constData());
+    LOG_INFO("PUT          BUCKET    "+m_endpoint+"/"+name);
+    ds3_error* ds3Error = ds3_put_bucket(m_client, request);
+    ds3_free_request(request);
 
-	if (ds3Error != NULL) {
-		DS3Error error(ds3Error);
-		ds3_free_error(ds3Error);
-		throw (error);
-	}
+    if (ds3Error != NULL) {
+        DS3Error error(ds3Error);
+        ds3_free_error(ds3Error);
+        throw (error);
+    }
+}
+
+void
+Client::CreateFolder(const QString& bucket, const QString& name)
+{
+    ds3_bulk_object bulk_obj;
+    ds3_bulk_response* response;
+
+    QString folderName = name;
+    // ensure that folder name ends in /
+    if (!folderName.endsWith('/')) {
+         folderName.append("/");
+    }
+
+    // create a bulk object list of 1 zero-length object
+    ds3_bulk_object_list* obj_list = ds3_init_bulk_object_list(1);
+    memset(&bulk_obj, 0, sizeof(ds3_bulk_object));
+    bulk_obj.name = ds3_str_init(folderName.toUtf8().constData());
+    bulk_obj.length = 0;
+    obj_list->list[0] = bulk_obj;
+
+    LOG_INFO("PUT          FOLDER    " + bucket + "/" + name);
+
+    ds3_request* request = ds3_init_put_bulk(bucket.toUtf8().constData(), obj_list); // Creating the request that will be the bulk put
+    ds3_error* ds3Error = ds3_bulk(m_client, request, &response); // Sends the bulk put request to the server
+    ds3_free_request(request);
+
+    if (ds3Error != NULL) {
+        DS3Error error(ds3Error);
+        ds3_free_error(ds3Error);
+        throw (error);
+    }
 }
 
 void

@@ -14,53 +14,30 @@
  * *****************************************************************************
  */
 
-#ifndef NEW_BUCKET_DIALOG_H
-#define NEW_BUCKET_DIALOG_H
+#ifndef NEW_FOLDER_DIALOG_H
+#define NEW_FOLDER_DIALOG_H
 
 #include <QComboBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QString>
 
 #include "views/dialog.h"
+#include "views/buckets/new_bucket_dialog.h"
 
-class Client;
 
-class NewItemDialog : public Dialog
+class NewFolderDialog : public NewItemDialog
 {
 	Q_OBJECT
 
 public:
-    NewItemDialog(Client* client, QWidget* parent = 0);
-
-public slots:
-	void Accept();
+    NewFolderDialog(Client* client, QString bucket, QString folder, QWidget* parent = 0);
 
 protected:
-    void UpdateItemName();
-    virtual void CreateItem() = 0;
-
-    void layoutDialog();
-	const QString& GetItemName() const;
-
-    QLabel* m_itemLabel;
-    QLabel* m_itemErrorLabel;
-    QLineEdit* m_itemLineEdit;
-
-	Client* m_client;
-    QString m_itemName;
-};
-
-
-class NewBucketDialog : public NewItemDialog
-{
-    Q_OBJECT
-
-public:
-    NewBucketDialog(Client* client, QWidget* parent = 0);
-
-protected:
-    void UpdateItem();
     void CreateItem();
+    QString m_bucketName;
+    QString m_folderName;
+
 };
 
 #endif

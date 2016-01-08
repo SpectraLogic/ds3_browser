@@ -64,8 +64,9 @@ public:
 						      const QString& id, const QString& name,
 		 				      ds3_object_type type, const QString& version);
 
-	void CreateBucket(const QString& name);
-	void DeleteBucket(const QString& name);
+    void CreateBucket(const QString& name);
+    void CreateFolder(const QString& bucket, const QString& name);
+    void DeleteBucket(const QString& name);
 	void DeleteObjects(const QString& bucketName, const QStringList& objectNames);
 	void DeleteFolders(const QString& bucketName, const QStringList& folderNames);
 	

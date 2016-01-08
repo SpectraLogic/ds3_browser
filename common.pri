@@ -57,7 +57,8 @@ HEADERS = \
 	$${PWD}/src/views/jobs_view.h \
 	$${PWD}/src/views/objects/delete_objects_dialog.h \
 	$${PWD}/src/views/session_dialog.h \
-	$${PWD}/src/views/session_view.h
+	$${PWD}/src/views/session_view.h \
+    src/views/buckets/new_folder_dialog.h
 
 SOURCES = \
 	$${PWD}/src/main_window.cc \
@@ -90,7 +91,8 @@ SOURCES = \
 	$${PWD}/src/views/jobs_view.cc \
 	$${PWD}/src/views/objects/delete_objects_dialog.cc \
 	$${PWD}/src/views/session_dialog.cc \
-	$${PWD}/src/views/session_view.cc
+	$${PWD}/src/views/session_view.cc \
+    src/views/buckets/new_folder_dialog.cc
 
 msvc {
 	LIBS += ds3.lib

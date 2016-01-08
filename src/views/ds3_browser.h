@@ -77,6 +77,7 @@ protected slots:
 
 private:
 	void CreateBucket();
+	void CreateFolder();
 	void DeleteSelected();
 	bool IsBucketSelectedOnly() const;
 
