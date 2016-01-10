@@ -30,37 +30,37 @@ class NewItemDialog : public Dialog
 	Q_OBJECT
 
 public:
-    NewItemDialog(Client* client, QWidget* parent = 0);
+	NewItemDialog(Client* client, QWidget* parent = 0);
 
 public slots:
 	void Accept();
 
 protected:
-    void UpdateItemName();
-    virtual void CreateItem() = 0;
+	void UpdateItemName();
+	virtual void CreateItem() = 0;
 
-    void layoutDialog();
+	void layoutDialog();
 	const QString& GetItemName() const;
 
-    QLabel* m_itemLabel;
-    QLabel* m_itemErrorLabel;
-    QLineEdit* m_itemLineEdit;
+	QLabel* m_itemLabel;
+	QLabel* m_itemErrorLabel;
+	QLineEdit* m_itemLineEdit;
 
 	Client* m_client;
-    QString m_itemName;
+	QString m_itemName;
 };
 
 
 class NewBucketDialog : public NewItemDialog
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    NewBucketDialog(Client* client, QWidget* parent = 0);
+	NewBucketDialog(Client* client, QWidget* parent = 0);
 
 protected:
-    void UpdateItem();
-    void CreateItem();
+	void UpdateItem();
+	void CreateItem();
 };
 
 #endif

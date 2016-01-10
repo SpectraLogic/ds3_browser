@@ -39,9 +39,9 @@ class DS3Browser : public Browser
 
 public:
 	DS3Browser(Client* client,
-		   JobsView* jobsView,
-		   QWidget* parent = 0,
-		   Qt::WindowFlags flags = 0);
+			JobsView* jobsView,
+			QWidget* parent = 0,
+			Qt::WindowFlags flags = 0);
 	bool CanReceive(QModelIndex& index);
 	void CanTransfer(bool enable);
 	QModelIndexList GetSelected();

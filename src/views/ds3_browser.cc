@@ -31,7 +31,7 @@
 static const QString BUCKET = "Bucket";
 
 DS3Browser::DS3Browser(Client* client, JobsView* jobsView,
-		       QWidget* parent, Qt::WindowFlags flags)
+	QWidget* parent, Qt::WindowFlags flags)
 	: Browser(client, parent, flags),
 	  m_jobsView(jobsView)
 {
@@ -81,7 +81,7 @@ DS3Browser::AddCustomToolBarActions()
 	m_toolBar->addAction(m_rootAction);
 
 	m_refreshAction = new QAction(style()->standardIcon(QStyle::SP_BrowserReload),
-				      "Refresh", this);
+					  "Refresh", this);
 	connect(m_refreshAction, SIGNAL(triggered()), this, SLOT(Refresh()));
 	m_toolBar->addAction(m_refreshAction);
 
@@ -197,20 +197,20 @@ DS3Browser::CreateBucket()
 void
 DS3Browser::CreateFolder()
 {
-    QModelIndexList selectedIndexes = m_treeView->selectionModel()->selectedRows();
+	QModelIndexList selectedIndexes = m_treeView->selectionModel()->selectedRows();
 
-    if ((selectedIndexes.count() == 0) || !m_model->IsBucketOrFolder(selectedIndexes[0])) {
-        LOG_ERROR("ERROR:       CREATE FOLDER failed, must select bucket or folder");
-        return;
-    }
+	if ((selectedIndexes.count() == 0) || !m_model->IsBucketOrFolder(selectedIndexes[0])) {
+		LOG_ERROR("ERROR:       CREATE FOLDER failed, must select bucket or folder");
+		return;
+	}
 
-    QModelIndex selectedIndex = selectedIndexes[0];
-    QString bucketName = m_model->GetBucketName(selectedIndex);
-    QString folderName = m_model->IsBucket(selectedIndex) ? ""
-            : m_model->GetFullName(selectedIndex);
+	QModelIndex selectedIndex = selectedIndexes[0];
+	QString bucketName = m_model->GetBucketName(selectedIndex);
+	QString folderName = m_model->IsBucket(selectedIndex) ? ""
+			: m_model->GetFullName(selectedIndex);
 
-    NewFolderDialog newFolderDialog(m_client, bucketName, folderName);
-    if (newFolderDialog.exec() == QDialog::Rejected) {
+	NewFolderDialog newFolderDialog(m_client, bucketName, folderName);
+	if (newFolderDialog.exec() == QDialog::Rejected) {
 		return;
 	}
 	Refresh();

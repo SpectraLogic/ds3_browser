@@ -31,12 +31,12 @@ class NewFolderDialog : public NewItemDialog
 	Q_OBJECT
 
 public:
-    NewFolderDialog(Client* client, QString bucket, QString folder, QWidget* parent = 0);
+	NewFolderDialog(Client* client, QString bucket, QString folder, QWidget* parent = 0);
 
 protected:
-    void CreateItem();
-    QString m_bucketName;
-    QString m_folderName;
+	void CreateItem();
+	QString m_bucketName;
+	QString m_folderName;
 
 };
 

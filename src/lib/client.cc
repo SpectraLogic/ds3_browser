@@ -97,7 +97,7 @@ Client::CancelActiveJobs()
 		BulkWorkItem* workItem = i.value();
 		Job::State state = workItem->GetState();
 		if (state != Job::CANCELING && state != Job::CANCELED &&
-		    state != Job::FINISHED) {
+			state != Job::FINISHED) {
 			workItem->SetState(Job::CANCELING);
 		}
 	}
@@ -116,60 +116,60 @@ Client::GetBucket(const QString& bucketName, const QString& prefix,
 		  const QString& marker, bool silent, const QString& delimiter)
 {
 	QFuture<ds3_get_bucket_response*> future = run(this,
-						       &Client::DoGetBucket,
-						       bucketName,
-						       prefix,
-						       delimiter,
-						       marker,
-						       silent);
+							   &Client::DoGetBucket,
+							   bucketName,
+							   prefix,
+							   delimiter,
+							   marker,
+							   silent);
 	return future;
 }
 
 void
 Client::CreateBucket(const QString& name)
 {
-    ds3_request* request = ds3_init_put_bucket(name.toUtf8().constData());
-    LOG_INFO("PUT          BUCKET    "+m_endpoint+"/"+name);
-    ds3_error* ds3Error = ds3_put_bucket(m_client, request);
-    ds3_free_request(request);
+	ds3_request* request = ds3_init_put_bucket(name.toUtf8().constData());
+	LOG_INFO("PUT          BUCKET    "+m_endpoint+"/"+name);
+	ds3_error* ds3Error = ds3_put_bucket(m_client, request);
+	ds3_free_request(request);
 
-    if (ds3Error != NULL) {
-        DS3Error error(ds3Error);
-        ds3_free_error(ds3Error);
-        throw (error);
-    }
+	if (ds3Error != NULL) {
+		DS3Error error(ds3Error);
+		ds3_free_error(ds3Error);
+		throw (error);
+	}
 }
 
 void
 Client::CreateFolder(const QString& bucket, const QString& name)
 {
-    ds3_bulk_object bulk_obj;
-    ds3_bulk_response* response;
+	ds3_bulk_object bulk_obj;
+	ds3_bulk_response* response;
 
-    QString folderName = name;
-    // ensure that folder name ends in /
-    if (!folderName.endsWith('/')) {
-         folderName.append("/");
-    }
+	QString folderName = name;
+	// ensure that folder name ends in /
+	if (!folderName.endsWith('/')) {
+		 folderName.append("/");
+	}
 
-    // create a bulk object list of 1 zero-length object
-    ds3_bulk_object_list* obj_list = ds3_init_bulk_object_list(1);
-    memset(&bulk_obj, 0, sizeof(ds3_bulk_object));
-    bulk_obj.name = ds3_str_init(folderName.toUtf8().constData());
-    bulk_obj.length = 0;
-    obj_list->list[0] = bulk_obj;
+	// create a bulk object list of 1 zero-length object
+	ds3_bulk_object_list* obj_list = ds3_init_bulk_object_list(1);
+	memset(&bulk_obj, 0, sizeof(ds3_bulk_object));
+	bulk_obj.name = ds3_str_init(folderName.toUtf8().constData());
+	bulk_obj.length = 0;
+	obj_list->list[0] = bulk_obj;
 
-    LOG_INFO("PUT          FOLDER    " + bucket + "/" + name);
+	LOG_INFO("PUT          FOLDER    " + bucket + "/" + name);
 
-    ds3_request* request = ds3_init_put_bulk(bucket.toUtf8().constData(), obj_list); // Creating the request that will be the bulk put
-    ds3_error* ds3Error = ds3_bulk(m_client, request, &response); // Sends the bulk put request to the server
-    ds3_free_request(request);
+	ds3_request* request = ds3_init_put_bulk(bucket.toUtf8().constData(), obj_list); // Creating the request that will be the bulk put
+	ds3_error* ds3Error = ds3_bulk(m_client, request, &response); // Sends the bulk put request to the server
+	ds3_free_request(request);
 
-    if (ds3Error != NULL) {
-        DS3Error error(ds3Error);
-        ds3_free_error(ds3Error);
-        throw (error);
-    }
+	if (ds3Error != NULL) {
+		DS3Error error(ds3Error);
+		ds3_free_error(ds3Error);
+		throw (error);
+	}
 }
 
 void
@@ -312,12 +312,12 @@ Client::GetObjects(const QString& bucketName, const QString& id,
 		  const QString& name, ds3_object_type type, const QString& version)
 {
 	QFuture<ds3_get_objects_response*> future = run(this,
-						       &Client::DoGetObjects,
-						       bucketName,
-						       id,
-						       name,
-						       type,
-						       version);
+							   &Client::DoGetObjects,
+							   bucketName,
+							   id,
+							   name,
+							   type,
+							   version);
 	return future;
 }
 
@@ -376,7 +376,7 @@ Client::CancelBulkJob(QUuid workItemID)
 		BulkWorkItem* workItem = m_bulkWorkItems[workItemID];
 		Job::State state = workItem->GetState();
 		if (state != Job::CANCELING && state != Job::CANCELED &&
-		    state != Job::FINISHED) {
+			state != Job::FINISHED) {
 			workItem->SetState(Job::CANCELING);
 		}
 	}
@@ -391,8 +391,8 @@ Client::DoGetService()
 
 	ds3_get_service_response *response;
 	ds3_error* ds3Error = ds3_get_service(m_client,
-					       request,
-					       &response);
+						   request,
+						   &response);
 	ds3_free_request(request);
 
 	if (ds3Error != NULL) {
@@ -406,8 +406,8 @@ Client::DoGetService()
 
 ds3_get_bucket_response*
 Client::DoGetBucket(const QString& bucketName, const QString& prefix,
-		    const QString& delimiter, const QString& marker,
-		    bool silent)
+			const QString& delimiter, const QString& marker,
+			bool silent)
 {
 	LOG_DEBUG("GET          Bucket    " + bucketName +
 		  ", prefix: " + prefix + ", marker: " + marker);
@@ -441,8 +441,8 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 	}
 	ds3_get_bucket_response* response;
 	ds3_error* ds3Error = ds3_get_bucket(m_client,
-					     request,
-					     &response);
+						 request,
+						 &response);
 	ds3_free_request(request);
 
 	if (ds3Error != NULL) {
@@ -456,7 +456,7 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 
 ds3_get_objects_response*
 Client::DoGetObjects(const QString& bucketName, const QString& id,
-		     const QString& name, ds3_object_type type, const QString& version)
+			 const QString& name, ds3_object_type type, const QString& version)
 {
 	LOG_DEBUG("DoGetObjects - bucket: " + bucketName +
 		  ", name: " + name);
@@ -490,8 +490,8 @@ Client::DoGetObjects(const QString& bucketName, const QString& id,
 
 	ds3_get_objects_response* response;
 	ds3_error* ds3Error = ds3_get_objects(m_client,
-					     request,
-					     &response);
+						 request,
+						 &response);
 	ds3_free_request(request);
 
 	if (ds3Error != NULL) {
@@ -518,8 +518,8 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 	QString destination = workItem->GetDestination();
 
 	for (QList<QUrl>::const_iterator& ui(workItem->GetUrlsIterator());
-	     ui != workItem->GetUrlsConstEnd();
-	     ui++) {
+		 ui != workItem->GetUrlsConstEnd();
+		 ui++) {
 		if (workItem->WasCanceled()) {
 			DeleteOrRequeueBulkWorkItem(workItem);
 			return;
@@ -544,7 +544,7 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 
 		QString bucket = url.GetBucketName();
 		if (workItem->GetObjMapSize() >= BULK_PAGE_LIMIT ||
-		    (!prevBucket.isEmpty() && prevBucket != bucket)) {
+			(!prevBucket.isEmpty() && prevBucket != bucket)) {
 			run(this, &Client::DoBulk, workItem);
 			return;
 		}
@@ -564,7 +564,7 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 					return;
 				}
 				if (getBucketRes == NULL ||
-				    (getBucketRes != NULL && i >= getBucketRes->num_objects)) {
+					(getBucketRes != NULL && i >= getBucketRes->num_objects)) {
 					QString marker;
 					if (getBucketRes != NULL) {
 						marker = QString::fromUtf8(getBucketRes->next_marker->value);
@@ -592,8 +592,8 @@ Client::PrepareBulkGets(BulkGetWorkItem* workItem)
 					QString objNameMinusPrefix = subFullObjName;
 					objNameMinusPrefix.replace(QRegularExpression("^" + prefix), "");
 					QString subFilePath = QDir::cleanPath(destination + "/" +
-									      lastPathPart + "/" +
-									      objNameMinusPrefix);
+										  lastPathPart + "/" +
+										  objNameMinusPrefix);
 					if (subFullObjName.endsWith("/")) {
 						workItem->AppendDirsToCreate(subFilePath);
 					} else if (QFile(subFilePath).exists()) {
@@ -640,8 +640,8 @@ Client::PrepareBulkPuts(BulkPutWorkItem* workItem)
 	}
 
 	for (QList<QUrl>::const_iterator& ui(workItem->GetUrlsIterator());
-	     ui != workItem->GetUrlsConstEnd();
-	     ui++) {
+		 ui != workItem->GetUrlsConstEnd();
+		 ui++) {
 		if (workItem->WasCanceled()) {
 			DeleteOrRequeueBulkWorkItem(workItem);
 			return;
@@ -733,8 +733,8 @@ Client::DoBulk(BulkWorkItem* workItem)
 	QHash<QString, QString>::const_iterator hi;
 	size_t i = 0;
 	for (hi = workItem->GetObjMapConstBegin();
-	     hi != workItem->GetObjMapConstEnd();
-	     hi++) {
+		 hi != workItem->GetObjMapConstEnd();
+		 hi++) {
 		ds3_bulk_object* bulkObj = &bulkObjList->list[i];
 		QString objName = hi.key();
 		QString filePath = hi.value();
@@ -779,11 +779,11 @@ Client::DoBulk(BulkWorkItem* workItem)
 				QRegularExpressionMatch match = rx.match(body);
 				if (match.hasMatch()) {
 					errorFileMsg += match.captured(1)+ "already exists"\
-					                "and objects cannot be replaced";
+									"and objects cannot be replaced";
 				} else {
 					errorFileMsg += "one or more of the objects "\
-					                "already exists and objects "\
-					                "cannot be replaced";
+									"already exists and objects "\
+									"cannot be replaced";
 				}
 			} else {
 				errorFileMsg += error.ToString();
@@ -944,12 +944,12 @@ Client::DeleteOrRequeueBulkWorkItem(BulkWorkItem* workItem)
 			LOG_DEBUG("More bulk pages to go.  Starting PrepareBulk{Gets,Puts} again.");
 			if (workItem->GetType() == Job::GET) {
 				run(this,
-				    &Client::PrepareBulkGets,
-				    static_cast<BulkGetWorkItem*>(workItem));
+					&Client::PrepareBulkGets,
+					static_cast<BulkGetWorkItem*>(workItem));
 			} else {
 				run(this,
-				    &Client::PrepareBulkPuts,
-				    static_cast<BulkPutWorkItem*>(workItem));
+					&Client::PrepareBulkPuts,
+					static_cast<BulkPutWorkItem*>(workItem));
 			}
 		}
 	} else {
@@ -978,7 +978,7 @@ Client::GetFileSize(const QString& path)
 	WIN32_FILE_ATTRIBUTE_DATA data;
 	QString nativePath = QDir::toNativeSeparators(path);
 	bool ok = GetFileAttributesEx((wchar_t*)nativePath.utf16(),
-				      GetFileExInfoStandard, &data);
+					  GetFileExInfoStandard, &data);
 	if (ok) {
 		size = data.nFileSizeHigh;
 		size <<= 32;

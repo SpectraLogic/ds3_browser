@@ -56,37 +56,37 @@ public:
 
 	QFuture<ds3_get_service_response*> GetService();
 	QFuture<ds3_get_bucket_response*> GetBucket(const QString& bucketName,
-						    const QString& prefix,
-						    const QString& marker,
-						    bool silent = false,
-						    const QString& delimiter = "/");
+							const QString& prefix,
+							const QString& marker,
+							bool silent = false,
+							const QString& delimiter = "/");
 	QFuture<ds3_get_objects_response*> GetObjects(const QString& bucketName,
-						      const QString& id, const QString& name,
-		 				      ds3_object_type type, const QString& version);
+							  const QString& id, const QString& name,
+							  ds3_object_type type, const QString& version);
 
-    void CreateBucket(const QString& name);
-    void CreateFolder(const QString& bucket, const QString& name);
-    void DeleteBucket(const QString& name);
+	void CreateBucket(const QString& name);
+	void CreateFolder(const QString& bucket, const QString& name);
+	void DeleteBucket(const QString& name);
 	void DeleteObjects(const QString& bucketName, const QStringList& objectNames);
 	void DeleteFolders(const QString& bucketName, const QStringList& folderNames);
-	
+
 	void BulkGet(const QList<QUrl> urls, const QString& destination);
 
 	void BulkPut(const QString& bucketName,
-		     const QString& prefix,
-		     const QList<QUrl> urls);
+			 const QString& prefix,
+			 const QList<QUrl> urls);
 
 	void GetObject(const QString& bucket,
-		       const QString& object,
-		       const QString& fileName,
-		       uint64_t offset,
-		       BulkGetWorkItem* bulkGetWorkItem);
+			   const QString& object,
+			   const QString& fileName,
+			   uint64_t offset,
+			   BulkGetWorkItem* bulkGetWorkItem);
 	void PutObject(const QString& bucket,
-		       const QString& object,
-		       const QString& fileName,
-		       uint64_t offset,
-		       uint64_t length,
-		       BulkPutWorkItem* bulkPutWorkItem);
+			   const QString& object,
+			   const QString& fileName,
+			   uint64_t offset,
+			   uint64_t length,
+			   BulkPutWorkItem* bulkPutWorkItem);
 
 public slots:
 	// Cancel an in-progress BulkGet or BulkPut request.
@@ -98,13 +98,13 @@ signals:
 private:
 	ds3_get_service_response* DoGetService();
 	ds3_get_bucket_response* DoGetBucket(const QString& bucketName,
-					     const QString& prefix,
-					     const QString& delimiter,
-					     const QString& marker,
-					     bool silent = false);
+						 const QString& prefix,
+						 const QString& delimiter,
+						 const QString& marker,
+						 bool silent = false);
 	ds3_get_objects_response* DoGetObjects(const QString& bucketName,
-					       const QString& id, const QString& name,
-		  			       ds3_object_type type, const QString& version);
+						   const QString& id, const QString& name,
+						   ds3_object_type type, const QString& version);
 	void PrepareBulkGets(BulkGetWorkItem* workItem);
 	void PrepareBulkPuts(BulkPutWorkItem* workItem);
 	void DoBulk(BulkWorkItem* workItem);

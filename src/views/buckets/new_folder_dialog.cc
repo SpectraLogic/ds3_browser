@@ -20,26 +20,26 @@
 #include "views/buckets/new_folder_dialog.h"
 
 NewFolderDialog::NewFolderDialog(Client* client, QString bucket, QString folder, QWidget* parent)
-    : NewItemDialog(client, parent)
+	: NewItemDialog(client, parent)
 {
-    setWindowTitle("New Folder in " + bucket + "/" + folder);
-    m_bucketName = bucket;
-    m_folderName = folder;
+	setWindowTitle("New Folder in " + bucket + "/" + folder);
+	m_bucketName = bucket;
+	m_folderName = folder;
 
-    m_itemLineEdit = new QLineEdit;
-    m_itemLineEdit->setToolTip("The name of the Folder to create");
-    m_itemLineEdit->setFixedWidth(150);
-    m_itemLabel = new QLabel("Folder Name");
-    m_itemErrorLabel = new QLabel;
-    m_itemErrorLabel->setStyleSheet("QLabel { color: red; }");
-    layoutDialog();
+	m_itemLineEdit = new QLineEdit;
+	m_itemLineEdit->setToolTip("The name of the Folder to create");
+	m_itemLineEdit->setFixedWidth(150);
+	m_itemLabel = new QLabel("Folder Name");
+	m_itemErrorLabel = new QLabel;
+	m_itemErrorLabel->setStyleSheet("QLabel { color: red; }");
+	layoutDialog();
 }
 
 void
 NewFolderDialog::CreateItem()
 {
-    if (m_folderName.length() > 0) {
-        m_itemName = m_folderName + "/" + m_itemName;
-    }
-    m_client->CreateFolder(m_bucketName, m_itemName);
+	if (m_folderName.length() > 0) {
+		m_itemName = m_folderName + "/" + m_itemName;
+	}
+	m_client->CreateFolder(m_bucketName, m_itemName);
 }
