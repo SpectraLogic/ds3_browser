@@ -22,6 +22,7 @@
 #include "models/session.h"
 #include "views/ds3_delete_dialog.h"
 #include "views/buckets/new_bucket_dialog.h"
+#include "views/buckets/new_folder_dialog.h"
 #include "views/buckets/delete_bucket_dialog.h"
 #include "views/objects/delete_objects_dialog.h"
 #include "views/ds3_browser.h"
@@ -30,7 +31,7 @@
 static const QString BUCKET = "Bucket";
 
 DS3Browser::DS3Browser(Client* client, JobsView* jobsView,
-		       QWidget* parent, Qt::WindowFlags flags)
+	QWidget* parent, Qt::WindowFlags flags)
 	: Browser(client, parent, flags),
 	  m_jobsView(jobsView)
 {
@@ -80,7 +81,7 @@ DS3Browser::AddCustomToolBarActions()
 	m_toolBar->addAction(m_rootAction);
 
 	m_refreshAction = new QAction(style()->standardIcon(QStyle::SP_BrowserReload),
-				      "Refresh", this);
+					  "Refresh", this);
 	connect(m_refreshAction, SIGNAL(triggered()), this, SLOT(Refresh()));
 	m_toolBar->addAction(m_refreshAction);
 
@@ -114,6 +115,7 @@ DS3Browser::OnContextMenuRequested(const QPoint& /*pos*/)
 {
 	QMenu menu;
 	QAction newBucketAction("New Bucket", &menu);
+	QAction newFolderAction("New Folder", &menu);
 	QAction deleteAction("Delete", &menu);
 
 	QModelIndex index = m_treeView->rootIndex();
@@ -122,6 +124,7 @@ DS3Browser::OnContextMenuRequested(const QPoint& /*pos*/)
 		menu.addAction(&newBucketAction);
 	}
 
+	menu.addAction(&newFolderAction);
 	menu.addAction(&deleteAction);
 	if (m_treeView->selectionModel()->selectedRows().count() == 0) {
 		// We could also disable the delete action for other conditions
@@ -140,6 +143,8 @@ DS3Browser::OnContextMenuRequested(const QPoint& /*pos*/)
 
 	if (selectedAction == &newBucketAction) {
 		CreateBucket();
+	} else if (selectedAction == &newFolderAction) {
+		CreateFolder();
 	} else if (selectedAction == &deleteAction) {
 		DeleteSelected();
 	}
@@ -184,6 +189,28 @@ DS3Browser::CreateBucket()
 {
 	NewBucketDialog newBucketDialog(m_client);
 	if (newBucketDialog.exec() == QDialog::Rejected) {
+		return;
+	}
+	Refresh();
+}
+
+void
+DS3Browser::CreateFolder()
+{
+	QModelIndexList selectedIndexes = m_treeView->selectionModel()->selectedRows();
+
+	if ((selectedIndexes.count() == 0) || !m_model->IsBucketOrFolder(selectedIndexes[0])) {
+		LOG_ERROR("ERROR:       CREATE FOLDER failed, must select bucket or folder");
+		return;
+	}
+
+	QModelIndex selectedIndex = selectedIndexes[0];
+	QString bucketName = m_model->GetBucketName(selectedIndex);
+	QString folderName = m_model->IsBucket(selectedIndex) ? ""
+			: m_model->GetFullName(selectedIndex);
+
+	NewFolderDialog newFolderDialog(m_client, bucketName, folderName);
+	if (newFolderDialog.exec() == QDialog::Rejected) {
 		return;
 	}
 	Refresh();
