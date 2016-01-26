@@ -442,9 +442,15 @@ Client::DoGetObjects(const QString& bucketName, const QString& id,
 		ds3_request_set_id(request, id.toUtf8().constData());
 		logQueryParams << "id=" + id;
 	}
-	if ((type != FOLDER) && (type != DATA)){
+	switch (type) {
+	case DATA:
 		ds3_request_set_type(request, type);
-		logQueryParams << "type=" + type;
+		logQueryParams << "type=DATA";
+		break;
+	case FOLDER:
+		ds3_request_set_type(request, type);
+		logQueryParams << "type=FOLDER";
+		break;
 	}
 	if (!version.isEmpty()) {
 		ds3_request_set_version(request, version.toUtf8().constData());
