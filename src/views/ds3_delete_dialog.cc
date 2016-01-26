@@ -59,9 +59,13 @@ DS3DeleteDialog::Accept()
 		m_baseErrorLabel->setText("");
 		m_form->removeWidget(m_baseErrorLabel);
 	}
-	if (m_confirmationRequired && m_confirmInput->text() != CONFIRM_WORD) {
+	if (m_confirmationRequired &&
+	    QString::compare(m_confirmInput->text(),
+			     CONFIRM_WORD,
+			     Qt::CaseSensitive) != 0) {
 		m_confirmLabel->setStyleSheet("QLabel { color: red; }");
 		m_confirmInput->setFocus();
+		return;
 	}
 
 	bool deleteSuccessful = Delete();
