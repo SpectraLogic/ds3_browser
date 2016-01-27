@@ -1115,10 +1115,7 @@ DS3SearchModel::Search(const QModelIndex& index,
 		// Would be better to use some sort of "UNKNOWN" type enum
 		// instead of hardcoding a value.
 		QFuture<ds3_get_objects_response*> future = m_client->GetObjects(bucket,
-									         "",
-									         search,
-									         (ds3_object_type)-1,
-									         "");
+									         search);
 		watcher->setFuture(future);
 	}
 }

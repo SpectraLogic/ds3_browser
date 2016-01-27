@@ -276,16 +276,12 @@ Client::GetObject(const QString& bucket,
 }
 
 QFuture<ds3_get_objects_response*>
-Client::GetObjects(const QString& bucketName, const QString& id,
-		  const QString& name, ds3_object_type type, const QString& version)
+Client::GetObjects(const QString& bucketName, const QString& name)
 {
 	QFuture<ds3_get_objects_response*> future = run(this,
 						       &Client::DoGetObjects,
 						       bucketName,
-						       id,
-						       name,
-						       type,
-						       version);
+						       name);
 	return future;
 }
 
@@ -423,8 +419,7 @@ Client::DoGetBucket(const QString& bucketName, const QString& prefix,
 }
 
 ds3_get_objects_response*
-Client::DoGetObjects(const QString& bucketName, const QString& id,
-		     const QString& name, ds3_object_type type, const QString& version)
+Client::DoGetObjects(const QString& bucketName, const QString& name)
 {
 	LOG_DEBUG("DoGetObjects - bucket: " + bucketName +
 		  ", name: " + name);
@@ -437,24 +432,6 @@ Client::DoGetObjects(const QString& bucketName, const QString& id,
 	if (!name.isEmpty()) {
 		ds3_request_set_name(request, name.toUtf8().constData());
 		logQueryParams << "name=" + name;
-	}
-	if (!id.isEmpty()) {
-		ds3_request_set_id(request, id.toUtf8().constData());
-		logQueryParams << "id=" + id;
-	}
-	switch (type) {
-	case DATA:
-		ds3_request_set_type(request, type);
-		logQueryParams << "type=DATA";
-		break;
-	case FOLDER:
-		ds3_request_set_type(request, type);
-		logQueryParams << "type=FOLDER";
-		break;
-	}
-	if (!version.isEmpty()) {
-		ds3_request_set_version(request, version.toUtf8().constData());
-		logQueryParams << "version=" + version;
 	}
 	if (!logQueryParams.isEmpty()) {
 		logMsg += "&" + logQueryParams.join("&");
